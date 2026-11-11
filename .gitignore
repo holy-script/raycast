@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+coverage/
+
+# Blender raw turntable output is reproducible from tools/blender/render-all.sh
+assets-src/character/raw/
+
+# Generated intermediate stylized frames; the packed atlas is committed
+public/assets/sprites/character/frames/
+
+# Root-level reference PDFs; the spec is archived in docs/spec/
+/*.pdf
