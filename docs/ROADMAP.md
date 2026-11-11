@@ -123,8 +123,10 @@ Status: `npm run assets:comfy` drives all 384 frames through `/upload/image`, `/
 `/history`, and `/view`, masks each result to the raw silhouette, downsamples to 96², and
 the existing packer runs unchanged. `--palette` and `--fallback` keep the pipeline usable
 without a server. `npm run assets:verify` reports IoU and neighbour-yaw palette drift.
-The mock-server integration test covers the HTTP flow; a real ComfyUI generation is still
-pending because no server/checkpoint/ControlNet is bundled in the repo.
+The mock-server integration test covers the HTTP flow. The real pass has since been run
+locally on Apple Silicon for all three characters (1,152 frames, 0 fallbacks, IoU 1.000,
+mean drift 5.4–6.2) and the committed atlases are the AI-stylized output; see
+[PIPELINE.md](PIPELINE.md#local-setup-apple-silicon-verified).
 
 ## M7 — Content and gameplay 🚧
 

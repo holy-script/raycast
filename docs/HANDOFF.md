@@ -24,21 +24,26 @@ Asset pipeline after a fresh clone (raw renders are gitignored):
 
 ```bash
 BLENDER_BIN=/Applications/Blender.app/Contents/MacOS/Blender npm run assets:blender
-npm run assets:stylize            # palette baseline
+npm run assets:stylize            # deterministic palette stylizer
 npm run assets:verify             # IoU + palette drift report
 npm run assets:atlas              # commit the regenerated atlases
 
-# AI pass, once ComfyUI is running with a checkpoint and depth ControlNet:
-npm run assets:comfy -- guardian --checkpoint sd15.safetensors \
-  --controlnet control_v11f1p_sd15_depth.pth --style "SNES RPG, muted palette"
+# AI pass (ComfyUI on 127.0.0.1:8188), one character at a time:
+npm run assets:comfy -- guardian \
+  --checkpoint v1-5-pruned-emaonly.safetensors \
+  --controlnet control_v11f1p_sd15_depth.safetensors \
+  --fallback --timeout 600
 npm run assets:comfy -- --dry-run # plan/missing-control check, writes nothing
 npm run assets:comfy -- guardian --palette --only idle:0:1:0 --out /tmp/frames
 ```
 
-`assets:blender` renders raw + depth + normal passes (pass `--no-controls` to skip the
-latter). `assets:comfy` falls back to the palette stylizer with `--fallback`; without a
-server use `--palette` or `--fallback`. The MCP server (`npm run mcp:studio`) exposes
-`generate_character_atlas` and `regenerate_view` over stdio; see
+The committed atlases are AI-stylized (SD1.5 + depth ControlNet, 0 fallbacks, ~55 min per
+character). `assets:blender` renders raw + depth + normal passes (`--no-controls` skips the
+latter). Setup and timings are in
+[PIPELINE.md](PIPELINE.md#local-setup-apple-silicon-verified). `assets:comfy` falls back to
+the palette stylizer with `--fallback`; without a server use `--palette` or `--fallback`.
+The MCP server (`npm run mcp:studio`) exposes `generate_character_atlas` and
+`regenerate_view` over stdio; see
 [PIPELINE.md](PIPELINE.md#mcp-studio-server-toolsmcpstudiots) for the client config.
 
 ## Debug API
@@ -118,7 +123,8 @@ leave HUD values at `--`.
   background; black/white fringes and silhouette growth return.
 - **Style verification tolerance:** the default IoU dilates the raw mask by one pixel
   because the mandated outline lives outside the silhouette. `--tolerance 0` is the strict
-  comparison; a mean palette-drift threshold of 12 matches the palette baseline.
+  comparison; a mean palette-drift threshold of 12 passed both the palette baseline (4.6–5.1)
+  and the SD1.5 pass (5.4–6.2).
 - **MCP framing:** `tools/mcp/studio.ts` must write only JSON-RPC lines to stdout; logs
   belong on stderr. Tool calls spawn `tsx` with an argv array, never a shell string.
 

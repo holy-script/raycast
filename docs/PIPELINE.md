@@ -238,8 +238,9 @@ npm run assets:comfy -- guardian --only idle:0:1:0 \
 ```
 
 Measured on M-series / 36 GB: ~22 s for the first frame (model load) and ~9.4 s per warm
-frame at 512² with 20 steps, so a full 384-frame character is ~1 hour (~3 hours for all
-three). Run one character at a time with `--fallback` and verify after each.
+frame at 512² with 20 steps. A full 384-frame character took ~55 min (guardian, scout,
+brute: 13:31, 14:27, 15:20 finish times), ~2.7 h for all three including verification.
+Run one character at a time with `--fallback` and verify after each.
 
 ### Workflow
 
@@ -363,9 +364,9 @@ printf '%s\n' \
 
 The ComfyUI call path is covered by `tests/comfy-cli.test.ts`, which runs the real CLI
 against a mock HTTP server (upload → prompt → history → view → 96² frame), so the test
-suite needs no GPU or models. A real local pass has been smoke-tested on Apple Silicon
-(see [Local setup](#local-setup-apple-silicon-verified)); the full 384-frame pass per
-character has not been run yet, so the committed atlases are still palette-stylized. No
+suite needs no GPU or models. The real pass was run on Apple Silicon (see
+[Local setup](#local-setup-apple-silicon-verified)): all 1,152 frames generated with 0
+palette fallbacks in ~3 h total, so the committed atlases are now AI-stylized. No
 ComfyUI server, checkpoint, or ControlNet model is bundled with this repo. The optional
 AutoSprite/Gamelabs adapter from the roadmap is not built; the CLI/workflow boundary is
 the integration point.

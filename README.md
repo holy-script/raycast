@@ -13,15 +13,16 @@ walls, floors and per-cell tops, a true rotational pitch camera, per-pixel depth
 jetpack flight up to 18 m. Walls are solid 1.4-unit blocks you can land on; map digits
 build walkable 0.2/0.4 stairs and a 0.6 crate. Three Blender chassis (guardian, scout, brute) are each rendered from
 16 yaw angles × 4 pitch angles × 6 animation poses (384 frames), stylized to 96×96 pixel
-art, and packed into one atlas per character. Height and pitch drive frame selection,
+art by SD1.5 + depth ControlNet (deterministic palette stylizer as fallback), and packed
+into one atlas per character. Height and pitch drive frame selection,
 including a dedicated near-overhead row, so looking down from altitude picks the correct
 view for every actor.
 
 **Status:** playable M6 build with a browser playtest harness. Core renderer, jetpack
 physics, aerial camera, heightmap stairs/platforms, 16-way/4-pitch sprites, five actor
 behaviors, and the full Blender → stylizer → atlas pipeline work end-to-end. M6 adds
-Blender depth/normal control passes, a ComfyUI img2img + ControlNet style stage with a
-deterministic palette fallback, silhouette/palette verification, and an MCP studio server
+Blender depth/normal control passes, a ComfyUI img2img + ControlNet style stage (run for
+all 1,152 frames, 0 fallbacks), silhouette/palette verification, and an MCP studio server
 for atlas generation. The renderer still consumes the same committed atlases; see the
 [roadmap](docs/ROADMAP.md), [pipeline](docs/PIPELINE.md), and
 [progress log](docs/PROGRESS.md).

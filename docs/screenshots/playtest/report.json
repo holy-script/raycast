@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-11T05:48:50.443Z",
+  "generatedAt": "2026-11-11T09:51:39.587Z",
   "url": "http://127.0.0.1:5199/?screenshot",
   "passed": 29,
   "failed": 0,
@@ -82,7 +82,7 @@
     {
       "name": "wall faces stay opaque while airborne",
       "ok": true,
-      "detail": "384 cols, 46943 wall px"
+      "detail": "384 cols, 47330 wall px"
     },
     {
       "name": "close wall fills the screen instead of vanishing",
@@ -122,12 +122,12 @@
     {
       "name": "walking up two steps lands on the 0.4 platform",
       "ok": true,
-      "detail": "alt 0.40 m, support 0.40, y=19.30"
+      "detail": "alt 0.40 m, support 0.40, y=19.35"
     },
     {
       "name": "stepped blocks render their top surfaces",
       "ok": true,
-      "detail": "46424 top px, 39568 wall px"
+      "detail": "46422 top px, 39570 wall px"
     },
     {
       "name": "a 0.6 crate blocks walking without a jump",
