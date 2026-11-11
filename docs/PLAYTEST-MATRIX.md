@@ -76,6 +76,29 @@ Every scenario also runs universal checks: finite player/render state, sane proj
 sprite rectangles, populated HUD, a non-blank rendered frame, and (for canvas captures) a
 golden-pixel comparison against the previous run and zero console/page errors.
 
+## State gallery
+
+`npm run playtest:states` is the companion to the matrix: instead of one frame per
+scenario, it holds the game still in every body state and captures each one. It walks
+the player through idle, walk, jump, jetpack, aerial, hurt, death, and redeploy, then
+walks each character chassis (guardian, scout, brute) through talk early/late, walk,
+attack wind-up/impact, hurt, death early/mid, and corpse. 98 checks, 43 captures
+(including full-page HUD/TALK/PAUSED overlays) land in `docs/screenshots/states/` with a
+labelled `contact-sheet.png` and `report.json`.
+
+```bash
+npm run playtest:states                 # local dev server on :5204
+STATES_OUT=/tmp/rc-states npm run playtest:states
+```
+
+The harness asserts, per state, that the actor reports the expected animation state,
+that the sprite actually drew more than ~200 pixels, and that the corpse leaves a body
+on the floor. A missing state in the atlas fails loudly instead of silently falling
+back to idle — that is how the scout/brute gap is tracked until their atlases are
+repacked. It also serves as the visual-critique gallery: pass the captures to the
+playtester agent and review silhouette, grounding, pose readability, attachment of
+limbs/antenna, and framing.
+
 ## Golden frames
 
 Canvas captures are compared to the existing PNG in `docs/screenshots/matrix/` with a

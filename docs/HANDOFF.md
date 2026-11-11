@@ -12,11 +12,12 @@ npm test
 npm run build
 npm run playtest   # headless Chrome, 29 checks + screenshots
 npm run playtest:matrix  # 90 deterministic scenarios, 581 checks
+npm run playtest:states  # 98 state checks, 43 paused-state captures
 npm run dev        # http://localhost:5173
 ```
 
 Expected: typecheck clean, 50 tests passing across 7 files, Vite build succeeds, playtest
-29/29, matrix 581/581 with zero console errors. Click the canvas, move with WASD, hold
+29/29, matrix 581/581, state gallery 98/98 with zero console errors. Click the canvas, move with WASD, hold
 Space to jetpack up to 18 m, and look down to see the top-pitch sprite rows and the
 diorama. Walk up the panel stairs (x=10–13, y=18–21) onto the 0.4 platform, jump the 0.6
 crate at (4.5, 13.5), or land on a wall to perch; walk off to fall back.
@@ -87,11 +88,13 @@ per-sprite `contentW/contentH/pixels/occluded` so the harness can assert on what
 actually drawn.
 
 `?screenshot` hides the intro overlay for headless captures. Prefer the harnesses:
-`npm run playtest` is the happy-path browser check, and `npm run playtest:matrix` walks
+`npm run playtest` is the happy-path browser check, `npm run playtest:matrix` walks
 90 deterministic state/route scenarios (581 checks, labelled contact sheet, golden
-frames). Both start Vite, drive Chrome over CDP, write screenshots plus `report.json`,
-and exit non-zero on failure; see [PLAYTEST-MATRIX.md](PLAYTEST-MATRIX.md). To verify a
-deployed build instead of the local server:
+frames), and `npm run playtest:states` pauses the sim in every player/chassis body state
+for 43 gallery captures (98 checks). All start Vite, drive Chrome over CDP, write
+screenshots plus `report.json`, and exit non-zero on failure; see
+[PLAYTEST-MATRIX.md](PLAYTEST-MATRIX.md). To verify a deployed build instead of the local
+server:
 
 ```bash
 PLAYTEST_OUT=/tmp/rc-prod-check npm run playtest -- --url https://raycast-rosy.vercel.app/
@@ -173,9 +176,9 @@ leave HUD values at `--`.
 - Runtime code has no dependencies; tooling uses `pngjs` and `tsx` only.
 - Comments explain non-obvious math or a bug workaround, not every line.
 - Unit tests cover pure math/data code. Browser behavior is verified by
-  `npm run playtest` plus the state matrix (`npm run playtest:matrix`); the playtester
-  agent (`.qoder/agents/playtester.md`) reviews the captured screenshots for visual
-  regressions.
+  `npm run playtest`, the state matrix (`npm run playtest:matrix`), and the paused-state
+  gallery (`npm run playtest:states`); the playtester agent
+  (`.qoder/agents/playtester.md`) reviews the captured screenshots for visual regressions.
 - Keep documentation current in the same commit as the change it describes.
 
 ## Git workflow

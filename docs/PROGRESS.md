@@ -27,6 +27,7 @@ npm test            # 7 files, 50 tests pass
 npm run build       # tsc + vite build
 npm run playtest    # 29/29 browser checks pass
 npm run playtest:matrix  # 90 scenarios, 581/581 checks, 0 console errors
+npm run playtest:states  # 98/98 state checks, 43 captures, 0 console errors
 npm run assets:verify  # 384-frame atlases; IoU 1.000, mean drift 5.4–6.2
 ```
 
@@ -132,7 +133,32 @@ M7 gameplay verification (2026-11-11):
   idle/walk until their AI passes finish, so their combat screenshots fall back to idle.
   The engine's state fallback keeps the loop working either way.
 
+State-gallery verification (2026-11-11, `npm run playtest:states`):
+
+- 98 checks / 43 captures pass in ~6 s with zero console errors. The gallery pauses and
+  fixed-steps the player through idle, walk, jump, jet, aerial, hurt, death, and redeploy,
+  and each chassis through talk early/late, walk, attack wind-up/impact, hurt, death
+  early/mid, and corpse.
+- Per-state checks assert the actor's resolved animation state, sprite pixel coverage
+  (>200 px), and a rendered corpse; missing atlas states fail instead of silently
+  falling back. This is how the scout/brute gap is tracked.
+- The playtester agent critiqued the gallery: guardian states are readable and distinct;
+  it found a detached antenna block on the attack wind-up frame and a near-black talk
+  frame 0. The raw Blender frames are clean, so both are stylization artifacts awaiting a
+  targeted frame-level re-run.
+- Artifacts: `docs/screenshots/states/contact-sheet.png`, 43 PNGs, `report.json`.
+
 ## Session log
+
+### 2026-11-11 — State-gallery playtest harness
+
+- Added `tools/playtest/states.ts` (`npm run playtest:states`): deterministic pause/step
+  gallery that captures every player and chassis body state, composes a labelled contact
+  sheet, and fails on missing states or blank sprites. 98 checks, 43 captures.
+- Documented the gallery in [PLAYTEST-MATRIX.md](PLAYTEST-MATRIX.md#state-gallery) and in
+  the playtester agent workflow; the agent now critiques each chassis state-by-state.
+- The gallery empirically caught two guardian stylization artifacts (detached antenna in
+  the attack wind-up, dark talk frame 0); the raw renders are clean.
 
 ### 2026-11-11 — Guardian six-state atlas, one-character verification
 
@@ -337,7 +363,11 @@ M7 gameplay verification (2026-11-11):
 - Pointer lock must be entered by clicking; automated screenshots use `?screenshot`.
 - The intro overlay can require a reload on a cold Vite dev start if assets race HMR.
 - The playtests verify mechanics, render statistics, and atlas wiring, not art quality;
-  the playtester agent reviews the screenshots for visual regressions.
+  the state gallery catches missing states and blank sprites, and the playtester agent
+  reviews the captures for silhouette/pose/framing regressions.
+- Guardian's AI attack wind-up has a detached antenna block and talk frame 0 reads dark
+  in the atlas; the raw Blender frames are clean, so these need a frame-level stylizer
+  re-run (no `--frames` filter exists yet).
 - Headless Chrome only emits rAF for a foregrounded target; both harnesses front the page,
   and the matrix does so again before resume. Without it, real-time checks freeze while
   `isPaused()` still returns false.

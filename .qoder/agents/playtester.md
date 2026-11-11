@@ -23,8 +23,20 @@ captured screenshots.
    `report.json`. Read the report, then open the contact sheet and any relevant
    full-size frames. The matrix catches movement, vertical, aim, surface, actor, UI,
    interaction, combat, level, and route states the happy-path run does not.
-3. Read both `report.json` files. List every failed check with its measured detail.
-4. Open the screenshots with the Read tool and review them as images. Check:
+3. Run `npm run playtest:states`. It pauses and steps the simulation until the player
+   and each character chassis (guardian, scout, brute) are held in every animation
+   state — idle, walk, jump, jet, aerial, talk early/late, attack wind-up/impact, hurt,
+   death early/mid, corpse, redeploy — and captures each one to
+   `docs/screenshots/states/` (98 checks, 43 captures, labelled
+   `contact-sheet.png` + `report.json`). Unlike the matrix, it asserts sprite-pixel
+   coverage per body state, so a missing or fallback atlas state fails loudly.
+4. Read all three `report.json` files. List every failed check with its measured detail.
+5. Open the screenshots with the Read tool and review them as images. In the state
+   gallery, critique each chassis state-by-state: silhouette readable and distinct from
+   neighbouring states, limbs/weapon/antenna attached, feet grounded, no near-black or
+   blown-out frames, talk lip/head movement visible, attack wind-up clearly anticipates
+   the impact pose, hurt/death poses unmistakable, corpse lies on the floor. Across all
+   captures, check:
    - Floor grid stays anchored to the world while moving and turning (no sliding or
      smearing along with the camera).
    - Walls are vertical, textured, and meet the floor without gaps; wall faces remain
@@ -42,21 +54,21 @@ captured screenshots.
      shot reveals the full courtyard with solid wall tops and visible actors.
    - Landing on a wall shows `PERCH · WALL 1.4 m` and a stable overhead view; stepping
      off returns to floor height.
-   - Combat frames show the enemy hurt/death pose (once the M7 atlas is repacked), a
-     corpse remains after death, and the player damage/death overlay reads clearly.
+   - Combat frames show the enemy wind-up, hurt, death, and corpse poses, and the player
+     damage/death overlay reads clearly.
    - Interaction frames show the prompt/toast, an unlocked door opening onto the beacon,
      talk lines, and pickups disappearing after collection.
    - The reactor captures show solid terrace steps, the vault door, and the hover actor;
      the beacon return lands back in the courtyard.
    - No black frames, sky-colored holes in the floor, or sprite rectangles.
-5. `window.__raycast.debug()` exposes render statistics (`wallColumns`, `wallPixels`,
+6. `window.__raycast.debug()` exposes render statistics (`wallColumns`, `wallPixels`,
    per-sprite `contentW/contentH/pixels`) and resolved yaw/pitch/frame per actor; use it
    when a check disagrees with what you see.
-6. Compare against the previous run when screenshots already exist, and call out any
+7. Compare against the previous run when screenshots already exist, and call out any
    visual change that looks like a regression even if all programmatic checks pass.
    Matrix goldens are replaced after a mismatch is reported, so review the first run
    after a visual change before it is committed.
-7. Report concisely: verdict, table of checks with pass/fail and measured values,
+8. Report concisely: verdict, table of checks with pass/fail and measured values,
    screenshot findings, and any suspected root cause with file references. Do not edit
    game code, docs, or assets, and do not commit. If the harness itself is broken
    (server boot, CDP, missing atlases), diagnose it and say exactly what is missing;
