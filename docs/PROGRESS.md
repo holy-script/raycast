@@ -13,7 +13,7 @@ Last updated: **2026-11-11**
 | Blender → stylize → atlas, 3 chassis | M4 | ✅ Complete |
 | Heightmap blocks: stairs, platforms, crates | M5 | ✅ Complete |
 | ComfyUI / MCP AI stylization | M6 | ✅ Complete; atlases AI-stylized |
-| 16-way and multi-character content | M7 | 🚧 Chassis, directions, behaviors done; combat pending |
+| Combat, interaction, doors, reactor map | M7 | 🚧 Gameplay complete; sprite-state atlas repack pending |
 | Audio, menus, deployment | M8 | 🚧 Live + auto-deploy; audio/menus pending |
 
 ## Verification snapshot
@@ -26,9 +26,12 @@ npm run typecheck   # passes
 npm test            # 6 files, 43 tests pass
 npm run build       # tsc + vite build
 npm run playtest    # 29/29 browser checks pass
-npm run playtest:matrix  # 70 scenarios, 428/428 checks, 0 console errors
-npm run assets:verify  # 384 frames/character; IoU 1.000, mean drift 5.4–6.2
+npm run playtest:matrix  # 90 scenarios, 490/490 checks, 0 console errors
+npm run assets:verify  # 384-frame atlases; IoU 1.000, mean drift 5.4–6.2
 ```
+
+The new-state AI pass (832 frames per character) is the only outstanding M7 item;
+`assets:verify` will report 1,216 frames per character after the repack.
 
 Asset-side verification (2026-11-11, after the AI pass landed):
 
@@ -98,7 +101,49 @@ State-matrix verification (2026-11-11, `npm run playtest:matrix`):
 - Artifacts: `docs/screenshots/matrix/contact-sheet.png`, per-scenario PNGs, and
   `report.json`.
 
+M7 gameplay verification (2026-11-11):
+
+- Matrix grown to **90 scenarios / 490 checks / 90 captures**, all passing with zero
+  console errors; three consecutive runs were identical after the deterministic level
+  load (level time reset, per-actor `animTime = index × 0.37`).
+- Interaction group: keycard pickup with toast, locked-door refusal, unlock (`D` cell
+  cleared from the tile grid), talk-line cycle, medkit heal, fuel refill, and a no-op
+  interact. Combat group: strike connects for 45, enemy hurt frame, kill → corpse still
+  rendered, cone and range rejection, hostile contact damage with the red overlay,
+  player death → redeploy, attack cooldown, and enemy wind-up timing.
+- Level group: courtyard → reactor transition, vault return with reloaded state, terrace
+  climb, reactor hover actor, and the beacon exit loop. Captures `i01`–`i07`,
+  `f01`–`f08`, and `l01`–`l05` are in the contact sheet.
+- Matrix extension surfaced a real state bug: `placeAtSpawn()` did not reset
+  `player.attackCooldown`, so a strike queued in the previous scenario blocked the next
+  one. Fixed alongside deterministic actor animation.
+- Happy-path playtest still 29/29; typecheck and 43 unit tests pass; `npm run build`
+  succeeds (37.6 kB JS, 13.8 kB gzip).
+- Sprite states: the atlases still hold idle/walk until the AI pass finishes, so combat
+  screenshots show idle silhouettes; the engine's state fallback keeps the loop working.
+
 ## Session log
+
+### 2026-11-11 — M7 combat, interaction, doors, and reactor map
+
+- Rebuilt the game on level definitions (`src/content/levels.ts`): `loadLevel(id)`,
+  mutable world, per-level actors/spawn, pickups, exits, and title/objective copy.
+  Deterministic reload resets `time`, actor animation phase, health, and cooldowns.
+- Added player combat: `F`/left click strikes a 70° cone at 2.3 m for 45 damage on a
+  0.45 s cooldown; actors gain HP, hurt/death states, knockback, and a corpse that holds
+  the final death frame. Hostiles damage the player on contact (8–14) with a red vignette,
+  death, and a 1.4 s redeploy.
+- Added `E` interaction: talk lines for guard/scholar/tinker/engineer, locked-door
+  refusal, door opening (clears tile + height, unlocks the vault), and auto-collected
+  keycard/medkit/fuel pickups with HUD prompts and toasts.
+- Added props and textures (`door`, `keycard`, `medkit`, `fuel`, `beacon`), a beacon exit
+  pad, and the second 24×24 reactor map with a stepped pyramid, vault, and hover actor.
+- HUD: health bar, level title, objective line, keycard status, prompt, toast, and a
+  damage/death overlay. Minimap now marks doors, pickups, exits, and hostiles.
+- Blender rig gained attack(4)/hurt(2)/death(4)/talk(3) poses; the packer emits all six
+  states and the engine uses state-specific frame clocks (death clamps to its last frame).
+- Added `tools/playtest/m7-check.ts` as a temporary end-to-end probe (27 checks, deleted
+  after the matrix absorbed its coverage).
 
 ### 2026-11-11 — Deterministic state-matrix playtesting
 
@@ -255,8 +300,9 @@ State-matrix verification (2026-11-11, `npm run playtest:matrix`):
 - Heights are blocks grown from `z = 0`; there are no sunken floors/pits, overhangs, or
   ceilings. A full floor/ceiling sector model is deferred (not needed for this game).
 - No ceiling geometry: sky is visible above the outer walls from ground level.
-- Actors have no collision with the player or each other and no combat loop; chase actors
-  pursue but cannot damage or be damaged.
+- Actors are non-blocking (no player/actor or actor/actor collision). Hostiles deal
+  contact damage and can be killed; the strike test uses distance + cone only, not wall
+  occlusion, so a hostile behind a low wall can still be hit.
 - Actor shadows fade out above 2.5 m, so high hover actors have no visible shadow.
 - Pointer lock must be entered by clicking; automated screenshots use `?screenshot`.
 - The intro overlay can require a reload on a cold Vite dev start if assets race HMR.
@@ -267,19 +313,20 @@ State-matrix verification (2026-11-11, `npm run playtest:matrix`):
   `isPaused()` still returns false.
 - Matrix golden PNGs are replaced after a mismatch is reported, so the first run after a
   visual change flags every affected scenario. Review that run before committing.
-- The ComfyUI path is implemented and covered against a mock server, but no real
-  checkpoint/ControlNet generation has run in this repo; start ComfyUI and supply
-  `--checkpoint`/`--controlnet` to validate art quality. AutoSprite/Gamelabs is not
-  implemented.
+- The committed atlases come from a real SD1.5 + depth-ControlNet pass (mock-tested CLI,
+  0 fallbacks). The attack/hurt/death/talk frames are mid-pass; until the repack lands the
+  engine falls back to idle for those states. AutoSprite/Gamelabs is not implemented.
 - Sprites are still masked to the Blender silhouette, so AI cannot invent limbs outside
   the render; a reference-image lock for costume details is also not implemented.
 
 ## Immediate next steps
 
-1. Add attack/hurt/death states and a simple interaction or combat loop (`M7`), with new
-   matrix scenarios for damage, hit feedback, and removal.
-2. Add doors, pickups, and a level transition; extend the matrix with `i`/`d` groups.
-3. Add a second map exercising the vertical layouts (M7) and a route scenario for it.
-4. Run a real ComfyUI pass when regenerating sprites for the new states, then tune
-   `--max-drift` from `artifacts/style-report.json`.
+1. Finish the AI pass for attack/hurt/death/talk on guardian, scout, and brute; repack the
+   three atlases; run `assets:verify` and inspect the style report for state-to-state drift.
+2. Refresh the matrix goldens/screenshots so combat captures show the new poses, then
+   rerun typecheck, tests, build, playtest, and matrix; commit the asset slice and verify
+   the Vercel deployment.
+3. Owner playtest of the M7 loop; capture feel/balance feedback (damage, range, cooldown)
+   as the input for M8.
+4. M8 polish: audio, pause/settings menu, performance pass, final README capture.
 5. Optional: AutoSprite/Gamelabs adapter behind the same CLI/workflow boundary.

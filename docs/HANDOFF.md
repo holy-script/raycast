@@ -11,15 +11,21 @@ npm run typecheck
 npm test
 npm run build
 npm run playtest   # headless Chrome, 29 checks + screenshots
-npm run playtest:matrix  # 70 deterministic state/route scenarios, 428 checks
+npm run playtest:matrix  # 90 deterministic state/route scenarios, 490 checks
 npm run dev        # http://localhost:5173
 ```
 
 Expected: typecheck clean, 43 tests passing across 6 files, Vite build succeeds, playtest
-29/29, matrix 428/428 with zero console errors. Click the canvas, move with WASD, hold Space to jetpack up to 18 m, and look down
-to see the top-pitch sprite rows and the diorama. Walk up the panel stairs (x=10–13,
-y=18–21) onto the 0.4 platform, jump the 0.6 crate at (4.5, 13.5), or land on a wall to
-perch; walk off to fall back.
+29/29, matrix 490/490 with zero console errors. Click the canvas, move with WASD, hold
+Space to jetpack up to 18 m, and look down to see the top-pitch sprite rows and the
+diorama. Walk up the panel stairs (x=10–13, y=18–21) onto the 0.4 platform, jump the 0.6
+crate at (4.5, 13.5), or land on a wall to perch; walk off to fall back.
+
+M7 loop: pick up the keycard near the courtyard spawn, open the door at (9, 11), step on
+the beacon to reach the reactor map, climb the terraces, unlock/open the vault door at
+(13, 9), and use the vault beacon to return. `E` talks to NPCs and interacts; `F` or left
+click strikes a hostile in front of you. Medkits and fuel canisters are picked up by
+walking over them.
 
 Asset pipeline after a fresh clone (raw renders are gitignored):
 
@@ -65,8 +71,12 @@ window.__raycast.debug();                     // camera, player, actor rects, re
 window.__raycast.automation.pause();          // freeze the live frame loop
 window.__raycast.automation.step(0.5);        // fixed-dt ticks while paused, then render
 window.__raycast.automation.resume();
-window.__raycast.automation.reset();          // respawn + actor spawns + fuel
+window.__raycast.automation.reset();          // reload courtyard + respawn state
 window.__raycast.automation.setFuel(0.3);
+window.__raycast.automation.setHealth(40);
+window.__raycast.automation.attack();         // one strike, true if it connected
+window.__raycast.automation.interact();       // "none" | "talk" | "door" | "locked" | "pickup"
+window.__raycast.automation.loadLevel("reactor");  // levelIndexById, deterministic reload
 window.__raycast.automation.frameCount();     // real rAF ticks (harness liveness)
 ```
 
@@ -78,7 +88,7 @@ actually drawn.
 
 `?screenshot` hides the intro overlay for headless captures. Prefer the harnesses:
 `npm run playtest` is the happy-path browser check, and `npm run playtest:matrix` walks
-70 deterministic state/route scenarios (428 checks, labelled contact sheet, golden
+90 deterministic state/route scenarios (490 checks, labelled contact sheet, golden
 frames). Both start Vite, drive Chrome over CDP, write screenshots plus `report.json`,
 and exit non-zero on failure; see [PLAYTEST-MATRIX.md](PLAYTEST-MATRIX.md). To verify a
 deployed build instead of the local server:
@@ -142,6 +152,20 @@ leave HUD values at `--`.
 - **Headless frames:** Chrome only emits rAF for a foregrounded target. The CDP launcher
   calls `Page.bringToFront`, and the matrix re-fronts before `resume()`; removing either
   silently freezes real-time checks while `isPaused()` still reads false.
+- **Level determinism:** `loadLevel` must reset `time`, actor `animTime` to
+  `index × 0.37`, player pose/health/fuel/cooldown, input, and rebuild the world. The
+  matrix compares golden pixels, so any new level or actor field that affects visuals
+  needs an explicit reset here.
+- **State clocks:** `idle`/`walk` animate from `animTime`; `attack`/`hurt`/`death`/`talk`
+  read `stateT` so their timing is independent of walk phase. `death` clamps to its last
+  frame and the actor stays in the array (`alive = false`) so the corpse still draws.
+- **Corpses:** skip only dead actors whose state is not `death`; filtering all dead actors
+  removes the corpse mid-frame, and updating them after death restarts animation.
+- **Strike contract:** one cone/range target per press, 45 damage, 0.45 s cooldown, and
+  the cooldown resets in `placeAtSpawn()`/`loadLevel()` — a leaked cooldown silently
+  swallows the first strike of the next scenario (this was a real matrix failure).
+- **Doors and exits:** opening a door clears both its tile id and height so movement and
+  raycasts agree; exits and pickups are radius checks in `update`, not tile triggers.
 
 ## Conventions
 
@@ -180,28 +204,34 @@ leave HUD values at `--`.
 - Heights are blocks grown from `z = 0`; there are no sunken floors/pits, overhangs, or
   ceilings. The walkable floor is one plane at 0.
 - No ceiling geometry; sky is visible above the outer walls from ground level.
-- Actors have no collision with the player or each other and no combat loop. Chase actors
-  pursue but do not damage; hover actors bob and spin.
+- Actors are non-blocking (no player/actor or actor/actor collision). Hostiles deal
+  contact damage and can be killed; the strike cone has no wall-occlusion check.
+- Levels reload from their definitions on every transition, which resets pickups, doors,
+  and the keycard. The demo loop is therefore one-way per visit: after the courtyard
+  beacon return you can re-collect the keycard and run it again.
+- The new attack/hurt/death/talk atlases are mid-generation; until the repack, those
+  states fall back to idle silhouettes (mechanics and timing are already correct).
 - Intro overlay can stick on a cold Vite start if HMR interrupts boot; reload fixes it.
 - No license file yet.
 
-## Next task: playtest feedback, then M7 gameplay
+## Next task: finish the M7 sprite-state atlas
 
-M6 is complete: Blender controls, the ComfyUI workflow/CLI, style verification, and the
-MCP studio server are in place. The owner is playtesting the current build next; treat
-their bug/feel report as the first input before starting new content.
+M7 gameplay is complete and deployed: combat, interaction, doors/pickups, transitions,
+and the reactor map are covered by the 90-scenario matrix. The owner should playtest the
+loop and report feel/balance issues.
 
-After that, resume M7. The matrix gives each new feature a place to land: add a scenario
-group for combat damage, interaction, doors/pickups, and the second map.
+The one open M7 item is the art pass. Blender renders for the new states, the packer
+entries, and engine selection are already in place; only frames and atlases are missing.
 
-1. Add attack/hurt/death/talk states to the Blender timeline, state constants, atlas
-   manifests, and frame selection.
-2. Add actor interaction (use/talk) and a simple combat loop with damage, hit feedback,
-   and enemy removal.
-3. Add doors, pickups, and a level transition.
-4. Add a second map that exercises the heightmap sectors and vertical camera.
-5. When ComfyUI + models are available, run a real `assets:comfy` pass, inspect
-   `artifacts/style-report.json`, and tune the drift threshold/style preset.
+1. Let `assets:comfy` finish for guardian, scout, and brute
+   (`--only attack,hurt,death,talk --fallback`), then run `npm run assets:atlas`.
+   Expect 1,216 frames and 76 atlas rows per character (1536×7296 per atlas).
+2. Run `npm run assets:verify` and review `artifacts/style-report.json` for state-to-state
+   drift; adjust `--max-drift` only for a deliberate style change.
+3. Rerun `npm run playtest:matrix -- --update-golden` so combat/talk captures show the new
+   poses, then playtest/build/typecheck/tests, commit the asset slice, and check Vercel.
+4. Then move to M8 polish (audio, pause/settings menu, performance) unless the owner's
+   playtest feedback changes priorities.
 
 If a design choice could go either way, record it in [DECISIONS.md](DECISIONS.md) with the
 tradeoff, then proceed.

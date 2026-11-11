@@ -102,6 +102,11 @@ def parse_args():
     parser.add_argument("--only", default="", help="state:frame:pitch:yaw for a single test render")
     parser.add_argument("--pitches", default="", help="comma-separated pitch indices to render")
     parser.add_argument(
+        "--states",
+        default="",
+        help="comma-separated state names to render (default: all)",
+    )
+    parser.add_argument(
         "--no-controls",
         dest="controls",
         action="store_false",
@@ -350,7 +355,17 @@ def build_character(character):
     }
 
 
+def reset_pose(rig):
+    """Every pose starts from the neutral rig so states never inherit joint drift."""
+    rig["torso"].location = (0, 0, 0.45)
+    rig["torso"].rotation_euler = (0, 0, 0)
+    rig["head"].rotation_euler = (0, 0, 0)
+    for key in ("shoulder_l", "shoulder_r", "hip_l", "hip_r"):
+        rig[key].rotation_euler = (0, 0, 0)
+
+
 def idle_pose(rig, frame):
+    reset_pose(rig)
     breath = 0.006 if frame % 2 == 0 else -0.004
     rig["torso"].location.z = 0.45 + breath
     rig["head"].rotation_euler = (0.02 if frame % 2 == 0 else -0.015, 0, 0)
@@ -369,6 +384,7 @@ WALK_POSES = [
 
 
 def walk_pose(rig, frame):
+    reset_pose(rig)
     hip_l, hip_r, arm_l, arm_r, lift = WALK_POSES[frame % len(WALK_POSES)]
     rig["hip_l"].rotation_euler = (hip_l, 0, 0)
     rig["hip_r"].rotation_euler = (hip_r, 0, 0)
@@ -376,6 +392,94 @@ def walk_pose(rig, frame):
     rig["shoulder_r"].rotation_euler = (arm_r, 0, 0.05)
     rig["torso"].location.z = 0.45 + lift
     rig["head"].rotation_euler = (0.01, 0, 0)
+
+
+# Attack reads as windup -> straight punch -> follow-through -> guard. Negative
+# shoulder X swings the arm forward (the character faces -Y); torso Z twists.
+ATTACK_POSES = [
+    (0.3, 0.45, 0.65, -0.3, 0.08, -0.02),
+    (-0.22, 0.43, -1.55, 0.2, -0.05, -0.05),
+    (-0.38, 0.44, -1.1, 0.1, 0.1, -0.06),
+    (-0.06, 0.45, -0.4, -0.15, 0.02, -0.01),
+]
+
+
+def attack_pose(rig, frame):
+    reset_pose(rig)
+    twist, torso_z, arm_r, arm_l, head_x, lunge = ATTACK_POSES[
+        frame % len(ATTACK_POSES)
+    ]
+    rig["torso"].rotation_euler = (0.06, 0, twist)
+    rig["torso"].location = (0, lunge, torso_z)
+    rig["shoulder_r"].rotation_euler = (arm_r, 0, 0.12)
+    rig["shoulder_l"].rotation_euler = (arm_l, 0, -0.08)
+    rig["head"].rotation_euler = (head_x, 0, twist * -0.4)
+    rig["hip_l"].rotation_euler = (0.18, 0, 0)
+    rig["hip_r"].rotation_euler = (-0.12, 0, 0)
+
+
+# Recoil leans the torso back (negative X); arms throw back.
+HURT_POSES = [
+    (0.42, -0.3, -0.4, 0.75, 0.6, 0.35),
+    (0.445, -0.08, -0.1, 0.25, 0.2, 0.1),
+]
+
+
+def hurt_pose(rig, frame):
+    reset_pose(rig)
+    torso_z, torso_x, head_x, arm_r, arm_l, hip_l = HURT_POSES[
+        frame % len(HURT_POSES)
+    ]
+    rig["torso"].location.z = torso_z
+    rig["torso"].rotation_euler = (torso_x, 0, 0.12)
+    rig["head"].rotation_euler = (head_x, 0, 0)
+    rig["shoulder_r"].rotation_euler = (arm_r, 0, 0.2)
+    rig["shoulder_l"].rotation_euler = (arm_l, 0, -0.2)
+    rig["hip_l"].rotation_euler = (hip_l, 0, 0)
+    rig["hip_r"].rotation_euler = (-hip_l, 0, 0)
+
+
+# Stagger -> buckle -> kneel -> slumped. Folding at the hips keeps the body
+# inside the turntable frame instead of rotating it through the floor.
+DEATH_POSES = [
+    (0.45, -0.3, -0.45, 0.75, 0.55, 0.0, 0.0),
+    (0.36, 0.22, 0.25, 0.1, 0.2, 0.9, 0.6),
+    (0.2, 0.42, 0.45, -0.45, -0.3, 1.5, 1.4),
+    (0.11, 0.85, 0.65, -0.85, -0.7, 1.65, 1.55),
+]
+
+
+def death_pose(rig, frame):
+    reset_pose(rig)
+    torso_z, torso_x, head_x, arm_r, arm_l, hip_l, hip_r = DEATH_POSES[
+        frame % len(DEATH_POSES)
+    ]
+    rig["torso"].location = (0, 0.02 * frame, torso_z)
+    rig["torso"].rotation_euler = (torso_x, 0, 0.08)
+    rig["head"].rotation_euler = (head_x, 0, 0)
+    rig["shoulder_r"].rotation_euler = (arm_r, 0, 0.15)
+    rig["shoulder_l"].rotation_euler = (arm_l, 0, -0.15)
+    rig["hip_l"].rotation_euler = (hip_l, 0, 0.05)
+    rig["hip_r"].rotation_euler = (hip_r, 0, -0.05)
+
+
+# Talk is a small looping gesture: raised forearm, head tilt, then a nod.
+TALK_POSES = [
+    (-0.55, 0.02, 0.0, 0.05),
+    (-1.0, 0.1, 0.08, 0.12),
+    (-0.75, 0.14, 0.02, 0.06),
+]
+
+
+def talk_pose(rig, frame):
+    reset_pose(rig)
+    arm_r, head_x, head_z, twist = TALK_POSES[frame % len(TALK_POSES)]
+    rig["torso"].rotation_euler = (0.02, 0, twist)
+    rig["shoulder_r"].rotation_euler = (arm_r, 0, 0.35)
+    rig["shoulder_l"].rotation_euler = (-0.1, 0, -0.08)
+    rig["head"].rotation_euler = (head_x, 0, head_z)
+    rig["hip_l"].rotation_euler = (0.04, 0, 0)
+    rig["hip_r"].rotation_euler = (-0.02, 0, 0)
 
 
 def setup_render(args):
@@ -536,7 +640,18 @@ def main():
     states = [
         ("idle", 2, idle_pose),
         ("walk", 4, walk_pose),
+        ("attack", 4, attack_pose),
+        ("hurt", 2, hurt_pose),
+        ("death", 4, death_pose),
+        ("talk", 3, talk_pose),
     ]
+    if args.states:
+        wanted = {name.strip() for name in args.states.split(",") if name.strip()}
+        known = {name for name, _, _ in states}
+        unknown = wanted - known
+        if unknown:
+            raise SystemExit(f"unknown states: {', '.join(sorted(unknown))}")
+        states = [state for state in states if state[0] in wanted]
 
     only = None
     if args.only:

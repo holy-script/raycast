@@ -317,6 +317,11 @@ async function main(): Promise<void> {
           look: text("hud-look"),
           fuel: text("hud-fuel"),
           sprite: text("hud-sprite"),
+          health: text("hud-health"),
+          level: text("hud-level"),
+          keycard: text("hud-keycard"),
+          prompt: text("prompt"),
+          toast: text("toast"),
         };
       })()`);
 
@@ -343,6 +348,12 @@ async function main(): Promise<void> {
       evaluate(`window.__raycast.automation.setFuel(${value})`);
     const setFlying = (value: boolean): Promise<void> =>
       evaluate(`window.__raycast.setFlying(${value})`);
+    const setHealth = (value: number): Promise<void> =>
+      evaluate(`window.__raycast.automation.setHealth(${value})`);
+    const attack = (): Promise<boolean> =>
+      evaluate<boolean>("window.__raycast.automation.attack()");
+    const interact = (): Promise<string> =>
+      evaluate<string>("window.__raycast.automation.interact()");
     const pause = (): Promise<void> =>
       evaluate("window.__raycast.automation.pause()");
     const resume = async (): Promise<void> => {
@@ -350,10 +361,14 @@ async function main(): Promise<void> {
       await browser!.send("Page.bringToFront");
       await evaluate("window.__raycast.automation.resume()");
     };
-    const reset = async (): Promise<void> => {
-      await evaluate("window.__raycast.automation.reset()");
+    const loadLevel = async (id: string): Promise<void> => {
+      await evaluate(`window.__raycast.automation.loadLevel(${JSON.stringify(id)})`);
       await pause();
       await step(0);
+    };
+    const reset = async (): Promise<void> => {
+      // Every scenario starts from the courtyard so level state cannot leak.
+      await loadLevel("courtyard");
     };
     const tapKey = async (code: string, key: string, virtualKey: number): Promise<void> => {
       const payload = {
@@ -1325,6 +1340,369 @@ async function main(): Promise<void> {
         "sprint route traverses the corridor",
         current.x - 3.5 > 4.4,
         `dx=${(current.x - 3.5).toFixed(2)} in 1 s`,
+      );
+    });
+
+    // ----------------------------------------------------------- interaction
+    define("interaction", "i01-keycard-pickup", async () => {
+      await pose(17.5, 9.5, 0, 0, 0);
+      await step(0.1);
+      const current = await state();
+      const dbg = await debug();
+      const card = dbg.pickups.find((pickup) => pickup.kind === "keycard");
+      const values = await hud();
+      check(
+        "walking onto the keycard collects it",
+        current.keycard && card?.taken === true,
+        `keycard=${current.keycard} taken=${card?.taken}`,
+      );
+      check("keycard toast appears", values.toast.includes("KEYCARD"), values.toast);
+      check("HUD keycard reads acquired", values.keycard === "ACQUIRED", values.keycard);
+      await capturePage("i01-keycard-toast");
+    });
+
+    define("interaction", "i02-door-locked", async () => {
+      await pose(8.4, 11.5, 0, 0.35, 0);
+      await step(0.1);
+      const result = await interact();
+      const dbg = await debug();
+      const values = await hud();
+      check(
+        "the lift door stays sealed without a keycard",
+        result === "locked" && dbg.doors[0].open === false,
+        `${result} · open=${dbg.doors[0].open}`,
+      );
+      check("locked prompt explains the keycard", values.prompt.includes("keycard"), values.prompt);
+      check("sealed toast appears", values.toast.includes("SEALED"), values.toast);
+    });
+
+    define("interaction", "i03-door-unlock", async () => {
+      await pose(17.5, 9.5, 0, 0, 0);
+      await step(0.1);
+      await pose(8.4, 11.5, 0, 0, 0);
+      await step(0.1);
+      const values = await hud();
+      check("unlock prompt appears at the door", values.prompt.includes("unlock door"), values.prompt);
+      const result = await interact();
+      const dbg = await debug();
+      const tile = await evaluate<number>(
+        "window.__raycast.game.world.tiles[11 * 24 + 9]",
+      );
+      check(
+        "the keycard clears the door tile",
+        result === "door" && dbg.doors[0].open === true && tile === 0,
+        `${result} · open=${dbg.doors[0].open} · tile=${tile}`,
+      );
+      await saveCanvas("i03-door-open", true);
+    });
+
+    define("interaction", "i04-talk-cycle", async () => {
+      await pose(8.5, 1.5, 0, Math.PI, 0);
+      await step(0.1);
+      const values = await hud();
+      check("talk prompt appears near the guard", values.prompt.includes("talk to guard"), values.prompt);
+      const first = await interact();
+      await step(0.1);
+      let guard = (await debug()).actors.find((actor) => actor.name === "guard");
+      const firstToast = (await hud()).toast;
+      const second = await interact();
+      await step(0.1);
+      guard = (await debug()).actors.find((actor) => actor.name === "guard");
+      const secondToast = (await hud()).toast;
+      check(
+        "E puts the guard into the talk state",
+        first === "talk" && second === "talk" && guard?.state === "talk",
+        `${first}/${second} · ${guard?.state}`,
+      );
+      check(
+        "talk lines advance on repeat use",
+        firstToast.includes("GUARD") &&
+          secondToast.includes("GUARD") &&
+          firstToast !== secondToast,
+        `"${firstToast}" -> "${secondToast}"`,
+      );
+      await capturePage("i04-talk");
+    });
+
+    define("interaction", "i05-medkit-heal", async () => {
+      await setHealth(40);
+      await pose(1.5, 21.5, 0, 0, 0);
+      await step(0.1);
+      const current = await state();
+      const values = await hud();
+      const medkit = (await debug()).pickups.find((pickup) => pickup.kind === "medkit");
+      check(
+        "the medkit restores 40 health",
+        current.health === 80 && medkit?.taken === true,
+        `health ${current.health} · taken=${medkit?.taken}`,
+      );
+      check("HUD health follows the pickup", values.health === "80 / 100", values.health);
+    });
+
+    define("interaction", "i06-fuel-refill", async () => {
+      await setFuel(0.1);
+      await pose(21.5, 12.5, 0, 0, 0);
+      await step(0.1);
+      const current = await state();
+      const fuel = (await debug()).pickups.find((pickup) => pickup.kind === "fuel");
+      check(
+        "the fuel cell tops up the jetpack",
+        current.fuel === 1 && fuel?.taken === true,
+        `fuel ${current.fuel} · taken=${fuel?.taken}`,
+      );
+      check("HUD fuel reads full", (await hud()).fuel === "100%", (await hud()).fuel);
+    });
+
+    define("interaction", "i07-empty-interact", async () => {
+      await pose(5.5, 4.5, 0, 0, 0);
+      await step(0.1);
+      const result = await interact();
+      const values = await hud();
+      check(
+        "using E with nothing in reach reports nothing",
+        result === "none" && values.toast.includes("NOTHING"),
+        `${result} · "${values.toast}"`,
+      );
+      check("no prompt away from interactables", values.prompt === "", `"${values.prompt}"`);
+    });
+
+    // ---------------------------------------------------------------- combat
+    define("combat", "f01-player-strike", async () => {
+      await pose(17.0, 14.5, 0, 0, 0);
+      await step(0.05);
+      const hit = await attack();
+      await step(0.1);
+      const stalker = (await debug()).actors.find((actor) => actor.name === "stalker");
+      check(
+        "a forward strike damages the stalker",
+        hit && stalker?.hp === 25,
+        `hit=${hit} · hp=${stalker?.hp}`,
+      );
+      check("the hit puts the actor in hurt state", stalker?.state === "hurt", stalker?.state ?? "missing");
+      await saveCanvas("f01-enemy-hurt", true);
+    });
+
+    define("combat", "f02-player-kill", async () => {
+      await pose(17.0, 14.5, 0, 0, 0);
+      await step(0.05);
+      await attack();
+      await step(0.5);
+      const hit = await attack();
+      await step(0.1);
+      let dbg = await debug();
+      let stalker = dbg.actors.find((actor) => actor.name === "stalker");
+      check(
+        "the second strike kills the stalker",
+        hit && stalker?.state === "death" && stalker.hp === 0,
+        `hit=${hit} · ${stalker?.state} · hp=${stalker?.hp}`,
+      );
+      const values = await hud();
+      check("kill toast names the target", values.toast.includes("STALKER DOWN"), values.toast);
+      await step(0.7);
+      dbg = await debug();
+      stalker = dbg.actors.find((actor) => actor.name === "stalker");
+      const corpse = dbg.stats.spriteRects.find((rect) => rect.id === "stalker");
+      check(
+        "the corpse drops out of targeting but stays rendered",
+        stalker?.alive === false && Boolean(corpse && corpse.pixels > 0),
+        `alive=${stalker?.alive} · ${corpse?.pixels ?? 0} corpse px`,
+      );
+      await saveCanvas("f02-enemy-corpse", true);
+    });
+
+    define("combat", "f03-attack-arc", async () => {
+      await pose(17.0, 14.5, 0, Math.PI, 0);
+      const hit = await attack();
+      const stalker = (await debug()).actors.find((actor) => actor.name === "stalker");
+      check(
+        "striking away from the target misses",
+        hit === false && stalker?.hp === 70,
+        `hit=${hit} · hp=${stalker?.hp}`,
+      );
+    });
+
+    define("combat", "f04-attack-range", async () => {
+      await pose(14.5, 14.5, 0, 0, 0);
+      const hit = await attack();
+      const stalker = (await debug()).actors.find((actor) => actor.name === "stalker");
+      check(
+        "targets beyond 2.3 m are out of reach",
+        hit === false && stalker?.hp === 70,
+        `hit=${hit} · hp=${stalker?.hp}`,
+      );
+    });
+
+    define("combat", "f05-hostile-damage", async () => {
+      await pose(17.6, 14.5, 0, 0, 0);
+      await setHealth(100);
+      await step(0.25);
+      const current = await state();
+      const values = await hud();
+      const overlay = await evaluate<number>(
+        'Number(document.getElementById("damage").style.opacity || 0)',
+      );
+      check(
+        "the hostile strike damages the player",
+        current.health < 100 && current.damageFlash > 0.5,
+        `hp=${current.health} · flash=${current.damageFlash.toFixed(2)}`,
+      );
+      check("HUD health and damage vignette react", values.health !== "100 / 100" && overlay > 0.2, `${values.health} · overlay=${overlay.toFixed(2)}`);
+      await capturePage("f05-player-hit");
+    });
+
+    define("combat", "f06-death-redeploy", async () => {
+      await pose(17.6, 14.5, 0, 0, 0);
+      await setHealth(1);
+      await step(0.6);
+      let current = await state();
+      let values = await hud();
+      const deadClass = await evaluate<boolean>(
+        'document.getElementById("damage").classList.contains("dead")',
+      );
+      check(
+        "a lethal hit downs the player",
+        current.dead && current.health === 0,
+        `dead=${current.dead} · hp=${current.health}`,
+      );
+      check("death HUD and overlay engage", values.health === "0 / 100" && deadClass, `${values.health} · deadOverlay=${deadClass}`);
+      await capturePage("f06-player-dead");
+      await step(1.4);
+      current = await state();
+      values = await hud();
+      check(
+        "redeploy restores spawn health",
+        !current.dead &&
+          current.health === 100 &&
+          near(current.x, 3.5, 0.01) &&
+          near(current.y, 1.5, 0.01),
+        `hp=${current.health} at ${current.x.toFixed(2)},${current.y.toFixed(2)}`,
+      );
+      check("redeploy toast appears", values.toast.includes("REDEPLOYED"), values.toast);
+      await capturePage("f06-redeployed");
+    });
+
+    define("combat", "f07-attack-cooldown", async () => {
+      await pose(17.0, 14.5, 0, 0, 0);
+      const first = await attack();
+      const second = await attack();
+      const stalker = (await debug()).actors.find((actor) => actor.name === "stalker");
+      check(
+        "the strike cooldown blocks immediate repeats",
+        first === true && second === false && stalker?.hp === 25,
+        `first=${first} second=${second} hp=${stalker?.hp}`,
+      );
+    });
+
+    define("combat", "f08-enemy-windup", async () => {
+      await pose(17.6, 14.5, 0, 0, 0);
+      await step(0.05);
+      const stalker = (await debug()).actors.find((actor) => actor.name === "stalker");
+      check(
+        "a hostile in range starts its attack animation",
+        stalker?.state === "attack",
+        stalker?.state ?? "missing",
+      );
+    });
+
+    // ---------------------------------------------------------------- levels
+    define("levels", "l01-transition-reactor", async () => {
+      await pose(17.5, 9.5, 0, 0, 0);
+      await step(0.1);
+      await pose(8.4, 11.5, 0, 0, 0);
+      await step(0.1);
+      await interact();
+      await pose(11.5, 11.5, 0, 0, 0);
+      await step(0.05);
+      const dbg = await debug();
+      const values = await hud();
+      check(
+        "the lift pad loads the reactor deck",
+        dbg.level === "reactor" && values.level === "REACTOR DECK",
+        `${dbg.level} · ${values.level}`,
+      );
+      check(
+        "the reactor spawn faces the terraces",
+        near(dbg.player.x, 2.5, 0.01) && near(dbg.player.y, 20.5, 0.01),
+        `${dbg.player.x.toFixed(2)}, ${dbg.player.y.toFixed(2)}`,
+      );
+      check("reactor objective updates", values.toast.includes("REACTOR DECK"), values.toast);
+      await saveCanvas("l01-reactor-spawn", true);
+    });
+
+    define("levels", "l02-vault-return", async () => {
+      await loadLevel("reactor");
+      await pose(12.4, 9.5, 0, 0, 0);
+      await step(0.1);
+      const result = await interact();
+      const opened = (await debug()).doors[0];
+      check("the vault opens without a keycard", result === "door" && opened.open, `${result} · open=${opened.open}`);
+      await pose(15.5, 9.5, 0, 0, 0);
+      await step(0.05);
+      const dbg = await debug();
+      check("the beacon returns to the courtyard", dbg.level === "courtyard", dbg.level);
+      check(
+        "returning reloads the courtyard state",
+        dbg.doors[0].open === false &&
+          dbg.keycard === false &&
+          dbg.pickups.every((pickup) => !pickup.taken),
+        `door=${dbg.doors[0].open} keycard=${dbg.keycard}`,
+      );
+      await saveCanvas("l02-vault-return", true);
+    });
+
+    define("levels", "l03-terrace-climb", async () => {
+      await loadLevel("reactor");
+      await pose(9.5, 22.5, 0, -Math.PI / 2, 0);
+      await press("KeyW");
+      await step(0.8);
+      let current = await state();
+      const perch = (await hud()).mode;
+      check(
+        "walking up the stepped pyramid raises the player",
+        current.z > 0.3 && current.onGround,
+        `alt ${current.z.toFixed(2)} m · ${perch}`,
+      );
+      await saveCanvas("l03-terrace", true);
+      await step(1.4);
+      await release("KeyW");
+      current = await state();
+      check(
+        "the terrace tops out and returns to floor level",
+        current.y < 17 && current.z === 0,
+        `y=${current.y.toFixed(2)} · alt ${current.z.toFixed(2)} m`,
+      );
+    });
+
+    define("levels", "l04-reactor-hover", async () => {
+      await loadLevel("reactor");
+      await pose(2.5, 20.5, 0, 0, 0);
+      let spark = (await debug()).actors.find((actor) => actor.name === "spark");
+      const start = spark?.z ?? 0;
+      await step(1.2);
+      spark = (await debug()).actors.find((actor) => actor.name === "spark");
+      const end = spark?.z ?? 0;
+      check(
+        "the reactor hover actor patrols its altitude",
+        Math.abs(end - start) > 0.15 && end > 1.5 && end < 2.3,
+        `z ${start.toFixed(2)} -> ${end.toFixed(2)}`,
+      );
+    });
+
+    define("levels", "l05-beacon-loop", async () => {
+      await loadLevel("reactor");
+      await pose(15.5, 9.5, 0, 0, 0);
+      await step(0.05);
+      const dbg = await debug();
+      const values = await hud();
+      check(
+        "the reactor beacon closes the loop",
+        dbg.level === "courtyard" && values.level === "COURTYARD",
+        `${dbg.level} · ${values.level}`,
+      );
+      check(
+        "the courtyard objective is restored",
+        values.toast.includes("COURTYARD"),
+        values.toast,
       );
     });
 

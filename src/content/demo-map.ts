@@ -1,4 +1,4 @@
-// 24x24 courtyard. '#' = brick, 'X' = tech panel, '.' = walkable.
+// 24x24 courtyard. '#' = brick, 'X' = tech panel, 'D' = sealed door, '.' = walkable.
 // Digits 1-9 are solid panel platforms at 0.2 × digit world units (stairs/ledges).
 export const DEMO_MAP: string[] = [
   "########################",
@@ -12,7 +12,7 @@ export const DEMO_MAP: string[] = [
   "#.....####....####.....#",
   "#......................#",
   "#..##....######....##..#",
-  "#..##....#....#....##..#",
+  "#..##....D....#....##..#",
   "#........#....#........#",
   "#...3....######........#",
   "#......................#",

@@ -29,21 +29,47 @@ async function boot(): Promise<void> {
   const hudFuel = byId<HTMLSpanElement>("hud-fuel");
   const hudFuelFill = byId<HTMLSpanElement>("hud-fuel-fill");
   const hudSprite = byId<HTMLSpanElement>("hud-sprite");
+  const hudHealth = byId<HTMLSpanElement>("hud-health");
+  const hudHealthFill = byId<HTMLSpanElement>("hud-health-fill");
+  const hudLevel = byId<HTMLSpanElement>("hud-level");
+  const hudObjective = byId<HTMLDivElement>("hud-objective");
+  const hudKeycard = byId<HTMLSpanElement>("hud-keycard");
+  const prompt = byId<HTMLDivElement>("prompt");
+  const toast = byId<HTMLDivElement>("toast");
+  const damage = byId<HTMLDivElement>("damage");
   const thrust = byId<HTMLDivElement>("thrust");
 
   let assets;
   try {
-    const [brick, panel, floor, guardian, scout, brute] = await Promise.all([
+    const [
+      brick,
+      panel,
+      door,
+      floor,
+      keycard,
+      medkit,
+      fuel,
+      beacon,
+      guardian,
+      scout,
+      brute,
+    ] = await Promise.all([
       loadTexture(`${BASE}assets/textures/brick.png`),
       loadTexture(`${BASE}assets/textures/panel.png`),
+      loadTexture(`${BASE}assets/textures/door.png`),
       loadTexture(`${BASE}assets/textures/floor.png`),
+      loadTexture(`${BASE}assets/textures/keycard.png`),
+      loadTexture(`${BASE}assets/textures/medkit.png`),
+      loadTexture(`${BASE}assets/textures/fuel.png`),
+      loadTexture(`${BASE}assets/textures/beacon.png`),
       loadAtlas(`${BASE}assets/sprites/guardian/atlas.json`),
       loadAtlas(`${BASE}assets/sprites/scout/atlas.json`),
       loadAtlas(`${BASE}assets/sprites/brute/atlas.json`),
     ]);
     assets = {
-      textures: { 1: brick, 2: panel },
+      textures: { 1: brick, 2: panel, 3: door },
       floor,
+      props: { keycard, medkit, fuel, beacon },
       atlases: { guardian, scout, brute },
     };
   } catch (error) {
@@ -100,6 +126,8 @@ async function boot(): Promise<void> {
     game.render();
     game.drawMinimap(mapCtx, MINIMAP_SIZE);
     thrust.classList.toggle("active", game.isThrusting());
+    damage.classList.toggle("dead", game.isDead);
+    damage.style.opacity = game.isDead ? "1" : String(game.damageFlash * 0.72);
   };
 
   const syncHud = (): void => {
@@ -123,6 +151,17 @@ async function boot(): Promise<void> {
       state.nearestYaw < 0
         ? "none"
         : `${state.nearestName} · ${state.nearestSprite} · yaw ${state.nearestYaw} · ${game.getPitchLabel(state.nearestPitch)}`;
+    hudHealth.textContent = `${Math.round(state.health)} / ${state.maxHealth}`;
+    hudHealthFill.style.width = `${(state.health / state.maxHealth) * 100}%`;
+    hudHealthFill.classList.toggle("critical", state.health <= 34);
+    hudLevel.textContent = state.levelTitle;
+    hudObjective.textContent = state.objective;
+    hudKeycard.textContent = state.keycard ? "ACQUIRED" : "--";
+    hudKeycard.classList.toggle("owned", state.keycard);
+    prompt.textContent = state.prompt;
+    prompt.classList.toggle("visible", state.prompt !== "");
+    toast.textContent = state.toast;
+    toast.classList.toggle("visible", state.toast !== "");
     hud.classList.toggle("minimal", !game.hudDetailVisible);
   };
 
@@ -189,10 +228,7 @@ async function boot(): Promise<void> {
         syncHud();
       },
       reset: () => {
-        game.respawn();
-        game.resetActors();
-        game.setFlying(false);
-        game.setFuel(1);
+        game.resetLevel();
         game.input.clearKeys();
         game.input.consumeLook();
         syncFrame();
@@ -200,6 +236,27 @@ async function boot(): Promise<void> {
       },
       setFuel: (value) => {
         game.setFuel(value);
+        syncHud();
+      },
+      setHealth: (value) => {
+        game.setHealth(value);
+        syncHud();
+      },
+      attack: () => {
+        const hit = game.attack();
+        syncFrame();
+        syncHud();
+        return hit;
+      },
+      interact: () => {
+        const result = game.interact();
+        syncFrame();
+        syncHud();
+        return result;
+      },
+      loadLevel: (id) => {
+        game.loadLevelById(id);
+        syncFrame();
         syncHud();
       },
     },
@@ -228,6 +285,10 @@ declare global {
         step: (seconds: number, dt?: number) => void;
         reset: () => void;
         setFuel: (value: number) => void;
+        setHealth: (value: number) => void;
+        attack: () => boolean;
+        interact: () => "none" | "talk" | "door" | "locked" | "pickup";
+        loadLevel: (id: string) => void;
       };
     };
   }

@@ -13,6 +13,12 @@ export interface ActorSpec {
   patrol?: { ax: number; ay: number; bx: number; by: number; speed: number };
   chase?: { speed: number; range: number };
   hover?: { height: number; bob: number; speed: number };
+  /** Hostile actors take and deal damage; friendly actors only talk. */
+  hostile?: boolean;
+  hp?: number;
+  attack?: { damage: number; range: number; cooldown: number };
+  /** Looping dialogue shown when the player uses E nearby. */
+  talk?: string[];
 }
 
 const EAST = 0;
@@ -20,7 +26,7 @@ const SOUTH = Math.PI * 0.5;
 const WEST = Math.PI;
 const NORTH = -Math.PI * 0.5;
 
-export const DEMO_ACTORS: ActorSpec[] = [
+export const COURTYARD_ACTORS: ActorSpec[] = [
   {
     name: "sentinel",
     sprite: "scout",
@@ -39,6 +45,10 @@ export const DEMO_ACTORS: ActorSpec[] = [
     facing: WEST,
     behavior: "idle",
     tint: [1.18, 0.86, 0.65],
+    talk: [
+      "Gate's been sealed since the vent blew. Keycard's east of here.",
+      "That lift chamber drops straight to the reactor deck.",
+    ],
   },
   {
     name: "patrol",
@@ -59,6 +69,7 @@ export const DEMO_ACTORS: ActorSpec[] = [
     behavior: "idle",
     tint: [1.0, 0.84, 1.18],
     scale: 0.9,
+    talk: ["Three chassis, sixteen views each. The reactor deck is worse."],
   },
   {
     name: "warden",
@@ -90,6 +101,10 @@ export const DEMO_ACTORS: ActorSpec[] = [
     behavior: "idle",
     tint: [1.2, 0.9, 1.05],
     scale: 1.12,
+    talk: [
+      "I keep the lift honest. You keep the drones off me.",
+      "Card readers are fussy. Walk up and press E.",
+    ],
   },
   {
     name: "watcher",
@@ -132,6 +147,9 @@ export const DEMO_ACTORS: ActorSpec[] = [
     tint: [1.1, 0.9, 1.25],
     scale: 0.95,
     chase: { speed: 1.5, range: 10 },
+    hostile: true,
+    hp: 70,
+    attack: { damage: 8, range: 1.5, cooldown: 1.2 },
   },
   {
     name: "prowler",
@@ -143,6 +161,9 @@ export const DEMO_ACTORS: ActorSpec[] = [
     tint: [1.25, 0.8, 0.85],
     scale: 1.12,
     chase: { speed: 1.05, range: 9 },
+    hostile: true,
+    hp: 140,
+    attack: { damage: 14, range: 1.6, cooldown: 1.5 },
   },
   {
     name: "marauder",
@@ -154,5 +175,64 @@ export const DEMO_ACTORS: ActorSpec[] = [
     tint: [1.2, 0.95, 0.8],
     scale: 1.04,
     chase: { speed: 0.9, range: 8 },
+    hostile: true,
+    hp: 110,
+    attack: { damage: 11, range: 1.5, cooldown: 1.35 },
+  },
+];
+
+export const REACTOR_ACTORS: ActorSpec[] = [
+  {
+    name: "engineer",
+    sprite: "scout",
+    x: 15.5,
+    y: 12.5,
+    facing: SOUTH,
+    behavior: "idle",
+    tint: [0.95, 1.15, 1.2],
+    scale: 0.94,
+    talk: [
+      "Vault's on the west face. No card reader on this deck, just press E.",
+      "Beacon inside the vault lifts you back to the courtyard.",
+    ],
+  },
+  {
+    name: "reactor-scout",
+    sprite: "scout",
+    x: 4.5,
+    y: 12.5,
+    facing: EAST,
+    behavior: "chase",
+    tint: [1.15, 0.85, 0.95],
+    scale: 0.96,
+    chase: { speed: 1.6, range: 12 },
+    hostile: true,
+    hp: 70,
+    attack: { damage: 9, range: 1.5, cooldown: 1.1 },
+  },
+  {
+    name: "reactor-brute",
+    sprite: "brute",
+    x: 19.5,
+    y: 6.5,
+    facing: WEST,
+    behavior: "chase",
+    tint: [1.3, 0.78, 0.7],
+    scale: 1.14,
+    chase: { speed: 1.0, range: 10 },
+    hostile: true,
+    hp: 140,
+    attack: { damage: 15, range: 1.6, cooldown: 1.6 },
+  },
+  {
+    name: "spark",
+    sprite: "guardian",
+    x: 11.5,
+    y: 15.5,
+    facing: NORTH,
+    behavior: "hover",
+    tint: [0.75, 1.2, 1.3],
+    scale: 0.8,
+    hover: { height: 1.9, bob: 0.32, speed: 1.9 },
   },
 ];

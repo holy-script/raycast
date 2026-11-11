@@ -10,7 +10,7 @@ ASCII map ─────────────┐
 textures ──────────────┤
 3 × atlas.{png,json} ──┘
 
-Blender chassis ─► 1152 RGBA renders + depth/normal controls ─► 384 stylized frames per character ─► 3 × 1536×2304 atlases
+Blender chassis ─► 1,216 RGBA renders + depth/normal controls ─► 1,216 stylized frames per character ─► 3 × 1536×7296 atlases
 ```
 
 ## Commands
@@ -40,10 +40,10 @@ The stylizer, verifier, and packer default to guardian, scout, and brute; pass n
 limit them: `npm run assets:stylize -- scout`, `npm run assets:comfy -- scout`,
 `npm run assets:verify -- scout`, `npm run assets:atlas -- scout`.
 
-Tested with Blender 5.2.2, Node 24, and ComfyUI's `/prompt` HTTP API. The full 1152-frame
-render takes roughly three minutes at 384² / 16 samples on Apple Silicon, plus two cheap
-control passes per frame. Raw renders, control images, and intermediate frames are
-gitignored; only the packed atlases, manifests, and textures are committed.
+Tested with Blender 5.2.2, Node 24, and ComfyUI's `/prompt` HTTP API. The full 1,216-frame
+render per character takes roughly 3–4 minutes at 384² / 16 samples on Apple Silicon,
+plus two cheap control passes per frame. Raw renders, control images, and intermediate
+frames are gitignored; only the packed atlases, manifests, and textures are committed.
 
 ## Stage 1 — textures (`tools/assets/make-textures.ts`)
 
@@ -76,11 +76,13 @@ with different materials and proportions:
 - Yaw: camera orbits with `azimuth = yaw / yaws × 2π`, 16 yaws by default.
 - Pitch: camera elevation `z = 0.5 + sin(pitch) × R`, with
   `PITCH_ANGLES = [-0.31, 0, 0.49, 1.25]` (low, level, high, top).
-- States: `idle` (2 frames), `walk` (4 frames, hip/arm swing).
+- States: `idle` (2 frames), `walk` (4 frames, hip/arm swing), `attack` (4 frames, arm
+  swing + forward lean), `hurt` (2 frames, recoil), `death` (4 frames, collapse to the
+  floor), `talk` (3 frames, head/arm gesture).
 - Frame filenames: `{state}_f{frame}_p{pitch}_y{yaw}.png`.
 
-Output: `assets-src/characters/<character>/raw/` — 384 files per character (16 yaws ×
-4 pitches × 6 poses), RGBA with a transparent background.
+Output: `assets-src/characters/<character>/raw/` — 1,216 files per character (16 yaws ×
+4 pitches × 19 poses), RGBA with a transparent background.
 
 Each frame also gets two control passes rendered through `scene.compositing_node_group`
 (Blender 5.2 removed the legacy compositor API and multilayer EXR):
@@ -100,7 +102,8 @@ normal-ControlNet variant.
 1. Add the state to the pose/timeline logic in `render_turntable.py`.
 2. Add `{ name, fps, frames }` to `STATES` in `tools/atlas/pack.ts`.
 3. Update `manifest.states` expectations and the engine's state fallback if needed.
-4. Rerun `npm run assets:blender && npm run assets:stylize && npm run assets:atlas`.
+4. Rerun `npm run assets:blender`, then `assets:comfy` (or `assets:stylize`), then
+   `assets:atlas`.
 
 ### Adding a pitch
 
@@ -148,11 +151,16 @@ counts are detected from the frame filenames, so 8-way and 16-way atlases use th
 code.
 
 - Frame size: 96×96.
-- Grid: 16 columns (yaw) × 24 rows (state × frame × pitch) = 1536×2304 per character.
+- Grid: 16 columns (yaw) × 76 rows (19 poses × 4 pitch) = 1536×7296 per character.
 - `frameWorldSize = 1.15`, `frameAnchorZ = -0.075`.
 - Row order: for each state, for each frame, for each pitch (low, level, high, top), then
   yaw.
 - Output: `public/assets/sprites/<character>/atlas.{png,json}`.
+
+Six states are packed: `idle` (2 frames, 2 fps), `walk` (4, 8), `attack` (4, 10),
+`hurt` (2, 8), `death` (4, 6), `talk` (3, 4). The engine animates `idle`/`walk` from a
+per-actor clock and uses a separate state clock for one-shot states; `death` clamps to its
+last frame so corpses hold their final pose.
 
 Manifest shape (`atlas.json`):
 
@@ -170,7 +178,11 @@ Manifest shape (`atlas.json`):
   "pitchOrder": ["low", "level", "high", "top"],
   "states": {
     "idle": { "fps": 2, "frames": 2 },
-    "walk": { "fps": 8, "frames": 4 }
+    "walk": { "fps": 8, "frames": 4 },
+    "attack": { "fps": 10, "frames": 4 },
+    "hurt": { "fps": 8, "frames": 2 },
+    "death": { "fps": 6, "frames": 4 },
+    "talk": { "fps": 4, "frames": 3 }
   },
   "frames": [
     { "state": "idle", "pitch": 0, "yaw": 0, "frame": 0, "x": 0, "y": 0, "w": 96, "h": 96 }
@@ -237,9 +249,10 @@ npm run assets:comfy -- guardian --only idle:0:1:0 \
   --out /tmp/comfy-smoke --timeout 600
 ```
 
-Measured on M-series / 36 GB: ~22 s for the first frame (model load) and ~9.4 s per warm
+Measured on M-series / 36 GB: ~22 s for the first frame (model load) and ~8–11 s per warm
 frame at 512² with 20 steps. A full 384-frame character took ~55 min (guardian, scout,
 brute: 13:31, 14:27, 15:20 finish times), ~2.7 h for all three including verification.
+The M7 pass adds attack/hurt/death/talk: 832 frames per character, roughly 2–2.5 h each.
 Run one character at a time with `--fallback` and verify after each.
 
 ### Workflow
@@ -317,9 +330,11 @@ Writes `artifacts/style-report.json` (gitignored) and prints a per-character tab
 
 Baseline for the palette stylizer (384 frames × 3 characters): IoU 1.000 at 1 px
 tolerance; mean drift 4.6 (guardian/scout), 5.1 (brute); worst single frame 27.5–30.1.
-Thresholds default to `0.98` IoU and `12` mean drift. A real ComfyUI pass should be
-checked against the same report; tune `--max-drift` if a deliberate style preset changes
-the palette consistently across all views.
+The SD1.5 + ControlNet M6 pass measured IoU 1.000 and mean drift 6.2 / 6.1 / 5.4. The M7
+repack expands the report to 1,216 frames per character; review the per-state numbers
+before changing thresholds. Thresholds default to `0.98` IoU and `12` mean drift. Tune
+`--max-drift` only when a deliberate style preset shifts the palette consistently across
+all views.
 
 ## MCP studio server (`tools/mcp/studio.ts`)
 

@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-11T11:28:05.881Z",
+  "generatedAt": "2026-11-11T11:48:05.906Z",
   "url": "http://127.0.0.1:5201/?screenshot",
-  "durationMs": 5088,
+  "durationMs": 7209,
   "scenarios": [
     "g01-spawn-idle",
     "g02-walk-forward",
@@ -72,9 +72,29 @@
     "r02-jet-forward-climb",
     "r03-aerial-lookdown",
     "r04-respawn-midair",
-    "r05-sprint-route"
+    "r05-sprint-route",
+    "i01-keycard-pickup",
+    "i02-door-locked",
+    "i03-door-unlock",
+    "i04-talk-cycle",
+    "i05-medkit-heal",
+    "i06-fuel-refill",
+    "i07-empty-interact",
+    "f01-player-strike",
+    "f02-player-kill",
+    "f03-attack-arc",
+    "f04-attack-range",
+    "f05-hostile-damage",
+    "f06-death-redeploy",
+    "f07-attack-cooldown",
+    "f08-enemy-windup",
+    "l01-transition-reactor",
+    "l02-vault-return",
+    "l03-terrace-climb",
+    "l04-reactor-hover",
+    "l05-beacon-loop"
   ],
-  "passed": 428,
+  "passed": 490,
   "failed": 0,
   "checks": [
     {
@@ -94,16 +114,9 @@
     {
       "scenario": "g01-spawn-idle",
       "group": "ground",
-      "name": "g01-spawn-idle matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "g01-spawn-idle",
-      "group": "ground",
       "name": "g01-spawn-idle renders content",
       "ok": true,
-      "detail": "288 colors, mean luma 49.5"
+      "detail": "301 colors, mean luma 49.4"
     },
     {
       "scenario": "g01-spawn-idle",
@@ -117,7 +130,7 @@
       "group": "ground",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "11 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "g01-spawn-idle",
@@ -136,16 +149,9 @@
     {
       "scenario": "g02-walk-forward",
       "group": "ground",
-      "name": "g02-walk-forward matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "g02-walk-forward",
-      "group": "ground",
       "name": "g02-walk-forward renders content",
       "ok": true,
-      "detail": "368 colors, mean luma 53.0"
+      "detail": "370 colors, mean luma 53.0"
     },
     {
       "scenario": "g02-walk-forward",
@@ -159,7 +165,7 @@
       "group": "ground",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "10 rects"
+      "detail": "13 rects"
     },
     {
       "scenario": "g02-walk-forward",
@@ -178,16 +184,9 @@
     {
       "scenario": "g03-walk-backward",
       "group": "ground",
-      "name": "g03-walk-backward matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "g03-walk-backward",
-      "group": "ground",
       "name": "g03-walk-backward renders content",
       "ok": true,
-      "detail": "224 colors, mean luma 51.9"
+      "detail": "245 colors, mean luma 51.9"
     },
     {
       "scenario": "g03-walk-backward",
@@ -201,7 +200,7 @@
       "group": "ground",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "12 rects"
+      "detail": "15 rects"
     },
     {
       "scenario": "g03-walk-backward",
@@ -216,13 +215,6 @@
       "name": "strafe right moves along +y",
       "ok": true,
       "detail": "x=5.50, y=6.00"
-    },
-    {
-      "scenario": "g04-strafe-right",
-      "group": "ground",
-      "name": "g04-strafe-right matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "g04-strafe-right",
@@ -243,7 +235,7 @@
       "group": "ground",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "10 rects"
+      "detail": "13 rects"
     },
     {
       "scenario": "g04-strafe-right",
@@ -262,16 +254,9 @@
     {
       "scenario": "g05-strafe-left",
       "group": "ground",
-      "name": "g05-strafe-left matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "g05-strafe-left",
-      "group": "ground",
       "name": "g05-strafe-left renders content",
       "ok": true,
-      "detail": "151 colors, mean luma 63.1"
+      "detail": "166 colors, mean luma 63.2"
     },
     {
       "scenario": "g05-strafe-left",
@@ -285,7 +270,7 @@
       "group": "ground",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "10 rects"
+      "detail": "13 rects"
     },
     {
       "scenario": "g05-strafe-left",
@@ -304,16 +289,9 @@
     {
       "scenario": "g06-sprint-forward",
       "group": "ground",
-      "name": "g06-sprint-forward matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "g06-sprint-forward",
-      "group": "ground",
       "name": "g06-sprint-forward renders content",
       "ok": true,
-      "detail": "123 colors, mean luma 47.5"
+      "detail": "126 colors, mean luma 47.5"
     },
     {
       "scenario": "g06-sprint-forward",
@@ -327,7 +305,7 @@
       "group": "ground",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "8 rects"
+      "detail": "11 rects"
     },
     {
       "scenario": "g06-sprint-forward",
@@ -346,16 +324,9 @@
     {
       "scenario": "g07-diagonal-walk",
       "group": "ground",
-      "name": "g07-diagonal-walk matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "g07-diagonal-walk",
-      "group": "ground",
       "name": "g07-diagonal-walk renders content",
       "ok": true,
-      "detail": "117 colors, mean luma 49.8"
+      "detail": "129 colors, mean luma 49.8"
     },
     {
       "scenario": "g07-diagonal-walk",
@@ -369,7 +340,7 @@
       "group": "ground",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "9 rects"
+      "detail": "12 rects"
     },
     {
       "scenario": "g07-diagonal-walk",
@@ -391,13 +362,6 @@
       "name": "wall contact keeps the camera opaque",
       "ok": true,
       "detail": "384 wall columns"
-    },
-    {
-      "scenario": "g08-wall-block",
-      "group": "ground",
-      "name": "g08-wall-block matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "g08-wall-block",
@@ -437,13 +401,6 @@
     {
       "scenario": "g09-north-wall-slide",
       "group": "ground",
-      "name": "g09-north-wall-slide matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "g09-north-wall-slide",
-      "group": "ground",
       "name": "g09-north-wall-slide renders content",
       "ok": true,
       "detail": "20 colors, mean luma 60.4"
@@ -479,13 +436,6 @@
     {
       "scenario": "g10-respawn-key",
       "group": "ground",
-      "name": "g10-respawn-key matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "g10-respawn-key",
-      "group": "ground",
       "name": "g10-respawn-key renders content",
       "ok": true,
       "detail": "300 colors, mean luma 49.4"
@@ -502,7 +452,7 @@
       "group": "ground",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "11 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "g10-respawn-key",
@@ -528,13 +478,6 @@
     {
       "scenario": "v01-jump-burst",
       "group": "vertical",
-      "name": "v01-jump-burst matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "v01-jump-burst",
-      "group": "vertical",
       "name": "v01-jump-burst renders content",
       "ok": true,
       "detail": "113 colors, mean luma 37.8"
@@ -551,7 +494,7 @@
       "group": "vertical",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "10 rects"
+      "detail": "13 rects"
     },
     {
       "scenario": "v01-jump-burst",
@@ -577,16 +520,9 @@
     {
       "scenario": "v02-jet-burn",
       "group": "vertical",
-      "name": "v02-jet-burn matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "v02-jet-burn",
-      "group": "vertical",
       "name": "v02-jet-burn renders content",
       "ok": true,
-      "detail": "159 colors, mean luma 31.1"
+      "detail": "152 colors, mean luma 31.1"
     },
     {
       "scenario": "v02-jet-burn",
@@ -607,7 +543,7 @@
       "group": "vertical",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "10 rects"
+      "detail": "13 rects"
     },
     {
       "scenario": "v02-jet-burn",
@@ -622,13 +558,6 @@
       "name": "altitude ceiling holds at 18 m",
       "ok": true,
       "detail": "alt 18.00 m"
-    },
-    {
-      "scenario": "v03-jet-ceiling",
-      "group": "vertical",
-      "name": "v03-jet-ceiling matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "v03-jet-ceiling",
@@ -649,7 +578,7 @@
       "group": "vertical",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "10 rects"
+      "detail": "13 rects"
     },
     {
       "scenario": "v03-jet-ceiling",
@@ -675,16 +604,9 @@
     {
       "scenario": "v04-jet-empty-fuel",
       "group": "vertical",
-      "name": "v04-jet-empty-fuel matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "v04-jet-empty-fuel",
-      "group": "vertical",
       "name": "v04-jet-empty-fuel renders content",
       "ok": true,
-      "detail": "122 colors, mean luma 48.5"
+      "detail": "119 colors, mean luma 48.5"
     },
     {
       "scenario": "v04-jet-empty-fuel",
@@ -698,7 +620,7 @@
       "group": "vertical",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "10 rects"
+      "detail": "13 rects"
     },
     {
       "scenario": "v04-jet-empty-fuel",
@@ -713,13 +635,6 @@
       "name": "free fall lands back on the floor",
       "ok": true,
       "detail": "alt 0.00 m, grounded true"
-    },
-    {
-      "scenario": "v05-fall-land",
-      "group": "vertical",
-      "name": "v05-fall-land matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "v05-fall-land",
@@ -740,7 +655,7 @@
       "group": "vertical",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "10 rects"
+      "detail": "13 rects"
     },
     {
       "scenario": "v05-fall-land",
@@ -755,13 +670,6 @@
       "name": "ground contact refuels over time",
       "ok": true,
       "detail": "fuel 0.70 after 1 s"
-    },
-    {
-      "scenario": "v06-ground-refuel",
-      "group": "vertical",
-      "name": "v06-ground-refuel matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "v06-ground-refuel",
@@ -782,7 +690,7 @@
       "group": "vertical",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "10 rects"
+      "detail": "13 rects"
     },
     {
       "scenario": "v06-ground-refuel",
@@ -808,16 +716,9 @@
     {
       "scenario": "v07-freefly-up",
       "group": "vertical",
-      "name": "v07-freefly-up matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "v07-freefly-up",
-      "group": "vertical",
       "name": "v07-freefly-up renders content",
       "ok": true,
-      "detail": "164 colors, mean luma 31.6"
+      "detail": "163 colors, mean luma 31.7"
     },
     {
       "scenario": "v07-freefly-up",
@@ -831,7 +732,7 @@
       "group": "vertical",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "10 rects"
+      "detail": "13 rects"
     },
     {
       "scenario": "v07-freefly-up",
@@ -850,16 +751,9 @@
     {
       "scenario": "v08-freefly-descend-crate",
       "group": "vertical",
-      "name": "v08-freefly-descend-crate matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "v08-freefly-descend-crate",
-      "group": "vertical",
       "name": "v08-freefly-descend-crate renders content",
       "ok": true,
-      "detail": "242 colors, mean luma 36.8"
+      "detail": "217 colors, mean luma 36.5"
     },
     {
       "scenario": "v08-freefly-descend-crate",
@@ -873,7 +767,7 @@
       "group": "vertical",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "10 rects"
+      "detail": "13 rects"
     },
     {
       "scenario": "v08-freefly-descend-crate",
@@ -892,16 +786,9 @@
     {
       "scenario": "v09-freefly-off-fall",
       "group": "vertical",
-      "name": "v09-freefly-off-fall matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "v09-freefly-off-fall",
-      "group": "vertical",
       "name": "v09-freefly-off-fall renders content",
       "ok": true,
-      "detail": "153 colors, mean luma 31.3"
+      "detail": "158 colors, mean luma 31.3"
     },
     {
       "scenario": "v09-freefly-off-fall",
@@ -915,7 +802,7 @@
       "group": "vertical",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "10 rects"
+      "detail": "13 rects"
     },
     {
       "scenario": "v09-freefly-off-fall",
@@ -930,13 +817,6 @@
       "name": "ground look-down clamps at 63 degrees",
       "ok": true,
       "detail": "pitch -63 deg"
-    },
-    {
-      "scenario": "a01-ground-pitch-clamp-down",
-      "group": "aim",
-      "name": "a01-ground-pitch-clamp-down matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a01-ground-pitch-clamp-down",
@@ -957,7 +837,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "10 rects"
+      "detail": "13 rects"
     },
     {
       "scenario": "a01-ground-pitch-clamp-down",
@@ -972,13 +852,6 @@
       "name": "ground look-up clamps at 63 degrees",
       "ok": true,
       "detail": "pitch 63 deg"
-    },
-    {
-      "scenario": "a02-ground-pitch-clamp-up",
-      "group": "aim",
-      "name": "a02-ground-pitch-clamp-up matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a02-ground-pitch-clamp-up",
@@ -999,7 +872,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "10 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "a02-ground-pitch-clamp-up",
@@ -1018,16 +891,9 @@
     {
       "scenario": "a03-air-pitch-top",
       "group": "aim",
-      "name": "a03-air-pitch-top matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "a03-air-pitch-top",
-      "group": "aim",
       "name": "a03-air-pitch-top renders content",
       "ok": true,
-      "detail": "256 colors, mean luma 40.9"
+      "detail": "272 colors, mean luma 40.9"
     },
     {
       "scenario": "a03-air-pitch-top",
@@ -1041,7 +907,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "17 rects"
     },
     {
       "scenario": "a03-air-pitch-top",
@@ -1060,16 +926,9 @@
     {
       "scenario": "a04-mouse-yaw",
       "group": "aim",
-      "name": "a04-mouse-yaw matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "a04-mouse-yaw",
-      "group": "aim",
       "name": "a04-mouse-yaw renders content",
       "ok": true,
-      "detail": "146 colors, mean luma 47.7"
+      "detail": "144 colors, mean luma 47.7"
     },
     {
       "scenario": "a04-mouse-yaw",
@@ -1083,7 +942,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "10 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "a04-mouse-yaw",
@@ -1098,13 +957,6 @@
       "name": "mouse-up tilts the camera up",
       "ok": true,
       "detail": "pitch 38 deg"
-    },
-    {
-      "scenario": "a05-mouse-pitch",
-      "group": "aim",
-      "name": "a05-mouse-pitch matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a05-mouse-pitch",
@@ -1125,7 +977,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "10 rects"
+      "detail": "13 rects"
     },
     {
       "scenario": "a05-mouse-pitch",
@@ -1140,13 +992,6 @@
       "name": "camera selects tinker yaw 0",
       "ok": true,
       "detail": "brute yaw 0 pitch 1"
-    },
-    {
-      "scenario": "a06-sector-front",
-      "group": "aim",
-      "name": "a06-sector-front matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a06-sector-front",
@@ -1167,7 +1012,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "5 rects"
+      "detail": "7 rects"
     },
     {
       "scenario": "a06-sector-front",
@@ -1182,13 +1027,6 @@
       "name": "camera selects tinker yaw 8",
       "ok": true,
       "detail": "brute yaw 8 pitch 1"
-    },
-    {
-      "scenario": "a07-sector-back",
-      "group": "aim",
-      "name": "a07-sector-back matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a07-sector-back",
@@ -1209,7 +1047,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "17 rects"
     },
     {
       "scenario": "a07-sector-back",
@@ -1224,13 +1062,6 @@
       "name": "camera selects tinker yaw 4",
       "ok": true,
       "detail": "brute yaw 4 pitch 1"
-    },
-    {
-      "scenario": "a08-sector-south",
-      "group": "aim",
-      "name": "a08-sector-south matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a08-sector-south",
@@ -1270,13 +1101,6 @@
     {
       "scenario": "a09-sector-north",
       "group": "aim",
-      "name": "a09-sector-north matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "a09-sector-north",
-      "group": "aim",
       "name": "a09-sector-north renders content",
       "ok": true,
       "detail": "433 colors, mean luma 41.2"
@@ -1293,7 +1117,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "12 rects"
+      "detail": "16 rects"
     },
     {
       "scenario": "a09-sector-north",
@@ -1308,13 +1132,6 @@
       "name": "camera selects tinker yaw 15",
       "ok": true,
       "detail": "brute yaw 15 pitch 1"
-    },
-    {
-      "scenario": "a10-sector-ne",
-      "group": "aim",
-      "name": "a10-sector-ne matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a10-sector-ne",
@@ -1335,7 +1152,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "6 rects"
+      "detail": "8 rects"
     },
     {
       "scenario": "a10-sector-ne",
@@ -1350,13 +1167,6 @@
       "name": "camera selects tinker yaw 1",
       "ok": true,
       "detail": "brute yaw 1 pitch 2"
-    },
-    {
-      "scenario": "a11-sector-sw",
-      "group": "aim",
-      "name": "a11-sector-sw matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a11-sector-sw",
@@ -1377,7 +1187,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "1 rects"
+      "detail": "2 rects"
     },
     {
       "scenario": "a11-sector-sw",
@@ -1392,13 +1202,6 @@
       "name": "camera selects tinker yaw 5",
       "ok": true,
       "detail": "brute yaw 5 pitch 1"
-    },
-    {
-      "scenario": "a12-sector-se",
-      "group": "aim",
-      "name": "a12-sector-se matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a12-sector-se",
@@ -1419,7 +1222,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "6 rects"
+      "detail": "7 rects"
     },
     {
       "scenario": "a12-sector-se",
@@ -1438,16 +1241,9 @@
     {
       "scenario": "a13-sector-nw",
       "group": "aim",
-      "name": "a13-sector-nw matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "a13-sector-nw",
-      "group": "aim",
       "name": "a13-sector-nw renders content",
       "ok": true,
-      "detail": "396 colors, mean luma 39.2"
+      "detail": "406 colors, mean luma 39.2"
     },
     {
       "scenario": "a13-sector-nw",
@@ -1461,7 +1257,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "17 rects"
     },
     {
       "scenario": "a13-sector-nw",
@@ -1480,16 +1276,9 @@
     {
       "scenario": "a14-pitch-band-low",
       "group": "aim",
-      "name": "a14-pitch-band-low matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "a14-pitch-band-low",
-      "group": "aim",
       "name": "a14-pitch-band-low renders content",
       "ok": true,
-      "detail": "131 colors, mean luma 47.5"
+      "detail": "244 colors, mean luma 47.8"
     },
     {
       "scenario": "a14-pitch-band-low",
@@ -1503,7 +1292,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "10 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "a14-pitch-band-low",
@@ -1518,13 +1307,6 @@
       "name": "a level actor selects the level pitch band",
       "ok": true,
       "detail": "guard pitch 1"
-    },
-    {
-      "scenario": "a15-pitch-band-level",
-      "group": "aim",
-      "name": "a15-pitch-band-level matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a15-pitch-band-level",
@@ -1545,7 +1327,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "10 rects"
+      "detail": "13 rects"
     },
     {
       "scenario": "a15-pitch-band-level",
@@ -1560,13 +1342,6 @@
       "name": "viewing from 3 m selects the high pitch band",
       "ok": true,
       "detail": "guard pitch 2"
-    },
-    {
-      "scenario": "a16-pitch-band-high",
-      "group": "aim",
-      "name": "a16-pitch-band-high matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a16-pitch-band-high",
@@ -1587,7 +1362,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "10 rects"
+      "detail": "13 rects"
     },
     {
       "scenario": "a16-pitch-band-high",
@@ -1606,16 +1381,9 @@
     {
       "scenario": "a17-pitch-band-top",
       "group": "aim",
-      "name": "a17-pitch-band-top matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "a17-pitch-band-top",
-      "group": "aim",
       "name": "a17-pitch-band-top renders content",
       "ok": true,
-      "detail": "281 colors, mean luma 38.3"
+      "detail": "307 colors, mean luma 38.3"
     },
     {
       "scenario": "a17-pitch-band-top",
@@ -1629,7 +1397,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "17 rects"
     },
     {
       "scenario": "a17-pitch-band-top",
@@ -1648,16 +1416,9 @@
     {
       "scenario": "s01-stairs-approach",
       "group": "surfaces",
-      "name": "s01-stairs-approach matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "s01-stairs-approach",
-      "group": "surfaces",
       "name": "s01-stairs-approach renders content",
       "ok": true,
-      "detail": "230 colors, mean luma 40.8"
+      "detail": "194 colors, mean luma 40.8"
     },
     {
       "scenario": "s01-stairs-approach",
@@ -1671,7 +1432,7 @@
       "group": "surfaces",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "11 rects"
+      "detail": "15 rects"
     },
     {
       "scenario": "s01-stairs-approach",
@@ -1697,16 +1458,9 @@
     {
       "scenario": "s02-stairs-climb",
       "group": "surfaces",
-      "name": "s02-stairs-climb matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "s02-stairs-climb",
-      "group": "surfaces",
       "name": "s02-stairs-climb renders content",
       "ok": true,
-      "detail": "413 colors, mean luma 35.1"
+      "detail": "344 colors, mean luma 35.1"
     },
     {
       "scenario": "s02-stairs-climb",
@@ -1720,7 +1474,7 @@
       "group": "surfaces",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "10 rects"
+      "detail": "13 rects"
     },
     {
       "scenario": "s02-stairs-climb",
@@ -1735,13 +1489,6 @@
       "name": "walking down the treads returns to the floor",
       "ok": true,
       "detail": "alt 0.00 m, y=22.65"
-    },
-    {
-      "scenario": "s03-stairs-descend",
-      "group": "surfaces",
-      "name": "s03-stairs-descend matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "s03-stairs-descend",
@@ -1781,13 +1528,6 @@
     {
       "scenario": "s04-platform-stand",
       "group": "surfaces",
-      "name": "s04-platform-stand matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "s04-platform-stand",
-      "group": "surfaces",
       "name": "s04-platform-stand renders content",
       "ok": true,
       "detail": "128 colors, mean luma 42.8"
@@ -1804,7 +1544,7 @@
       "group": "surfaces",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "6 rects"
+      "detail": "8 rects"
     },
     {
       "scenario": "s04-platform-stand",
@@ -1819,13 +1559,6 @@
       "name": "a 0.6 crate blocks walking",
       "ok": true,
       "detail": "stopped at y=14.20, support 0"
-    },
-    {
-      "scenario": "s05-crate-block",
-      "group": "surfaces",
-      "name": "s05-crate-block matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "s05-crate-block",
@@ -1846,7 +1579,7 @@
       "group": "surfaces",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "6 rects"
+      "detail": "9 rects"
     },
     {
       "scenario": "s05-crate-block",
@@ -1861,13 +1594,6 @@
       "name": "falling onto the crate stops at 0.6 m",
       "ok": true,
       "detail": "alt 0.60 m, support 0.6000000238418579"
-    },
-    {
-      "scenario": "s06-crate-perch",
-      "group": "surfaces",
-      "name": "s06-crate-perch matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "s06-crate-perch",
@@ -1888,7 +1614,7 @@
       "group": "surfaces",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "11 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "s06-crate-perch",
@@ -1914,13 +1640,6 @@
     {
       "scenario": "s07-wall-land",
       "group": "surfaces",
-      "name": "s07-wall-land matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "s07-wall-land",
-      "group": "surfaces",
       "name": "s07-wall-land renders content",
       "ok": true,
       "detail": "294 colors, mean luma 54.5"
@@ -1937,7 +1656,7 @@
       "group": "surfaces",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "11 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "s07-wall-land",
@@ -1952,13 +1671,6 @@
       "name": "stepping off a wall falls to the floor",
       "ok": true,
       "detail": "x=6.80, alt 0.00 m"
-    },
-    {
-      "scenario": "s08-wall-stepoff",
-      "group": "surfaces",
-      "name": "s08-wall-stepoff matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "s08-wall-stepoff",
@@ -1979,7 +1691,7 @@
       "group": "surfaces",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "9 rects"
+      "detail": "12 rects"
     },
     {
       "scenario": "s08-wall-stepoff",
@@ -1994,13 +1706,6 @@
       "name": "perched overhead view renders tops",
       "ok": true,
       "detail": "56832 top px, 384 columns"
-    },
-    {
-      "scenario": "s09-wall-perch-down",
-      "group": "surfaces",
-      "name": "s09-wall-perch-down matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "s09-wall-perch-down",
@@ -2021,7 +1726,7 @@
       "group": "surfaces",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "12 rects"
+      "detail": "16 rects"
     },
     {
       "scenario": "s09-wall-perch-down",
@@ -2036,13 +1741,6 @@
       "name": "a near wall fills the frame without vanishing",
       "ok": true,
       "detail": "384 cols, 92160 wall px"
-    },
-    {
-      "scenario": "s10-near-wall",
-      "group": "surfaces",
-      "name": "s10-near-wall matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "s10-near-wall",
@@ -2078,13 +1776,6 @@
       "name": "a near wall survives a steep look-down",
       "ok": true,
       "detail": "384 cols, 55296 wall px"
-    },
-    {
-      "scenario": "s11-near-wall-lookdown",
-      "group": "surfaces",
-      "name": "s11-near-wall-lookdown matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "s11-near-wall-lookdown",
@@ -2131,16 +1822,9 @@
     {
       "scenario": "c01-watcher-tracks",
       "group": "actors",
-      "name": "c01-watcher-tracks matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "c01-watcher-tracks",
-      "group": "actors",
       "name": "c01-watcher-tracks renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 46.0"
+      "detail": "437 colors, mean luma 46.1"
     },
     {
       "scenario": "c01-watcher-tracks",
@@ -2154,7 +1838,7 @@
       "group": "actors",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "6 rects"
+      "detail": "8 rects"
     },
     {
       "scenario": "c01-watcher-tracks",
@@ -2169,13 +1853,6 @@
       "name": "patrol actor walks along its line",
       "ok": true,
       "detail": "x 10.50 -> 12.70 · walk"
-    },
-    {
-      "scenario": "c02-patrol-advance",
-      "group": "actors",
-      "name": "c02-patrol-advance matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "c02-patrol-advance",
@@ -2196,7 +1873,7 @@
       "group": "actors",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "7 rects"
+      "detail": "9 rects"
     },
     {
       "scenario": "c02-patrol-advance",
@@ -2211,13 +1888,6 @@
       "name": "patrol reverses at the end of the line",
       "ok": true,
       "detail": "facing -3.14, x=15.90"
-    },
-    {
-      "scenario": "c03-patrol-reverse",
-      "group": "actors",
-      "name": "c03-patrol-reverse matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "c03-patrol-reverse",
@@ -2238,7 +1908,7 @@
       "group": "actors",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "7 rects"
+      "detail": "9 rects"
     },
     {
       "scenario": "c03-patrol-reverse",
@@ -2257,16 +1927,9 @@
     {
       "scenario": "c04-chase-approach",
       "group": "actors",
-      "name": "c04-chase-approach matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "c04-chase-approach",
-      "group": "actors",
       "name": "c04-chase-approach renders content",
       "ok": true,
-      "detail": "86 colors, mean luma 44.9"
+      "detail": "90 colors, mean luma 45.0"
     },
     {
       "scenario": "c04-chase-approach",
@@ -2280,7 +1943,7 @@
       "group": "actors",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "5 rects"
+      "detail": "7 rects"
     },
     {
       "scenario": "c04-chase-approach",
@@ -2294,14 +1957,7 @@
       "group": "actors",
       "name": "hover actor bobs vertically",
       "ok": true,
-      "detail": "z 1.10 -> 1.38"
-    },
-    {
-      "scenario": "c05-hover-bob",
-      "group": "actors",
-      "name": "c05-hover-bob matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
+      "detail": "z 0.83 -> 1.22"
     },
     {
       "scenario": "c05-hover-bob",
@@ -2322,7 +1978,7 @@
       "group": "actors",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "7 rects"
+      "detail": "8 rects"
     },
     {
       "scenario": "c05-hover-bob",
@@ -2337,13 +1993,6 @@
       "name": "idle actor animates between two frames",
       "ok": true,
       "detail": "5.04% of pixels changed"
-    },
-    {
-      "scenario": "c06-idle-animation",
-      "group": "actors",
-      "name": "c06-idle-animation matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "c06-idle-animation",
@@ -2364,7 +2013,7 @@
       "group": "actors",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "10 rects"
+      "detail": "13 rects"
     },
     {
       "scenario": "c06-idle-animation",
@@ -2379,13 +2028,6 @@
       "name": "the crate occludes the scholar behind it",
       "ok": true,
       "detail": "252 drawn, 1722 occluded px"
-    },
-    {
-      "scenario": "c07-occlusion-crate",
-      "group": "actors",
-      "name": "c07-occlusion-crate matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "c07-occlusion-crate",
@@ -2406,7 +2048,7 @@
       "group": "actors",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "9 rects"
+      "detail": "12 rects"
     },
     {
       "scenario": "c07-occlusion-crate",
@@ -2421,13 +2063,6 @@
       "name": "a full wall hides the actor behind it",
       "ok": true,
       "detail": "0 drawn, 218 occluded px, w=39.4"
-    },
-    {
-      "scenario": "c08-occlusion-wall",
-      "group": "actors",
-      "name": "c08-occlusion-wall matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "c08-occlusion-wall",
@@ -2467,16 +2102,9 @@
     {
       "scenario": "c09-overhead-guard",
       "group": "actors",
-      "name": "c09-overhead-guard matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "c09-overhead-guard",
-      "group": "actors",
       "name": "c09-overhead-guard renders content",
       "ok": true,
-      "detail": "256 colors, mean luma 40.9"
+      "detail": "272 colors, mean luma 40.9"
     },
     {
       "scenario": "c09-overhead-guard",
@@ -2490,7 +2118,7 @@
       "group": "actors",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "17 rects"
     },
     {
       "scenario": "c09-overhead-guard",
@@ -2509,16 +2137,9 @@
     {
       "scenario": "c10-overhead-edge-actor",
       "group": "actors",
-      "name": "c10-overhead-edge-actor matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "c10-overhead-edge-actor",
-      "group": "actors",
       "name": "c10-overhead-edge-actor renders content",
       "ok": true,
-      "detail": "167 colors, mean luma 34.3"
+      "detail": "171 colors, mean luma 34.3"
     },
     {
       "scenario": "c10-overhead-edge-actor",
@@ -2532,7 +2153,7 @@
       "group": "actors",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "17 rects"
     },
     {
       "scenario": "c10-overhead-edge-actor",
@@ -2546,21 +2167,14 @@
       "group": "actors",
       "name": "aerial view projects several actors",
       "ok": true,
-      "detail": "11 visible: tinker, watcher, marauder, sentinel, stalker, warden, patrol, guard, prowler, scholar, drone"
-    },
-    {
-      "scenario": "c11-multi-actor-aerial",
-      "group": "actors",
-      "name": "c11-multi-actor-aerial matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
+      "detail": "14 visible: pickup:fuel, tinker, watcher, marauder, sentinel, stalker, pickup:keycard, warden, exit:lift, patrol, guard, prowler, drone, scholar"
     },
     {
       "scenario": "c11-multi-actor-aerial",
       "group": "actors",
       "name": "c11-multi-actor-aerial renders content",
       "ok": true,
-      "detail": "330 colors, mean luma 46.8"
+      "detail": "346 colors, mean luma 46.8"
     },
     {
       "scenario": "c11-multi-actor-aerial",
@@ -2574,7 +2188,7 @@
       "group": "actors",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "17 rects"
     },
     {
       "scenario": "c11-multi-actor-aerial",
@@ -2602,7 +2216,7 @@
       "group": "ui",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "11 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "u01-minimap-visible",
@@ -2637,7 +2251,7 @@
       "group": "ui",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "11 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "u02-minimap-hidden",
@@ -2672,7 +2286,7 @@
       "group": "ui",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "11 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "u03-hud-minimal",
@@ -2698,13 +2312,6 @@
     {
       "scenario": "u04-pause-freeze",
       "group": "ui",
-      "name": "u04-pause-freeze matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "u04-pause-freeze",
-      "group": "ui",
       "name": "u04-pause-freeze renders content",
       "ok": true,
       "detail": "123 colors, mean luma 52.9"
@@ -2721,7 +2328,7 @@
       "group": "ui",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "10 rects"
+      "detail": "13 rects"
     },
     {
       "scenario": "u04-pause-freeze",
@@ -2735,14 +2342,14 @@
       "group": "ui",
       "name": "resuming advances the simulation",
       "ok": true,
-      "detail": "patrol dx 0.38, 22 frames, paused=false, 3.33% pixels changed"
+      "detail": "patrol dx 0.39, 22 frames, paused=false, 3.08% pixels changed"
     },
     {
       "scenario": "u05-pause-resume",
       "group": "ui",
       "name": "u05-pause-resume renders content",
       "ok": true,
-      "detail": "441 colors, mean luma 51.3"
+      "detail": "347 colors, mean luma 51.3"
     },
     {
       "scenario": "u05-pause-resume",
@@ -2756,7 +2363,7 @@
       "group": "ui",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "8 rects"
+      "detail": "11 rects"
     },
     {
       "scenario": "u05-pause-resume",
@@ -2782,16 +2389,9 @@
     {
       "scenario": "u06-hud-values",
       "group": "ui",
-      "name": "u06-hud-values matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "u06-hud-values",
-      "group": "ui",
       "name": "u06-hud-values renders content",
       "ok": true,
-      "detail": "295 colors, mean luma 33.4"
+      "detail": "294 colors, mean luma 33.5"
     },
     {
       "scenario": "u06-hud-values",
@@ -2805,7 +2405,7 @@
       "group": "ui",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "9 rects"
+      "detail": "12 rects"
     },
     {
       "scenario": "u06-hud-values",
@@ -2820,13 +2420,6 @@
       "name": "fuel readout formats the tank",
       "ok": true,
       "detail": "37%"
-    },
-    {
-      "scenario": "u07-fuel-readout",
-      "group": "ui",
-      "name": "u07-fuel-readout matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "u07-fuel-readout",
@@ -2847,7 +2440,7 @@
       "group": "ui",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "11 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "u07-fuel-readout",
@@ -2866,16 +2459,9 @@
     {
       "scenario": "r01-jet-over-wall",
       "group": "routes",
-      "name": "r01-jet-over-wall matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "r01-jet-over-wall",
-      "group": "routes",
       "name": "r01-jet-over-wall renders content",
       "ok": true,
-      "detail": "371 colors, mean luma 35.3"
+      "detail": "302 colors, mean luma 35.2"
     },
     {
       "scenario": "r01-jet-over-wall",
@@ -2889,7 +2475,7 @@
       "group": "routes",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "11 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "r01-jet-over-wall",
@@ -2904,13 +2490,6 @@
       "name": "jetpack plus forward crosses the courtyard airborne",
       "ok": true,
       "detail": "x=14.50, alt 5.41 m"
-    },
-    {
-      "scenario": "r02-jet-forward-climb",
-      "group": "routes",
-      "name": "r02-jet-forward-climb matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "r02-jet-forward-climb",
@@ -2931,7 +2510,7 @@
       "group": "routes",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "5 rects"
+      "detail": "7 rects"
     },
     {
       "scenario": "r02-jet-forward-climb",
@@ -2950,16 +2529,9 @@
     {
       "scenario": "r03-aerial-lookdown",
       "group": "routes",
-      "name": "r03-aerial-lookdown matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
-    },
-    {
-      "scenario": "r03-aerial-lookdown",
-      "group": "routes",
       "name": "r03-aerial-lookdown renders content",
       "ok": true,
-      "detail": "310 colors, mean luma 44.1"
+      "detail": "332 colors, mean luma 44.1"
     },
     {
       "scenario": "r03-aerial-lookdown",
@@ -2973,7 +2545,7 @@
       "group": "routes",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "17 rects"
     },
     {
       "scenario": "r03-aerial-lookdown",
@@ -2988,13 +2560,6 @@
       "name": "respawning from altitude resets the pose",
       "ok": true,
       "detail": "alt 0.00 m, yaw 0, fuel 1"
-    },
-    {
-      "scenario": "r04-respawn-midair",
-      "group": "routes",
-      "name": "r04-respawn-midair matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "r04-respawn-midair",
@@ -3015,7 +2580,7 @@
       "group": "routes",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "11 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "r04-respawn-midair",
@@ -3030,13 +2595,6 @@
       "name": "sprint route traverses the corridor",
       "ok": true,
       "detail": "dx=4.60 in 1 s"
-    },
-    {
-      "scenario": "r05-sprint-route",
-      "group": "routes",
-      "name": "r05-sprint-route matches baseline",
-      "ok": true,
-      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "r05-sprint-route",
@@ -3057,7 +2615,7 @@
       "group": "routes",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "8 rects"
+      "detail": "11 rects"
     },
     {
       "scenario": "r05-sprint-route",
@@ -3067,8 +2625,904 @@
       "detail": "WALK · ATTRACT · fuel 100%"
     },
     {
-      "scenario": "r05-sprint-route",
-      "group": "routes",
+      "scenario": "i01-keycard-pickup",
+      "group": "interaction",
+      "name": "walking onto the keycard collects it",
+      "ok": true,
+      "detail": "keycard=true taken=true"
+    },
+    {
+      "scenario": "i01-keycard-pickup",
+      "group": "interaction",
+      "name": "keycard toast appears",
+      "ok": true,
+      "detail": "KEYCARD ACQUIRED · lift chamber unlocked"
+    },
+    {
+      "scenario": "i01-keycard-pickup",
+      "group": "interaction",
+      "name": "HUD keycard reads acquired",
+      "ok": true,
+      "detail": "ACQUIRED"
+    },
+    {
+      "scenario": "i01-keycard-pickup",
+      "group": "interaction",
+      "name": "i01-keycard-pickup renders content",
+      "ok": true,
+      "detail": "365 colors, mean luma 54.6"
+    },
+    {
+      "scenario": "i01-keycard-pickup",
+      "group": "interaction",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "17.50, 9.50, 0.00, 1.00, 384.00, 47151.00, 0.00"
+    },
+    {
+      "scenario": "i01-keycard-pickup",
+      "group": "interaction",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "6 rects"
+    },
+    {
+      "scenario": "i01-keycard-pickup",
+      "group": "interaction",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "i02-door-locked",
+      "group": "interaction",
+      "name": "the lift door stays sealed without a keycard",
+      "ok": true,
+      "detail": "locked · open=false"
+    },
+    {
+      "scenario": "i02-door-locked",
+      "group": "interaction",
+      "name": "locked prompt explains the keycard",
+      "ok": true,
+      "detail": "E · sealed — keycard required"
+    },
+    {
+      "scenario": "i02-door-locked",
+      "group": "interaction",
+      "name": "sealed toast appears",
+      "ok": true,
+      "detail": "SEALED · keycard required"
+    },
+    {
+      "scenario": "i02-door-locked",
+      "group": "interaction",
+      "name": "i02-door-locked renders content",
+      "ok": true,
+      "detail": "47 colors, mean luma 66.5"
+    },
+    {
+      "scenario": "i02-door-locked",
+      "group": "interaction",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "8.40, 11.50, 0.00, 1.00, 384.00, 92160.00, 0.00"
+    },
+    {
+      "scenario": "i02-door-locked",
+      "group": "interaction",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "12 rects"
+    },
+    {
+      "scenario": "i02-door-locked",
+      "group": "interaction",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "i03-door-unlock",
+      "group": "interaction",
+      "name": "unlock prompt appears at the door",
+      "ok": true,
+      "detail": "E · unlock door"
+    },
+    {
+      "scenario": "i03-door-unlock",
+      "group": "interaction",
+      "name": "the keycard clears the door tile",
+      "ok": true,
+      "detail": "door · open=true · tile=0"
+    },
+    {
+      "scenario": "i03-door-unlock",
+      "group": "interaction",
+      "name": "i03-door-open renders content",
+      "ok": true,
+      "detail": "226 colors, mean luma 51.1"
+    },
+    {
+      "scenario": "i03-door-unlock",
+      "group": "interaction",
+      "name": "i03-door-unlock renders content",
+      "ok": true,
+      "detail": "226 colors, mean luma 51.1"
+    },
+    {
+      "scenario": "i03-door-unlock",
+      "group": "interaction",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "8.40, 11.50, 0.00, 1.00, 384.00, 67237.00, 0.00"
+    },
+    {
+      "scenario": "i03-door-unlock",
+      "group": "interaction",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "10 rects"
+    },
+    {
+      "scenario": "i03-door-unlock",
+      "group": "interaction",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "i04-talk-cycle",
+      "group": "interaction",
+      "name": "talk prompt appears near the guard",
+      "ok": true,
+      "detail": "E · talk to guard"
+    },
+    {
+      "scenario": "i04-talk-cycle",
+      "group": "interaction",
+      "name": "E puts the guard into the talk state",
+      "ok": true,
+      "detail": "talk/talk · talk"
+    },
+    {
+      "scenario": "i04-talk-cycle",
+      "group": "interaction",
+      "name": "talk lines advance on repeat use",
+      "ok": true,
+      "detail": "\"GUARD · Gate's been sealed since the vent blew. Keycard's east of here.\" -> \"GUARD · That lift chamber drops straight to the reactor deck.\""
+    },
+    {
+      "scenario": "i04-talk-cycle",
+      "group": "interaction",
+      "name": "i04-talk-cycle renders content",
+      "ok": true,
+      "detail": "318 colors, mean luma 54.3"
+    },
+    {
+      "scenario": "i04-talk-cycle",
+      "group": "interaction",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "8.50, 1.50, 0.00, 1.00, 384.00, 67940.00, 0.00"
+    },
+    {
+      "scenario": "i04-talk-cycle",
+      "group": "interaction",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "6 rects"
+    },
+    {
+      "scenario": "i04-talk-cycle",
+      "group": "interaction",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "i05-medkit-heal",
+      "group": "interaction",
+      "name": "the medkit restores 40 health",
+      "ok": true,
+      "detail": "health 80 · taken=true"
+    },
+    {
+      "scenario": "i05-medkit-heal",
+      "group": "interaction",
+      "name": "HUD health follows the pickup",
+      "ok": true,
+      "detail": "80 / 100"
+    },
+    {
+      "scenario": "i05-medkit-heal",
+      "group": "interaction",
+      "name": "i05-medkit-heal renders content",
+      "ok": true,
+      "detail": "91 colors, mean luma 59.6"
+    },
+    {
+      "scenario": "i05-medkit-heal",
+      "group": "interaction",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "1.50, 21.50, 0.00, 1.00, 384.00, 75921.00, 0.00"
+    },
+    {
+      "scenario": "i05-medkit-heal",
+      "group": "interaction",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "15 rects"
+    },
+    {
+      "scenario": "i05-medkit-heal",
+      "group": "interaction",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "i06-fuel-refill",
+      "group": "interaction",
+      "name": "the fuel cell tops up the jetpack",
+      "ok": true,
+      "detail": "fuel 1 · taken=true"
+    },
+    {
+      "scenario": "i06-fuel-refill",
+      "group": "interaction",
+      "name": "HUD fuel reads full",
+      "ok": true,
+      "detail": "100%"
+    },
+    {
+      "scenario": "i06-fuel-refill",
+      "group": "interaction",
+      "name": "i06-fuel-refill renders content",
+      "ok": true,
+      "detail": "58 colors, mean luma 64.1"
+    },
+    {
+      "scenario": "i06-fuel-refill",
+      "group": "interaction",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "21.50, 12.50, 0.00, 1.00, 384.00, 84864.00, 0.00"
+    },
+    {
+      "scenario": "i06-fuel-refill",
+      "group": "interaction",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "0 rects"
+    },
+    {
+      "scenario": "i06-fuel-refill",
+      "group": "interaction",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "i07-empty-interact",
+      "group": "interaction",
+      "name": "using E with nothing in reach reports nothing",
+      "ok": true,
+      "detail": "none · \"NOTHING IN REACH\""
+    },
+    {
+      "scenario": "i07-empty-interact",
+      "group": "interaction",
+      "name": "no prompt away from interactables",
+      "ok": true,
+      "detail": "\"\""
+    },
+    {
+      "scenario": "i07-empty-interact",
+      "group": "interaction",
+      "name": "i07-empty-interact renders content",
+      "ok": true,
+      "detail": "123 colors, mean luma 52.9"
+    },
+    {
+      "scenario": "i07-empty-interact",
+      "group": "interaction",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 4.50, 0.00, 1.00, 384.00, 67886.00, 0.00"
+    },
+    {
+      "scenario": "i07-empty-interact",
+      "group": "interaction",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "13 rects"
+    },
+    {
+      "scenario": "i07-empty-interact",
+      "group": "interaction",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "f01-player-strike",
+      "group": "combat",
+      "name": "a forward strike damages the stalker",
+      "ok": true,
+      "detail": "hit=true · hp=25"
+    },
+    {
+      "scenario": "f01-player-strike",
+      "group": "combat",
+      "name": "the hit puts the actor in hurt state",
+      "ok": true,
+      "detail": "hurt"
+    },
+    {
+      "scenario": "f01-player-strike",
+      "group": "combat",
+      "name": "f01-enemy-hurt renders content",
+      "ok": true,
+      "detail": "380 colors, mean luma 46.4"
+    },
+    {
+      "scenario": "f01-player-strike",
+      "group": "combat",
+      "name": "f01-player-strike renders content",
+      "ok": true,
+      "detail": "380 colors, mean luma 46.4"
+    },
+    {
+      "scenario": "f01-player-strike",
+      "group": "combat",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "17.00, 14.50, 0.00, 1.00, 384.00, 45855.00, 0.00"
+    },
+    {
+      "scenario": "f01-player-strike",
+      "group": "combat",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "7 rects"
+    },
+    {
+      "scenario": "f01-player-strike",
+      "group": "combat",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "f02-player-kill",
+      "group": "combat",
+      "name": "the second strike kills the stalker",
+      "ok": true,
+      "detail": "hit=true · death · hp=0"
+    },
+    {
+      "scenario": "f02-player-kill",
+      "group": "combat",
+      "name": "kill toast names the target",
+      "ok": true,
+      "detail": "STALKER DOWN"
+    },
+    {
+      "scenario": "f02-player-kill",
+      "group": "combat",
+      "name": "the corpse drops out of targeting but stays rendered",
+      "ok": true,
+      "detail": "alive=false · 8817 corpse px"
+    },
+    {
+      "scenario": "f02-player-kill",
+      "group": "combat",
+      "name": "f02-enemy-corpse renders content",
+      "ok": true,
+      "detail": "390 colors, mean luma 47.1"
+    },
+    {
+      "scenario": "f02-player-kill",
+      "group": "combat",
+      "name": "f02-player-kill renders content",
+      "ok": true,
+      "detail": "390 colors, mean luma 47.1"
+    },
+    {
+      "scenario": "f02-player-kill",
+      "group": "combat",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "17.00, 14.50, 0.00, 1.00, 384.00, 45859.00, 0.00"
+    },
+    {
+      "scenario": "f02-player-kill",
+      "group": "combat",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "7 rects"
+    },
+    {
+      "scenario": "f02-player-kill",
+      "group": "combat",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "f03-attack-arc",
+      "group": "combat",
+      "name": "striking away from the target misses",
+      "ok": true,
+      "detail": "hit=false · hp=70"
+    },
+    {
+      "scenario": "f03-attack-arc",
+      "group": "combat",
+      "name": "f03-attack-arc renders content",
+      "ok": true,
+      "detail": "229 colors, mean luma 51.5"
+    },
+    {
+      "scenario": "f03-attack-arc",
+      "group": "combat",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "17.00, 14.50, 0.00, 1.00, 384.00, 61838.00, 0.00"
+    },
+    {
+      "scenario": "f03-attack-arc",
+      "group": "combat",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "10 rects"
+    },
+    {
+      "scenario": "f03-attack-arc",
+      "group": "combat",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "f04-attack-range",
+      "group": "combat",
+      "name": "targets beyond 2.3 m are out of reach",
+      "ok": true,
+      "detail": "hit=false · hp=70"
+    },
+    {
+      "scenario": "f04-attack-range",
+      "group": "combat",
+      "name": "f04-attack-range renders content",
+      "ok": true,
+      "detail": "256 colors, mean luma 44.9"
+    },
+    {
+      "scenario": "f04-attack-range",
+      "group": "combat",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "14.50, 14.50, 0.00, 1.00, 384.00, 46749.00, 0.00"
+    },
+    {
+      "scenario": "f04-attack-range",
+      "group": "combat",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "7 rects"
+    },
+    {
+      "scenario": "f04-attack-range",
+      "group": "combat",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "f05-hostile-damage",
+      "group": "combat",
+      "name": "the hostile strike damages the player",
+      "ok": true,
+      "detail": "hp=92 · flash=0.96"
+    },
+    {
+      "scenario": "f05-hostile-damage",
+      "group": "combat",
+      "name": "HUD health and damage vignette react",
+      "ok": true,
+      "detail": "92 / 100 · overlay=0.69"
+    },
+    {
+      "scenario": "f05-hostile-damage",
+      "group": "combat",
+      "name": "f05-hostile-damage renders content",
+      "ok": true,
+      "detail": "358 colors, mean luma 51.8"
+    },
+    {
+      "scenario": "f05-hostile-damage",
+      "group": "combat",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "17.60, 14.50, 0.00, 1.00, 384.00, 43077.00, 0.00"
+    },
+    {
+      "scenario": "f05-hostile-damage",
+      "group": "combat",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "6 rects"
+    },
+    {
+      "scenario": "f05-hostile-damage",
+      "group": "combat",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "f06-death-redeploy",
+      "group": "combat",
+      "name": "a lethal hit downs the player",
+      "ok": true,
+      "detail": "dead=true · hp=0"
+    },
+    {
+      "scenario": "f06-death-redeploy",
+      "group": "combat",
+      "name": "death HUD and overlay engage",
+      "ok": true,
+      "detail": "0 / 100 · deadOverlay=true"
+    },
+    {
+      "scenario": "f06-death-redeploy",
+      "group": "combat",
+      "name": "redeploy restores spawn health",
+      "ok": true,
+      "detail": "hp=100 at 3.50,1.50"
+    },
+    {
+      "scenario": "f06-death-redeploy",
+      "group": "combat",
+      "name": "redeploy toast appears",
+      "ok": true,
+      "detail": "REDEPLOYED · COURTYARD"
+    },
+    {
+      "scenario": "f06-death-redeploy",
+      "group": "combat",
+      "name": "f06-death-redeploy renders content",
+      "ok": true,
+      "detail": "288 colors, mean luma 49.5"
+    },
+    {
+      "scenario": "f06-death-redeploy",
+      "group": "combat",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 66996.00, 0.00"
+    },
+    {
+      "scenario": "f06-death-redeploy",
+      "group": "combat",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "14 rects"
+    },
+    {
+      "scenario": "f06-death-redeploy",
+      "group": "combat",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "f07-attack-cooldown",
+      "group": "combat",
+      "name": "the strike cooldown blocks immediate repeats",
+      "ok": true,
+      "detail": "first=true second=false hp=25"
+    },
+    {
+      "scenario": "f07-attack-cooldown",
+      "group": "combat",
+      "name": "f07-attack-cooldown renders content",
+      "ok": true,
+      "detail": "380 colors, mean luma 46.4"
+    },
+    {
+      "scenario": "f07-attack-cooldown",
+      "group": "combat",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "17.00, 14.50, 0.00, 1.00, 384.00, 45859.00, 0.00"
+    },
+    {
+      "scenario": "f07-attack-cooldown",
+      "group": "combat",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "7 rects"
+    },
+    {
+      "scenario": "f07-attack-cooldown",
+      "group": "combat",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "f08-enemy-windup",
+      "group": "combat",
+      "name": "a hostile in range starts its attack animation",
+      "ok": true,
+      "detail": "attack"
+    },
+    {
+      "scenario": "f08-enemy-windup",
+      "group": "combat",
+      "name": "f08-enemy-windup renders content",
+      "ok": true,
+      "detail": "357 colors, mean luma 51.8"
+    },
+    {
+      "scenario": "f08-enemy-windup",
+      "group": "combat",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "17.60, 14.50, 0.00, 1.00, 384.00, 43077.00, 0.00"
+    },
+    {
+      "scenario": "f08-enemy-windup",
+      "group": "combat",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "6 rects"
+    },
+    {
+      "scenario": "f08-enemy-windup",
+      "group": "combat",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "l01-transition-reactor",
+      "group": "levels",
+      "name": "the lift pad loads the reactor deck",
+      "ok": true,
+      "detail": "reactor · REACTOR DECK"
+    },
+    {
+      "scenario": "l01-transition-reactor",
+      "group": "levels",
+      "name": "the reactor spawn faces the terraces",
+      "ok": true,
+      "detail": "2.50, 20.50"
+    },
+    {
+      "scenario": "l01-transition-reactor",
+      "group": "levels",
+      "name": "reactor objective updates",
+      "ok": true,
+      "detail": "ENTERING REACTOR DECK"
+    },
+    {
+      "scenario": "l01-transition-reactor",
+      "group": "levels",
+      "name": "l01-reactor-spawn renders content",
+      "ok": true,
+      "detail": "123 colors, mean luma 40.1"
+    },
+    {
+      "scenario": "l01-transition-reactor",
+      "group": "levels",
+      "name": "l01-transition-reactor renders content",
+      "ok": true,
+      "detail": "123 colors, mean luma 40.1"
+    },
+    {
+      "scenario": "l01-transition-reactor",
+      "group": "levels",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "2.50, 20.50, 0.00, 1.00, 384.00, 26484.00, 0.00"
+    },
+    {
+      "scenario": "l01-transition-reactor",
+      "group": "levels",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "7 rects"
+    },
+    {
+      "scenario": "l01-transition-reactor",
+      "group": "levels",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "l02-vault-return",
+      "group": "levels",
+      "name": "the vault opens without a keycard",
+      "ok": true,
+      "detail": "door · open=true"
+    },
+    {
+      "scenario": "l02-vault-return",
+      "group": "levels",
+      "name": "the beacon returns to the courtyard",
+      "ok": true,
+      "detail": "courtyard"
+    },
+    {
+      "scenario": "l02-vault-return",
+      "group": "levels",
+      "name": "returning reloads the courtyard state",
+      "ok": true,
+      "detail": "door=false keycard=false"
+    },
+    {
+      "scenario": "l02-vault-return",
+      "group": "levels",
+      "name": "l02-vault-return renders content",
+      "ok": true,
+      "detail": "288 colors, mean luma 49.5"
+    },
+    {
+      "scenario": "l02-vault-return",
+      "group": "levels",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 66996.00, 0.00"
+    },
+    {
+      "scenario": "l02-vault-return",
+      "group": "levels",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "14 rects"
+    },
+    {
+      "scenario": "l02-vault-return",
+      "group": "levels",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "l03-terrace-climb",
+      "group": "levels",
+      "name": "walking up the stepped pyramid raises the player",
+      "ok": true,
+      "detail": "alt 0.60 m · PERCH · 0.6 m"
+    },
+    {
+      "scenario": "l03-terrace-climb",
+      "group": "levels",
+      "name": "l03-terrace renders content",
+      "ok": true,
+      "detail": "282 colors, mean luma 38.3"
+    },
+    {
+      "scenario": "l03-terrace-climb",
+      "group": "levels",
+      "name": "the terrace tops out and returns to floor level",
+      "ok": true,
+      "detail": "y=15.90 · alt 0.00 m"
+    },
+    {
+      "scenario": "l03-terrace-climb",
+      "group": "levels",
+      "name": "l03-terrace-climb renders content",
+      "ok": true,
+      "detail": "123 colors, mean luma 43.6"
+    },
+    {
+      "scenario": "l03-terrace-climb",
+      "group": "levels",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "9.50, 15.90, 0.00, 1.00, 384.00, 38976.00, 2.00"
+    },
+    {
+      "scenario": "l03-terrace-climb",
+      "group": "levels",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "6 rects"
+    },
+    {
+      "scenario": "l03-terrace-climb",
+      "group": "levels",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "l04-reactor-hover",
+      "group": "levels",
+      "name": "the reactor hover actor patrols its altitude",
+      "ok": true,
+      "detail": "z 2.17 -> 1.60"
+    },
+    {
+      "scenario": "l04-reactor-hover",
+      "group": "levels",
+      "name": "l04-reactor-hover renders content",
+      "ok": true,
+      "detail": "158 colors, mean luma 37.3"
+    },
+    {
+      "scenario": "l04-reactor-hover",
+      "group": "levels",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "2.50, 20.50, 0.00, 1.00, 384.00, 21091.00, 128.00"
+    },
+    {
+      "scenario": "l04-reactor-hover",
+      "group": "levels",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "6 rects"
+    },
+    {
+      "scenario": "l04-reactor-hover",
+      "group": "levels",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "l05-beacon-loop",
+      "group": "levels",
+      "name": "the reactor beacon closes the loop",
+      "ok": true,
+      "detail": "courtyard · COURTYARD"
+    },
+    {
+      "scenario": "l05-beacon-loop",
+      "group": "levels",
+      "name": "the courtyard objective is restored",
+      "ok": true,
+      "detail": "ENTERING COURTYARD"
+    },
+    {
+      "scenario": "l05-beacon-loop",
+      "group": "levels",
+      "name": "l05-beacon-loop renders content",
+      "ok": true,
+      "detail": "288 colors, mean luma 49.4"
+    },
+    {
+      "scenario": "l05-beacon-loop",
+      "group": "levels",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 66984.00, 0.00"
+    },
+    {
+      "scenario": "l05-beacon-loop",
+      "group": "levels",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "14 rects"
+    },
+    {
+      "scenario": "l05-beacon-loop",
+      "group": "levels",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "l05-beacon-loop",
+      "group": "levels",
       "name": "no page errors",
       "ok": true,
       "detail": "0 errors"
@@ -3078,350 +3532,292 @@
     {
       "name": "g01-spawn-idle",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "g02-walk-forward",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "g03-walk-backward",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "g04-strafe-right",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "g05-strafe-left",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "g06-sprint-forward",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "g07-diagonal-walk",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "g08-wall-block",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "g09-north-wall-slide",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "g10-respawn-key",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "v01-jump-burst",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "v02-jet-burn",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "v03-jet-ceiling",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "v04-jet-empty-fuel",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "v05-fall-land",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "v06-ground-refuel",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "v07-freefly-up",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "v08-freefly-descend-crate",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "v09-freefly-off-fall",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "a01-ground-pitch-clamp-down",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "a02-ground-pitch-clamp-up",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "a03-air-pitch-top",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "a04-mouse-yaw",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "a05-mouse-pitch",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "a06-sector-front",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "a07-sector-back",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "a08-sector-south",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "a09-sector-north",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "a10-sector-ne",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "a11-sector-sw",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "a12-sector-se",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "a13-sector-nw",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "a14-pitch-band-low",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "a15-pitch-band-level",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "a16-pitch-band-high",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "a17-pitch-band-top",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "s01-stairs-approach",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "s02-stairs-climb",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "s03-stairs-descend",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "s04-platform-stand",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "s05-crate-block",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "s06-crate-perch",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "s07-wall-land",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "s08-wall-stepoff",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "s09-wall-perch-down",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "s10-near-wall",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "s11-near-wall-lookdown",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "c01-watcher-tracks",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "c02-patrol-advance",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "c03-patrol-reverse",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "c04-chase-approach",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "c05-hover-bob",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "c06-idle-animation",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "c07-occlusion-crate",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "c08-occlusion-wall",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "c09-overhead-guard",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "c10-overhead-edge-actor",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "c11-multi-actor-aerial",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "u01-minimap-visible",
@@ -3441,8 +3837,7 @@
     {
       "name": "u04-pause-freeze",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "u05-pause-resume",
@@ -3452,44 +3847,187 @@
     {
       "name": "u06-hud-values",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "u07-fuel-readout",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "r01-jet-over-wall",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "r02-jet-forward-climb",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "r03-aerial-lookdown",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "r04-respawn-midair",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
     },
     {
       "name": "r05-sprint-route",
       "kind": "canvas",
-      "diff": 0,
-      "baseline": "compared"
+      "baseline": "updated"
+    },
+    {
+      "name": "i01-keycard-toast",
+      "kind": "page",
+      "baseline": "skipped"
+    },
+    {
+      "name": "i01-keycard-pickup",
+      "kind": "canvas",
+      "baseline": "updated"
+    },
+    {
+      "name": "i02-door-locked",
+      "kind": "canvas",
+      "baseline": "updated"
+    },
+    {
+      "name": "i03-door-open",
+      "kind": "canvas",
+      "baseline": "updated"
+    },
+    {
+      "name": "i03-door-unlock",
+      "kind": "canvas",
+      "baseline": "updated"
+    },
+    {
+      "name": "i04-talk",
+      "kind": "page",
+      "baseline": "skipped"
+    },
+    {
+      "name": "i04-talk-cycle",
+      "kind": "canvas",
+      "baseline": "updated"
+    },
+    {
+      "name": "i05-medkit-heal",
+      "kind": "canvas",
+      "baseline": "updated"
+    },
+    {
+      "name": "i06-fuel-refill",
+      "kind": "canvas",
+      "baseline": "updated"
+    },
+    {
+      "name": "i07-empty-interact",
+      "kind": "canvas",
+      "baseline": "updated"
+    },
+    {
+      "name": "f01-enemy-hurt",
+      "kind": "canvas",
+      "baseline": "updated"
+    },
+    {
+      "name": "f01-player-strike",
+      "kind": "canvas",
+      "baseline": "updated"
+    },
+    {
+      "name": "f02-enemy-corpse",
+      "kind": "canvas",
+      "baseline": "updated"
+    },
+    {
+      "name": "f02-player-kill",
+      "kind": "canvas",
+      "baseline": "updated"
+    },
+    {
+      "name": "f03-attack-arc",
+      "kind": "canvas",
+      "baseline": "updated"
+    },
+    {
+      "name": "f04-attack-range",
+      "kind": "canvas",
+      "baseline": "updated"
+    },
+    {
+      "name": "f05-player-hit",
+      "kind": "page",
+      "baseline": "skipped"
+    },
+    {
+      "name": "f05-hostile-damage",
+      "kind": "canvas",
+      "baseline": "updated"
+    },
+    {
+      "name": "f06-player-dead",
+      "kind": "page",
+      "baseline": "skipped"
+    },
+    {
+      "name": "f06-redeployed",
+      "kind": "page",
+      "baseline": "skipped"
+    },
+    {
+      "name": "f06-death-redeploy",
+      "kind": "canvas",
+      "baseline": "updated"
+    },
+    {
+      "name": "f07-attack-cooldown",
+      "kind": "canvas",
+      "baseline": "updated"
+    },
+    {
+      "name": "f08-enemy-windup",
+      "kind": "canvas",
+      "baseline": "updated"
+    },
+    {
+      "name": "l01-reactor-spawn",
+      "kind": "canvas",
+      "baseline": "updated"
+    },
+    {
+      "name": "l01-transition-reactor",
+      "kind": "canvas",
+      "baseline": "updated"
+    },
+    {
+      "name": "l02-vault-return",
+      "kind": "canvas",
+      "baseline": "updated"
+    },
+    {
+      "name": "l03-terrace",
+      "kind": "canvas",
+      "baseline": "updated"
+    },
+    {
+      "name": "l03-terrace-climb",
+      "kind": "canvas",
+      "baseline": "updated"
+    },
+    {
+      "name": "l04-reactor-hover",
+      "kind": "canvas",
+      "baseline": "updated"
+    },
+    {
+      "name": "l05-beacon-loop",
+      "kind": "canvas",
+      "baseline": "updated"
     }
   ],
   "consoleErrors": [],

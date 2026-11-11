@@ -18,11 +18,11 @@ captured screenshots.
    `window.__raycast.automation`, captures screenshots to
    `docs/screenshots/playtest/`, and writes `report.json`. It exits non-zero on a
    failed check.
-2. Run `npm run playtest:matrix`. It walks 70 deterministic scenarios (428 checks) and
+2. Run `npm run playtest:matrix`. It walks 90 deterministic scenarios (490 checks) and
    writes `docs/screenshots/matrix/` with a labelled `contact-sheet.png` and
    `report.json`. Read the report, then open the contact sheet and any relevant
-   full-size frames. The matrix catches movement, vertical, aim, surface, actor, UI, and
-   route states the happy-path run does not.
+   full-size frames. The matrix catches movement, vertical, aim, surface, actor, UI,
+   interaction, combat, level, and route states the happy-path run does not.
 3. Read both `report.json` files. List every failed check with its measured detail.
 4. Open the screenshots with the Read tool and review them as images. Check:
    - Floor grid stays anchored to the world while moving and turning (no sliding or
@@ -42,6 +42,12 @@ captured screenshots.
      shot reveals the full courtyard with solid wall tops and visible actors.
    - Landing on a wall shows `PERCH · WALL 1.4 m` and a stable overhead view; stepping
      off returns to floor height.
+   - Combat frames show the enemy hurt/death pose (once the M7 atlas is repacked), a
+     corpse remains after death, and the player damage/death overlay reads clearly.
+   - Interaction frames show the prompt/toast, an unlocked door opening onto the beacon,
+     talk lines, and pickups disappearing after collection.
+   - The reactor captures show solid terrace steps, the vault door, and the hover actor;
+     the beacon return lands back in the courtyard.
    - No black frames, sky-colored holes in the floor, or sprite rectangles.
 5. `window.__raycast.debug()` exposes render statistics (`wallColumns`, `wallPixels`,
    per-sprite `contentW/contentH/pixels`) and resolved yaw/pitch/frame per actor; use it
@@ -60,7 +66,7 @@ captured screenshots.
 
 ```bash
 npm run playtest     # happy-path browser verification against the local dev server
-npm run playtest:matrix  # 70 deterministic state/route scenarios
+npm run playtest:matrix  # 90 deterministic state/interaction/combat/level scenarios
 PLAYTEST_OUT=/tmp/rc-prod-check npm run playtest -- --url https://raycast-rosy.vercel.app/
 npm test             # unit tests (not a substitute for the playtest)
 npm run typecheck

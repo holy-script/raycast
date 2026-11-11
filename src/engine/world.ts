@@ -15,6 +15,7 @@ export const STEP_UP = 0.3;
 const TILE_CHARS: Record<string, number> = {
   "#": 1,
   X: 2,
+  D: 3,
 };
 
 /** A digit 1-9 is a solid panel platform at 0.2 × digit world units. */

@@ -198,3 +198,24 @@ silhouette. Palette drift is measured for view-to-view consistency, not fidelity
 raw colours, so a deliberate global restyle is allowed. A real ComfyUI generation still
 needs a checkpoint and ControlNet supplied by the operator; the repo only guarantees the
 HTTP flow and the fallback. `artifacts/style-report.json` is the tuning input.
+
+## ADR-014 — Reloadable level definitions and cone-strike combat
+
+**Context:** M7 needs dialogue, doors, pickups, combat, and a second map without turning
+the demo into a persistent-state RPG or a full entity system. The deterministic matrix
+also needs every scenario to start from a byte-identical world.
+
+**Decision:** Describe each level as one `LevelSpec` object (rows, spawn, actors, pickups,
+doors, exits) and rebuild the world from it on every load or transition. Reset time,
+player state, keycard, pickups, doors, and actor animation phase in `loadLevel`. Combat
+is a player cone test (nearest hostile within 2.3 m and 0.7 rad of yaw, 45 damage, 0.45 s
+cooldown) plus a small hostile state machine with fixed wind-up/impact/hurt/death timings.
+One-shot actor states use their own clock; death holds the final frame and leaves the
+actor in the array as a corpse.
+
+**Consequences:** State is always explainable from the current level definition, which
+makes the matrix reproducible and level authoring cheap. Transitions reset progress (the
+keycard and opened doors do not persist), which is acceptable for a two-level demo but
+would need a session/inventory layer for a longer campaign. Actors do not collide with the
+player or each other, and strikes ignore walls, keeping combat readable at this scale;
+both would need real work before larger maps.

@@ -27,8 +27,8 @@ solid diorama from jetpack altitude and the player can land on a wall to look do
 | `src/engine/renderer.ts` | Sky, walls, floor, wall tops, sprites, shadows, depth buffer |
 | `src/engine/atlas.ts` | Manifest parsing, frame lookup with fallback, image loading |
 | `src/engine/input.ts` | Pointer lock, key state, one-shot actions, scripted playtest input |
-| `src/game.ts` | Player physics, jetpack, camera state, actor behavior, sprite selection, HUD |
-| `src/content/` | ASCII map, spawn, actor specs (sprite id, behavior, tint, scale) |
+| `src/game.ts` | Player physics, jetpack, combat/interaction, level loading, actor behavior, sprite selection, HUD |
+| `src/content/` | Level definitions (rows, spawn, actors, pickups, doors, exits) and actor specs |
 | `src/main.ts` | Asset boot, render loop, DOM/HUD wiring, debug API |
 | `tools/blender/` | Headless turntable: raw RGBA, depth, and normal passes |
 | `tools/stylize/` | Palette stylizer, shared premultiplied downsample, ComfyUI CLI |
@@ -190,8 +190,11 @@ yawIndex   = round(relative / (2π / directions)) mod directions;
 centerZ    = actor.z + anchorZ + worldSize / 2;
 elevation  = atan2(camEyeZ - centerZ, distance);
 pitchIndex = quantizePitch(elevation, manifest.pitches);
-frameIndex = floor(animTime * state.fps) % state.frames;
+frameIndex = floor(stateClock * state.fps) % state.frames;
 ```
+
+`stateClock` is the per-actor `animTime` for looping `idle`/`walk` and the time since the
+state began for `attack`/`hurt`/`death`/`talk`. `death` clamps to its final frame.
 
 `quantizePitch` uses bands centred between the atlas elevations. With four pitches
 (`[-0.31, 0, 0.49, 1.25]` rad) the thresholds are `0.87 → top`, `0.245 → high`,
@@ -244,6 +247,43 @@ without chattering. Landing refuels. `F2` toggles a fuel-free freefly debug mode
 
 The field of view widens from 70° to 100° as altitude rises from 1 to 11 units, and fog
 attenuation scales down at altitude so the whole courtyard stays readable.
+
+## Levels, combat, and interaction
+
+`src/content/levels.ts` defines each level as `{ id, title, objective, rows, spawn,
+actors, pickups, doors, exits }`. `Game.loadLevel(index)` rebuilds the `World` from the
+rows, then deterministically resets time, player pose/health/fuel/cooldown, keycard, and
+actor animation phase (`index × 0.37`). Exits target another level id; the beacon prop
+marks the pad. Because the world is rebuilt, pickups, opened doors, and the keycard reset
+on every transition — the demo loop is one-way per visit.
+
+Actor states are `idle | walk | attack | hurt | death | talk`. Hostiles (`hostile: true`)
+stalk the player, and once within reach they enter `attack`:
+
+| Timing | Value |
+| --- | --- |
+| Enemy attack impact / total | 0.20 s / 0.40 s |
+| Hurt / death state time | 0.25 s / 0.67 s |
+| Player strike | 45 dmg, range 2.3, half-angle 0.7 rad (80° cone), 0.45 s cooldown |
+| Player max health / redeploy | 100 / 1.4 s |
+| Hostile damage (wind-up) | 8–14 per hit |
+| Interaction radius | talk/door 2.4 m, pickup 0.5 m, exit pad 0.6 m |
+
+`attack()` picks the nearest living actor inside the cone and range, applies damage plus
+0.18 knockback, and switches it to `hurt` or `death`. Dead actors stay in the actor array
+with `alive = false` so the final death frame still draws as a corpse; they no longer
+update, attack, or block the strike target search. Wall occlusion is not part of the
+strike test.
+
+`interact()` returns `none | talk | door | locked | pickup`. Doors are grid cells marked
+`D` with a `DoorSpec`; opening one clears both the tile id and its height so movement and
+raycasts agree, and a door with `requires: "keycard"` refuses until the player has one.
+Pickups are billboards collected by walking within 0.5 m: keycard sets the flag, medkit
+heals, fuel refills. The HUD surfaces the current prompt (`E · talk`, `E · sealed —
+keycard required`, …) and a transient toast for outcomes.
+
+Prop billboards (pickups, beacon) share the sprite renderer with `worldSize` and a fixed
+z offset; the beacon pulses and the pickups bob so they read as interactive objects.
 
 ## Render loop
 

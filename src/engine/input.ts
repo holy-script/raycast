@@ -1,4 +1,10 @@
-export type InputAction = "toggle-map" | "toggle-fly" | "toggle-debug" | "respawn";
+export type InputAction =
+  | "toggle-map"
+  | "toggle-fly"
+  | "toggle-debug"
+  | "respawn"
+  | "attack"
+  | "interact";
 
 const PREVENT_DEFAULT = new Set([
   "Space",
@@ -41,6 +47,10 @@ export class InputController {
       this.lookY += event.movementY;
     });
 
+    document.addEventListener("mousedown", (event) => {
+      if (this.locked && event.button === 0) this.onAction?.("attack");
+    });
+
     window.addEventListener("keydown", (event) => {
       if (PREVENT_DEFAULT.has(event.code)) event.preventDefault();
       if (this.locked) this.keys.add(event.code);
@@ -49,6 +59,8 @@ export class InputController {
       if (event.code === "F2") this.onAction?.("toggle-fly");
       if (event.code === "F3") this.onAction?.("toggle-debug");
       if (event.code === "KeyR") this.onAction?.("respawn");
+      if (event.code === "KeyF") this.onAction?.("attack");
+      if (event.code === "KeyE") this.onAction?.("interact");
     });
 
     window.addEventListener("keyup", (event) => {

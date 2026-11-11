@@ -11,20 +11,19 @@ reproducible pipeline for multi-angle character sprites, based on
 The engine renders a 384×240 framebuffer to Canvas 2D: DDA grid traversal, textured
 walls, floors and per-cell tops, a true rotational pitch camera, per-pixel depth, and
 jetpack flight up to 18 m. Walls are solid 1.4-unit blocks you can land on; map digits
-build walkable 0.2/0.4 stairs and a 0.6 crate. Three Blender chassis (guardian, scout, brute) are each rendered from
-16 yaw angles × 4 pitch angles × 6 animation poses (384 frames), stylized to 96×96 pixel
-art by SD1.5 + depth ControlNet (deterministic palette stylizer as fallback), and packed
-into one atlas per character. Height and pitch drive frame selection,
-including a dedicated near-overhead row, so looking down from altitude picks the correct
-view for every actor.
+build walkable 0.2/0.4 stairs and a 0.6 crate. Three Blender chassis (guardian, scout,
+brute) are each rendered from 16 yaw angles × 4 pitch angles × 19 poses (1,216 frames
+across idle, walk, attack, hurt, death, and talk), stylized to 96×96 pixel art by SD1.5 +
+depth ControlNet (deterministic palette stylizer as fallback), and packed into one atlas
+per character. Height and pitch drive frame selection, including a dedicated
+near-overhead row, so looking down from altitude picks the correct view for every actor.
 
-**Status:** playable M6 build with a browser playtest harness. Core renderer, jetpack
-physics, aerial camera, heightmap stairs/platforms, 16-way/4-pitch sprites, five actor
-behaviors, and the full Blender → stylizer → atlas pipeline work end-to-end. M6 adds
-Blender depth/normal control passes, a ComfyUI img2img + ControlNet style stage (run for
-all 1,152 frames, 0 fallbacks), silhouette/palette verification, and an MCP studio server
-for atlas generation. The renderer still consumes the same committed atlases; see the
-[roadmap](docs/ROADMAP.md), [pipeline](docs/PIPELINE.md), and
+**Status:** playable M7 build. Two levels, combat with hurt/death states, NPC dialogue,
+doors, keycard/medkit/fuel pickups, level transitions, and a 90-scenario deterministic
+playtest matrix. The M6 AI stylization infrastructure (Blender depth/normal controls,
+ComfyUI img2img + ControlNet, silhouette/palette verification, MCP studio server) remains
+the asset path; the attack/hurt/death/talk AI frames and atlas repack are the last M7
+deliverable. See the [roadmap](docs/ROADMAP.md), [pipeline](docs/PIPELINE.md), and
 [progress log](docs/PROGRESS.md).
 
 ## Quick start
@@ -38,7 +37,7 @@ npm test           # unit tests
 npm run typecheck
 npm run build      # static build in dist/
 npm run playtest   # headless Chrome: input, physics, atlas + screenshot checks
-npm run playtest:matrix  # 70 deterministic state/route scenarios, 428 checks
+npm run playtest:matrix  # 90 deterministic state/interaction/combat/level checks
 ```
 
 ## Controls
@@ -50,6 +49,8 @@ npm run playtest:matrix  # 70 deterministic state/route scenarios, 428 checks
 | `W A S D` | Move |
 | `Shift` | Sprint |
 | `Space` | Ignite/hold jetpack (ground jump or sustained lift) |
+| `F` / left click | Strike (45 damage, 2.3 m cone, 0.45 s cooldown) |
+| `E` | Interact: talk, open doors, collect pickups |
 | `F2` | Toggle freefly debug mode (`Space` up, `Ctrl`/`C` down) |
 | `M` / `Tab` | Toggle minimap |
 | `F3` | Toggle detailed HUD |
@@ -79,11 +80,11 @@ stylized frames are reproducible and gitignored; the packed atlas is committed.
 | Command | Output |
 | --- | --- |
 | `npm run assets:textures` | `public/assets/textures/{brick,panel,floor}.png` |
-| `npm run assets:blender` | 1,152 raw + 2,304 control PNGs in `assets-src/characters/<id>/` |
+| `npm run assets:blender` | 1,216 raw + 2,432 control PNGs in `assets-src/characters/<id>/` |
 | `npm run assets:stylize` | 96×96 palette frames per character |
 | `npm run assets:comfy` | 96×96 AI frames (or `--fallback`/`--palette`) |
 | `npm run assets:verify` | `artifacts/style-report.json` (gitignored) |
-| `npm run assets:atlas` | three `atlas.png` (1536×2304) + `atlas.json` pairs |
+| `npm run assets:atlas` | three `atlas.png` (1536×7296) + `atlas.json` pairs |
 | `npm run mcp:studio` | stdio MCP tools for atlas generation/repair |
 
 Both `assets:stylize`, `assets:comfy`, `assets:verify`, and `assets:atlas` accept character
@@ -93,7 +94,7 @@ names (`npm run assets:atlas -- guardian`) and default to guardian, scout, and b
 
 ```
 src/engine/      DDA, world/collision, renderer, atlas loader, input, math
-src/content/      demo map + actor placements
+src/content/      courtyard + reactor level definitions, actors, props
 src/game.ts       player physics, jetpack, camera, animation, minimap, HUD
 src/main.ts       asset boot, render loop, pointer lock, debug API
 tools/assets/     deterministic wall/floor texture generator

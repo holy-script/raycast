@@ -22,6 +22,7 @@
         <canvas id="view" width="384" height="240"></canvas>
         <div class="scanlines" aria-hidden="true"></div>
         <div id="thrust" aria-hidden="true"></div>
+        <div id="damage" aria-hidden="true"></div>
         <div class="crosshair" aria-hidden="true"></div>
         <header id="brand">
           <span class="mark">RAYCAST</span>
@@ -36,8 +37,18 @@
           <div class="row detail"><span class="k">JET</span><span id="hud-fuel">--</span></div>
           <div class="fuel detail" aria-hidden="true"><span id="hud-fuel-fill"></span></div>
           <div class="row detail"><span class="k">SPRITE</span><span id="hud-sprite">--</span></div>
+          <div class="row"><span class="k">HP</span><span id="hud-health">--</span></div>
+          <div class="health" aria-hidden="true"><span id="hud-health-fill"></span></div>
+          <div class="row"><span class="k">LEVEL</span><span id="hud-level">--</span></div>
+          <div id="hud-objective" class="objective detail">--</div>
+          <div class="row detail">
+            <span class="k">KEYCARD</span>
+            <span id="hud-keycard">--</span>
+          </div>
         </div>
         <canvas id="minimap" aria-label="Minimap"></canvas>
+        <div id="prompt" aria-live="polite"></div>
+        <div id="toast" aria-live="polite"></div>
         <div id="resume" class="hidden">PAUSED <span>click to resume</span></div>
       </section>
 
@@ -46,19 +57,21 @@
           <p class="eyebrow">PSEUDO-3D ENGINE / DIRECTIONAL ATLAS</p>
           <h1>Raycast<br /><em>Sprite Lab</em></h1>
           <p class="lede">
-            A 2.5D courtyard rendered with DDA raycasting and a software depth buffer.
-            Three chassis are baked into 16-direction, 3-pitch sprite atlases, then
-            viewed from the ground or straight down from jetpack altitude.
+            A 2.5D courtyard and reactor deck rendered with DDA raycasting and a
+            software depth buffer. Three chassis are baked into 16-direction,
+            4-pitch sprite atlases with combat states, then viewed from the ground
+            or straight down from jetpack altitude.
           </p>
           <ul class="specs">
             <li><b>16</b> yaw frames</li>
-            <li><b>3</b> pitch states</li>
-            <li><b>3</b> chassis</li>
+            <li><b>4</b> pitch states</li>
+            <li><b>6</b> actor states</li>
             <li><b>Jet</b> pack flight</li>
           </ul>
           <button id="enter" type="button">Enter courtyard</button>
           <p class="fine">
-            <kbd>Space</kbd> ignites the jetpack. Mouse look is captured on entry.
+            <kbd>Space</kbd> ignites the jetpack, <kbd>F</kbd>/click strikes,
+            <kbd>E</kbd> interacts. Mouse look is captured on entry;
             <kbd>Esc</kbd> releases it.
           </p>
         </div>

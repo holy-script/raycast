@@ -24,8 +24,16 @@ import {
   supportHeight,
   type World,
 } from "./engine/world";
-import { DEMO_ACTORS, type ActorSpec } from "./content/actors";
-import { DEMO_MAP, DEMO_SPAWN } from "./content/demo-map";
+import type { ActorSpec } from "./content/actors";
+import {
+  LEVELS,
+  levelIndexById,
+  type DoorSpec,
+  type ExitSpec,
+  type LevelSpec,
+  type PickupKind,
+  type PickupSpec,
+} from "./content/levels";
 
 export const FOV = (70 * Math.PI) / 180;
 const HIGH_ALTITUDE_FOV = (100 * Math.PI) / 180;
@@ -46,10 +54,32 @@ const GROUND_PITCH_LIMIT = 1.1;
 const AIR_PITCH_LIMIT = 1.45;
 const MAX_ALTITUDE = 18;
 
+const PLAYER_MAX_HEALTH = 100;
+const PLAYER_ATTACK_DAMAGE = 45;
+const PLAYER_ATTACK_RANGE = 2.3;
+const PLAYER_ATTACK_ARC = 0.7;
+const PLAYER_ATTACK_COOLDOWN = 0.45;
+const RESPAWN_DELAY = 1.4;
+const DAMAGE_FLASH_TIME = 0.45;
+const INTERACT_RANGE = 2.4;
+const TALK_RANGE = 2.4;
+const PICKUP_RADIUS = 0.5;
+const EXIT_RADIUS = 0.6;
+
+const ATTACK_IMPACT = 0.2;
+const ATTACK_STATE_TIME = 0.4;
+const HURT_STATE_TIME = 0.25;
+const DEATH_STATE_TIME = 0.67;
+
+const PITCH_LABELS = ["LOW", "LEVEL", "HIGH", "TOP"];
+
+type ActorState = "idle" | "walk" | "attack" | "hurt" | "death" | "talk";
+
 export interface GameAssets {
   atlases: Record<string, SpriteAtlas>;
   textures: Record<number, Texture>;
   floor: Texture;
+  props: Record<PickupKind | "beacon", Texture>;
 }
 
 interface Player {
@@ -64,6 +94,11 @@ interface Player {
   eyeBob: number;
   fuel: number;
   thrusting: boolean;
+  health: number;
+  dead: boolean;
+  deathT: number;
+  hitFlash: number;
+  attackCooldown: number;
 }
 
 interface Actor {
@@ -72,9 +107,25 @@ interface Actor {
   y: number;
   z: number;
   facing: number;
-  state: "idle" | "walk";
+  state: ActorState;
   animTime: number;
+  stateT: number;
   patrolT: number;
+  hp: number;
+  maxHp: number;
+  alive: boolean;
+  attackCooldown: number;
+  hitLanded: boolean;
+  talkIndex: number;
+}
+
+interface WorldPickup extends PickupSpec {
+  taken: boolean;
+  seed: number;
+}
+
+interface WorldDoor extends DoorSpec {
+  open: boolean;
 }
 
 export interface HudState {
@@ -95,6 +146,15 @@ export interface HudState {
   nearestDistance: number;
   nearestYaw: number;
   nearestPitch: number;
+  health: number;
+  maxHealth: number;
+  dead: boolean;
+  damageFlash: number;
+  levelTitle: string;
+  objective: string;
+  prompt: string;
+  toast: string;
+  keycard: boolean;
 }
 
 export interface RenderDebug {
@@ -114,6 +174,7 @@ export interface RenderDebug {
     support: number;
     onGround: boolean;
   };
+  level: string;
   actors: Array<{
     name: string;
     x: number;
@@ -125,33 +186,48 @@ export interface RenderDebug {
     yawIndex: number;
     pitchIndex: number;
     frameIndex: number;
+    hp: number;
+    maxHp: number;
+    alive: boolean;
+    hostile: boolean;
   }>;
+  pickups: Array<{ kind: string; x: number; y: number; taken: boolean }>;
+  doors: Array<{ id: string; x: number; y: number; open: boolean }>;
+  health: number;
+  keycard: boolean;
   stats: RenderStats;
 }
 
-const PITCH_LABELS = ["LOW", "LEVEL", "HIGH", "TOP"];
-
 export class Game {
-  readonly world: World;
+  world: World;
   readonly input: InputController;
   minimapVisible = true;
   hudDetailVisible = true;
   flying = false;
 
   private readonly player: Player;
-  private readonly actors: Actor[];
+  private actors: Actor[] = [];
   private readonly renderer: Renderer;
   private readonly assets: GameAssets;
+  private level: LevelSpec = LEVELS[0];
+  private levelIndex = 0;
+  private pickups: WorldPickup[] = [];
+  private doors: WorldDoor[] = [];
+  private exits: ExitSpec[] = [];
+  private keycard = false;
+  private time = 0;
+  private toastText = "";
+  private toastT = 0;
 
   constructor(renderer: Renderer, assets: GameAssets, canvas: HTMLCanvasElement) {
     this.renderer = renderer;
     this.assets = assets;
-    this.world = createWorld(DEMO_MAP, DEMO_SPAWN);
+    this.world = createWorld(LEVELS[0].rows);
     this.input = new InputController(canvas);
 
     this.player = {
-      x: DEMO_SPAWN.x,
-      y: DEMO_SPAWN.y,
+      x: 0,
+      y: 0,
       z: 0,
       vz: 0,
       yaw: 0,
@@ -161,29 +237,42 @@ export class Game {
       eyeBob: 0,
       fuel: 1,
       thrusting: false,
+      health: PLAYER_MAX_HEALTH,
+      dead: false,
+      deathT: 0,
+      hitFlash: 0,
+      attackCooldown: 0,
     };
-
-    this.actors = DEMO_ACTORS.map((spec) => ({
-      spec,
-      x: spec.x,
-      y: spec.y,
-      z: 0,
-      facing: spec.facing,
-      state: spec.behavior === "patrol" ? "walk" : "idle",
-      animTime: Math.random() * 4,
-      patrolT: 0,
-    }));
 
     this.input.onAction = (action) => {
       if (action === "toggle-map") this.minimapVisible = !this.minimapVisible;
       if (action === "toggle-debug") this.hudDetailVisible = !this.hudDetailVisible;
       if (action === "toggle-fly") this.flying = !this.flying;
       if (action === "respawn") this.respawn();
+      if (action === "attack") this.attack();
+      if (action === "interact") this.interact();
     };
+
+    this.loadLevel(0);
+  }
+
+  get currentLevelId(): string {
+    return this.level.id;
   }
 
   update(dt: number): void {
+    this.time += dt;
+    this.toastT = Math.max(0, this.toastT - dt);
+    this.player.hitFlash = Math.max(0, this.player.hitFlash - dt);
+    this.player.attackCooldown = Math.max(0, this.player.attackCooldown - dt);
     this.updateActors(dt);
+
+    if (this.player.dead) {
+      this.player.deathT += dt;
+      if (this.player.deathT >= RESPAWN_DELAY) this.redeploy();
+      return;
+    }
+
     if (!this.input.active) return;
 
     const look = this.input.consumeLook();
@@ -321,6 +410,9 @@ export class Game {
       this.player.bobPhase += dt * (sprint ? 13 : 9.5);
     }
     this.player.eyeBob = lerp(this.player.eyeBob, bobTarget, Math.min(1, dt * 12));
+
+    this.collectPickups();
+    this.checkExits();
   }
 
   private pitchLimit(): number {
@@ -338,43 +430,71 @@ export class Game {
       Math.sign(this.player.pitch) * (limit + excess * decay);
   }
 
+  private faceTowards(actor: Actor, x: number, y: number, rate: number): void {
+    const target = Math.atan2(y - actor.y, x - actor.x);
+    actor.facing = wrapAngle(
+      actor.facing + shortestAngleDelta(actor.facing, target) * Math.min(1, rate),
+    );
+  }
+
   private updateActors(dt: number): void {
     for (const actor of this.actors) {
+      if (!actor.alive) continue;
       actor.animTime += dt;
+      actor.attackCooldown = Math.max(0, actor.attackCooldown - dt);
 
-      if (actor.spec.behavior === "watcher") {
-        const target = Math.atan2(
-          this.player.y - actor.y,
-          this.player.x - actor.x,
-        );
-        actor.facing +=
-          shortestAngleDelta(actor.facing, target) * Math.min(1, dt * 2.4);
+      if (actor.state === "death") {
+        actor.stateT += dt;
+        if (actor.stateT >= DEATH_STATE_TIME) actor.alive = false;
+        continue;
       }
 
-      if (actor.spec.behavior === "chase" && actor.spec.chase) {
-        const dx = this.player.x - actor.x;
-        const dy = this.player.y - actor.y;
-        const distance = Math.hypot(dx, dy);
-        const target = Math.atan2(dy, dx);
-        actor.facing = wrapAngle(
-          actor.facing +
-            shortestAngleDelta(actor.facing, target) * Math.min(1, dt * 4),
-        );
-        const { speed, range } = actor.spec.chase;
-        if (distance > 1.5 && distance < range) {
-          const step = Math.min(speed * dt, distance - 1.4);
-          const nextX = actor.x + Math.cos(target) * step;
-          if (canOccupy(this.world, nextX, actor.y, 0.16, actor.z)) {
-            actor.x = nextX;
-          }
-          const nextY = actor.y + Math.sin(target) * step;
-          if (canOccupy(this.world, actor.x, nextY, 0.16, actor.z)) {
-            actor.y = nextY;
-          }
-          actor.state = "walk";
-        } else {
+      if (actor.state === "hurt") {
+        actor.stateT += dt;
+        if (actor.stateT >= HURT_STATE_TIME) {
           actor.state = "idle";
+          actor.stateT = 0;
         }
+        continue;
+      }
+
+      if (actor.state === "talk") {
+        this.faceTowards(actor, this.player.x, this.player.y, dt * 5);
+        actor.stateT += dt;
+        const distance = Math.hypot(
+          this.player.x - actor.x,
+          this.player.y - actor.y,
+        );
+        if (distance > TALK_RANGE + 0.6) {
+          actor.state = "idle";
+          actor.stateT = 0;
+        }
+        continue;
+      }
+
+      if (actor.state === "attack") {
+        actor.stateT += dt;
+        this.faceTowards(actor, this.player.x, this.player.y, dt * 5);
+        const attack = actor.spec.attack;
+        if (attack && !actor.hitLanded && actor.stateT >= ATTACK_IMPACT) {
+          actor.hitLanded = true;
+          const distance = Math.hypot(
+            this.player.x - actor.x,
+            this.player.y - actor.y,
+          );
+          if (distance <= attack.range + 0.25) {
+            this.damagePlayer(attack.damage);
+          }
+        }
+        if (actor.stateT >= ATTACK_STATE_TIME) {
+          actor.state = "idle";
+          actor.stateT = 0;
+        }
+        continue;
+      }
+
+      if (actor.spec.behavior === "watcher") {
+        this.faceTowards(actor, this.player.x, this.player.y, dt * 2.4);
       }
 
       if (actor.spec.behavior === "hover" && actor.spec.hover) {
@@ -398,7 +518,312 @@ export class Game {
         }
         actor.state = "walk";
       }
+
+      if (actor.spec.behavior === "chase" && actor.spec.chase) {
+        const dx = this.player.x - actor.x;
+        const dy = this.player.y - actor.y;
+        const distance = Math.hypot(dx, dy);
+        const target = Math.atan2(dy, dx);
+        actor.facing = wrapAngle(
+          actor.facing +
+            shortestAngleDelta(actor.facing, target) * Math.min(1, dt * 4),
+        );
+        const { speed, range } = actor.spec.chase;
+        const attack = actor.spec.attack;
+
+        if (
+          attack &&
+          !this.player.dead &&
+          distance <= attack.range &&
+          actor.attackCooldown <= 0
+        ) {
+          actor.state = "attack";
+          actor.stateT = 0;
+          actor.hitLanded = false;
+          actor.attackCooldown = attack.cooldown;
+        } else if (distance > 1.5 && distance < range) {
+          const step = Math.min(speed * dt, distance - 1.4);
+          const nextX = actor.x + Math.cos(target) * step;
+          if (canOccupy(this.world, nextX, actor.y, 0.16, actor.z)) {
+            actor.x = nextX;
+          }
+          const nextY = actor.y + Math.sin(target) * step;
+          if (canOccupy(this.world, actor.x, nextY, 0.16, actor.z)) {
+            actor.y = nextY;
+          }
+          actor.state = "walk";
+        } else {
+          actor.state = "idle";
+        }
+      }
+
+      if (actor.spec.behavior === "idle" && actor.state === "walk") {
+        actor.state = "idle";
+      }
     }
+  }
+
+  private damagePlayer(amount: number): void {
+    if (this.player.dead) return;
+    this.player.health = Math.max(0, this.player.health - amount);
+    this.player.hitFlash = DAMAGE_FLASH_TIME;
+    if (this.player.health <= 0) {
+      this.player.dead = true;
+      this.player.deathT = 0;
+      this.player.thrusting = false;
+      this.setToast("SYSTEMS OFFLINE · redeploying", 3);
+    }
+  }
+
+  private redeploy(): void {
+    this.placeAtSpawn();
+    this.setToast(`REDEPLOYED · ${this.level.title}`, 2.4);
+  }
+
+  private placeAtSpawn(): void {
+    const { spawn } = this.level;
+    this.player.x = spawn.x;
+    this.player.y = spawn.y;
+    this.player.z = 0;
+    this.player.vz = 0;
+    this.player.yaw = wrapAngle(spawn.yaw);
+    this.player.pitch = 0;
+    this.player.fuel = 1;
+    this.player.thrusting = false;
+    this.player.onGround = true;
+    this.player.health = PLAYER_MAX_HEALTH;
+    this.player.dead = false;
+    this.player.deathT = 0;
+    this.player.hitFlash = 0;
+    this.player.attackCooldown = 0;
+    this.flying = false;
+  }
+
+  attack(): boolean {
+    if (this.player.dead || this.player.attackCooldown > 0) return false;
+    this.player.attackCooldown = PLAYER_ATTACK_COOLDOWN;
+
+    let target: Actor | null = null;
+    let best = Infinity;
+    for (const actor of this.actors) {
+      if (!actor.alive || !actor.spec.hostile) continue;
+      const dx = actor.x - this.player.x;
+      const dy = actor.y - this.player.y;
+      const distance = Math.hypot(dx, dy);
+      if (distance > PLAYER_ATTACK_RANGE) continue;
+      const angle = Math.abs(
+        shortestAngleDelta(this.player.yaw, Math.atan2(dy, dx)),
+      );
+      if (angle > PLAYER_ATTACK_ARC) continue;
+      if (distance < best) {
+        best = distance;
+        target = actor;
+      }
+    }
+
+    if (!target) return false;
+
+    target.hp = Math.max(0, target.hp - PLAYER_ATTACK_DAMAGE);
+    target.stateT = 0;
+    if (target.hp <= 0) {
+      target.state = "death";
+      this.setToast(`${target.spec.name.toUpperCase()} DOWN`, 1.6);
+    } else {
+      target.state = "hurt";
+      const dx = target.x - this.player.x;
+      const dy = target.y - this.player.y;
+      const length = Math.hypot(dx, dy) || 1;
+      const nextX = target.x + (dx / length) * 0.18;
+      const nextY = target.y + (dy / length) * 0.18;
+      if (canOccupy(this.world, nextX, nextY, 0.16, target.z)) {
+        target.x = nextX;
+        target.y = nextY;
+      }
+    }
+    return true;
+  }
+
+  interact(): "none" | "talk" | "door" | "locked" | "pickup" {
+    if (this.player.dead) return "none";
+
+    const npc = this.nearestTalkable();
+    if (npc) {
+      npc.state = "talk";
+      npc.stateT = 0;
+      this.faceTowards(npc, this.player.x, this.player.y, 1);
+      const lines = npc.spec.talk ?? [];
+      const line = lines[npc.talkIndex % Math.max(1, lines.length)] ?? "";
+      npc.talkIndex += 1;
+      this.setToast(`${npc.spec.name.toUpperCase()} · ${line}`, 4);
+      return "talk";
+    }
+
+    const door = this.nearestDoor();
+    if (door) {
+      if (door.requires === "keycard" && !this.keycard) {
+        this.setToast("SEALED · keycard required", 2);
+        return "locked";
+      }
+      this.openDoor(door);
+      return "door";
+    }
+
+    const pickup = this.nearestPickup(1.4);
+    if (pickup) {
+      this.collectPickup(pickup);
+      return "pickup";
+    }
+
+    this.setToast("NOTHING IN REACH", 1.2);
+    return "none";
+  }
+
+  private nearestTalkable(): Actor | null {
+    let best = Infinity;
+    let found: Actor | null = null;
+    for (const actor of this.actors) {
+      if (!actor.alive || !actor.spec.talk) continue;
+      const distance = Math.hypot(
+        this.player.x - actor.x,
+        this.player.y - actor.y,
+      );
+      if (distance <= INTERACT_RANGE && distance < best) {
+        best = distance;
+        found = actor;
+      }
+    }
+    return found;
+  }
+
+  private nearestDoor(): WorldDoor | null {
+    let best = Infinity;
+    let found: WorldDoor | null = null;
+    for (const door of this.doors) {
+      if (door.open) continue;
+      const distance = Math.hypot(
+        this.player.x - (door.x + 0.5),
+        this.player.y - (door.y + 0.5),
+      );
+      if (distance <= INTERACT_RANGE && distance < best) {
+        best = distance;
+        found = door;
+      }
+    }
+    return found;
+  }
+
+  private nearestPickup(radius: number): WorldPickup | null {
+    let best = Infinity;
+    let found: WorldPickup | null = null;
+    for (const pickup of this.pickups) {
+      if (pickup.taken) continue;
+      const distance = Math.hypot(
+        this.player.x - pickup.x,
+        this.player.y - pickup.y,
+      );
+      if (distance <= radius && distance < best) {
+        best = distance;
+        found = pickup;
+      }
+    }
+    return found;
+  }
+
+  private openDoor(door: WorldDoor): void {
+    door.open = true;
+    const cell = door.y * this.world.width + door.x;
+    this.world.tiles[cell] = 0;
+    this.world.heights[cell] = 0;
+    this.setToast("DOOR UNLOCKED", 1.8);
+  }
+
+  private collectPickups(): void {
+    if (this.player.z > 0.8) return;
+    const pickup = this.nearestPickup(PICKUP_RADIUS);
+    if (pickup) this.collectPickup(pickup);
+  }
+
+  private collectPickup(pickup: WorldPickup): void {
+    if (pickup.taken) return;
+    pickup.taken = true;
+    if (pickup.kind === "keycard") {
+      this.keycard = true;
+      this.setToast("KEYCARD ACQUIRED · lift chamber unlocked", 3);
+    } else if (pickup.kind === "medkit") {
+      this.player.health = Math.min(PLAYER_MAX_HEALTH, this.player.health + 40);
+      this.setToast("MEDKIT · +40 HP", 2);
+    } else {
+      this.player.fuel = 1;
+      this.setToast("JET FUEL REPLENISHED", 2);
+    }
+  }
+
+  private checkExits(): void {
+    for (const exit of this.exits) {
+      if (
+        Math.hypot(this.player.x - exit.x, this.player.y - exit.y) <=
+        EXIT_RADIUS
+      ) {
+        const index = levelIndexById(exit.target);
+        this.loadLevel(index, `ENTERING ${LEVELS[index].title}`);
+        return;
+      }
+    }
+  }
+
+  private setToast(text: string, seconds = 2.5): void {
+    this.toastText = text;
+    this.toastT = seconds;
+  }
+
+  loadLevel(index: number, message?: string): void {
+    const level = LEVELS[index];
+    if (!level) throw new Error(`Unknown level index: ${index}`);
+    this.level = level;
+    this.levelIndex = index;
+    this.time = 0;
+    this.world = createWorld(level.rows, {
+      x: level.spawn.x,
+      y: level.spawn.y,
+    });
+    this.actors = level.actors.map((spec, i) => this.createActor(spec, i));
+    this.pickups = level.pickups.map((pickup, i) => ({
+      ...pickup,
+      taken: false,
+      seed: i * 1.7,
+    }));
+    this.doors = level.doors.map((door) => ({ ...door, open: false }));
+    this.exits = level.exits;
+    this.keycard = false;
+    this.placeAtSpawn();
+    this.toastText = "";
+    this.toastT = 0;
+    if (message) this.setToast(message, 3);
+  }
+
+  private createActor(spec: ActorSpec, index: number): Actor {
+    const maxHp = spec.hp ?? 80;
+    const animTime = index * 0.37;
+    return {
+      spec,
+      x: spec.x,
+      y: spec.y,
+      z: (spec.hover?.height ?? 0) + Math.sin(animTime * (spec.hover?.speed ?? 1)) * (spec.hover?.bob ?? 0),
+      facing: spec.facing,
+      state:
+        spec.behavior === "patrol" || spec.behavior === "chase"
+          ? "walk"
+          : "idle",
+      animTime,
+      stateT: 0,
+      patrolT: 0,
+      hp: maxHp,
+      maxHp,
+      alive: true,
+      attackCooldown: 0,
+      hitLanded: false,
+      talkIndex: 0,
+    };
   }
 
   render(): void {
@@ -408,7 +833,7 @@ export class Game {
       this.world,
       this.assets.textures,
       this.assets.floor,
-      this.buildSprites(camera),
+      [...this.buildSprites(camera), ...this.buildPropSprites()],
     );
   }
 
@@ -465,9 +890,19 @@ export class Game {
       manifest.pitches,
     );
     const stateDef = manifest.states[actor.state] ?? manifest.states.idle;
-    const frameIndex = stateDef
-      ? Math.floor(actor.animTime * stateDef.fps) % stateDef.frames
+    const clock =
+      actor.state === "idle" || actor.state === "walk"
+        ? actor.animTime
+        : actor.stateT;
+    let frameIndex = stateDef
+      ? Math.floor(clock * stateDef.fps) % stateDef.frames
       : 0;
+    if (actor.state === "death" && stateDef) {
+      frameIndex = Math.min(
+        stateDef.frames - 1,
+        Math.floor(clock * stateDef.fps),
+      );
+    }
     return { yawIndex, pitchIndex, frameIndex, worldSize };
   }
 
@@ -475,6 +910,8 @@ export class Game {
     const draws: SpriteDraw[] = [];
 
     for (const actor of this.actors) {
+      // Corpses keep the final death frame until the level reloads.
+      if (!actor.alive && actor.state !== "death") continue;
       const atlas = this.atlasFor(actor.spec);
       const manifest = atlas.manifest;
       const dx = camera.x - actor.x;
@@ -505,11 +942,46 @@ export class Game {
     return draws;
   }
 
+  private buildPropSprites(): SpriteDraw[] {
+    const draws: SpriteDraw[] = [];
+
+    for (const pickup of this.pickups) {
+      if (pickup.taken) continue;
+      const texture = this.assets.props[pickup.kind];
+      const bob = Math.sin(this.time * 2.2 + pickup.seed) * 0.05;
+      draws.push({
+        x: pickup.x,
+        y: pickup.y,
+        z: 0.3 + bob,
+        facing: 0,
+        frame: { texture, sx: 0, sy: 0, sw: texture.width, sh: texture.height },
+        worldSize: 0.42,
+        id: `pickup:${pickup.kind}`,
+      });
+    }
+
+    for (const exit of this.exits) {
+      const texture = this.assets.props.beacon;
+      draws.push({
+        x: exit.x,
+        y: exit.y,
+        z: 0,
+        facing: 0,
+        frame: { texture, sx: 0, sy: 0, sw: texture.width, sh: texture.height },
+        worldSize: 1.1,
+        id: `exit:${exit.id}`,
+      });
+    }
+
+    return draws;
+  }
+
   getHudState(): HudState {
     const camera = this.cameraState();
     let nearest: Actor | null = null;
     let best = Infinity;
     for (const actor of this.actors) {
+      if (!actor.alive) continue;
       const distance = Math.hypot(camera.x - actor.x, camera.y - actor.y);
       if (distance < best) {
         best = distance;
@@ -560,7 +1032,32 @@ export class Game {
       nearestDistance: best,
       nearestYaw,
       nearestPitch,
+      health: this.player.health,
+      maxHealth: PLAYER_MAX_HEALTH,
+      dead: this.player.dead,
+      damageFlash: this.player.hitFlash / DAMAGE_FLASH_TIME,
+      levelTitle: this.level.title,
+      objective: this.level.objective,
+      prompt: this.interactionPrompt(),
+      toast: this.toastT > 0 ? this.toastText : "",
+      keycard: this.keycard,
     };
+  }
+
+  private interactionPrompt(): string {
+    if (this.player.dead) return "";
+    const npc = this.nearestTalkable();
+    if (npc) return `E · talk to ${npc.spec.name}`;
+    const door = this.nearestDoor();
+    if (door) {
+      if (door.requires === "keycard" && !this.keycard) {
+        return "E · sealed — keycard required";
+      }
+      return "E · unlock door";
+    }
+    const pickup = this.nearestPickup(1.4);
+    if (pickup) return `E · collect ${pickup.kind}`;
+    return "";
   }
 
   getRenderDebug(): RenderDebug {
@@ -587,6 +1084,7 @@ export class Game {
         support,
         onGround: this.player.onGround,
       },
+      level: this.level.id,
       actors: this.actors.map((actor) => {
         const selection = this.spriteSelection(actor, camera);
         return {
@@ -600,8 +1098,26 @@ export class Game {
           yawIndex: selection.yawIndex,
           pitchIndex: selection.pitchIndex,
           frameIndex: selection.frameIndex,
+          hp: actor.hp,
+          maxHp: actor.maxHp,
+          alive: actor.alive,
+          hostile: actor.spec.hostile ?? false,
         };
       }),
+      pickups: this.pickups.map((pickup) => ({
+        kind: pickup.kind,
+        x: pickup.x,
+        y: pickup.y,
+        taken: pickup.taken,
+      })),
+      doors: this.doors.map((door) => ({
+        id: door.id,
+        x: door.x,
+        y: door.y,
+        open: door.open,
+      })),
+      health: this.player.health,
+      keycard: this.keycard,
       stats: this.renderer.stats,
     };
   }
@@ -624,17 +1140,40 @@ export class Game {
       for (let x = 0; x < world.width; x += 1) {
         const tile = world.tiles[y * world.width + x];
         if (tile === 0) continue;
-        ctx.fillStyle = tile === 2 ? "#39434f" : "#2a2f3c";
+        ctx.fillStyle = tile === 2 ? "#39434f" : tile === 3 ? "#8a6b3a" : "#2a2f3c";
         ctx.fillRect(x * scale, (world.height - 1 - y) * scale, scale - 0.5, scale - 0.5);
       }
     }
 
+    for (const pickup of this.pickups) {
+      if (pickup.taken) continue;
+      const px = pickup.x * scale;
+      const py = (world.height - pickup.y) * scale;
+      ctx.fillStyle =
+        pickup.kind === "keycard"
+          ? "#6ce0ef"
+          : pickup.kind === "medkit"
+            ? "#f0e4c8"
+            : "#8fb7d0";
+      ctx.fillRect(px - 1.2, py - 1.2, 2.4, 2.4);
+    }
+
+    for (const exit of this.exits) {
+      const ex = exit.x * scale;
+      const ey = (world.height - exit.y) * scale;
+      ctx.strokeStyle = "#6ce0ef";
+      ctx.beginPath();
+      ctx.arc(ex, ey, 2.6, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
     for (const actor of this.actors) {
+      if (!actor.alive) continue;
       const ax = actor.x * scale;
       const ay = (world.height - actor.y) * scale;
-      ctx.fillStyle = "#66c7cd";
+      ctx.fillStyle = actor.spec.hostile ? "#e08a7a" : "#66c7cd";
       ctx.fillRect(ax - 1.5, ay - 1.5, 3, 3);
-      ctx.strokeStyle = "#66c7cd";
+      ctx.strokeStyle = ctx.fillStyle;
       ctx.beginPath();
       ctx.moveTo(ax, ay);
       ctx.lineTo(ax + Math.cos(actor.facing) * 5, ay + Math.sin(actor.facing) * 5);
@@ -673,16 +1212,11 @@ export class Game {
   }
 
   respawn(): void {
-    this.player.x = DEMO_SPAWN.x;
-    this.player.y = DEMO_SPAWN.y;
-    this.player.z = 0;
-    this.player.vz = 0;
-    this.player.yaw = 0;
-    this.player.pitch = 0;
-    this.player.fuel = 1;
-    this.player.thrusting = false;
-    this.player.onGround = true;
-    this.flying = false;
+    this.placeAtSpawn();
+  }
+
+  resetLevel(): void {
+    this.loadLevel(this.levelIndex);
   }
 
   setPose(x: number, y: number, z: number, yaw: number, pitch: number): void {
@@ -705,22 +1239,24 @@ export class Game {
     this.player.fuel = clamp(value, 0, 1);
   }
 
-  /** Restores actors to their authored spawns and a shared animation clock. */
-  resetActors(): void {
-    this.actors.forEach((actor, index) => {
-      const spec = DEMO_ACTORS[index];
-      actor.x = spec.x;
-      actor.y = spec.y;
-      // Hover actors spawn at their cruising height; the bob term is zero at t=0.
-      actor.z = spec.hover?.height ?? 0;
-      actor.facing = spec.facing;
-      actor.state = spec.behavior === "patrol" ? "walk" : "idle";
-      actor.animTime = 0;
-      actor.patrolT = 0;
-    });
+  setHealth(value: number): void {
+    this.player.health = clamp(value, 0, PLAYER_MAX_HEALTH);
+    if (this.player.health > 0) this.player.dead = false;
   }
 
   isThrusting(): boolean {
     return this.player.thrusting;
+  }
+
+  get damageFlash(): number {
+    return this.player.hitFlash / DAMAGE_FLASH_TIME;
+  }
+
+  get isDead(): boolean {
+    return this.player.dead;
+  }
+
+  loadLevelById(id: string): void {
+    this.loadLevel(levelIndexById(id));
   }
 }

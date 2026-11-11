@@ -145,6 +145,24 @@ body {
   }
 }
 
+#damage {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(ellipse at 50% 50%, transparent 42%, rgba(180, 30, 24, 0.55) 100%);
+  mix-blend-mode: screen;
+  transition: opacity 90ms linear;
+}
+
+#damage.dead {
+  opacity: 1;
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(70, 8, 6, 0.35) 20%, rgba(120, 12, 8, 0.85) 100%);
+  mix-blend-mode: normal;
+}
+
 #brand {
   position: absolute;
   top: 14px;
@@ -220,6 +238,81 @@ body {
   width: 100%;
   background: linear-gradient(90deg, var(--cyan), var(--amber));
   transition: width 120ms linear;
+}
+
+#hud .health {
+  height: 3px;
+  margin: 1px 0 2px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(57, 67, 84, 0.55);
+  overflow: hidden;
+}
+
+#hud .health span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #7fd7a4, #cfe8a8);
+  transition: width 120ms linear;
+}
+
+#hud .health span.critical {
+  background: linear-gradient(90deg, #e07a6a, #e2b077);
+}
+
+#hud #hud-objective {
+  margin-top: 4px;
+  padding-top: 5px;
+  border-top: 1px solid rgba(57, 67, 84, 0.5);
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.45;
+  max-width: 215px;
+  white-space: normal;
+}
+
+#hud #hud-keycard {
+  color: var(--muted);
+}
+
+#hud #hud-keycard.owned {
+  color: var(--cyan);
+}
+
+#prompt,
+#toast {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 14px;
+  background: rgba(6, 8, 14, 0.82);
+  border: 1px solid var(--line-bright);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--ink);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease;
+  white-space: nowrap;
+  max-width: 92%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#prompt {
+  bottom: 62px;
+  color: var(--amber);
+}
+
+#toast {
+  bottom: 104px;
+  border-color: rgba(111, 211, 216, 0.55);
+  color: var(--cyan);
+}
+
+#prompt.visible,
+#toast.visible {
+  opacity: 1;
 }
 
 #hud.minimal .detail {

@@ -9,9 +9,13 @@ const FRAME_ANCHOR_Z = -0.075;
 const STATES = [
   { name: "idle", fps: 2, frames: 2 },
   { name: "walk", fps: 8, frames: 4 },
+  { name: "attack", fps: 10, frames: 4 },
+  { name: "hurt", fps: 8, frames: 2 },
+  { name: "death", fps: 6, frames: 4 },
+  { name: "talk", fps: 4, frames: 3 },
 ];
 
-const FRAME_PATTERN = /^(idle|walk)_f(\d+)_p(\d+)_y(\d+)\.png$/;
+const FRAME_PATTERN = /^([a-z]+)_f(\d+)_p(\d+)_y(\d+)\.png$/;
 
 interface AtlasFrame {
   state: string;

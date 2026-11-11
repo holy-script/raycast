@@ -10,7 +10,7 @@ const COMFY = join(ROOT, "tools/stylize/comfy.ts");
 const PACK = join(ROOT, "tools/atlas/pack.ts");
 const VERIFY = join(ROOT, "tools/verify/style.ts");
 const CHARACTERS = ["guardian", "scout", "brute"] as const;
-const FRAME_KEY = /^(idle|walk)_f\d+_p\d+_y\d+$/;
+const FRAME_KEY = /^[a-z]+_f\d+_p\d+_y\d+$/;
 const ONLY_SELECTOR = /^[a-z*]*(:\d*){0,3}$/;
 
 type Character = (typeof CHARACTERS)[number];
