@@ -12,7 +12,7 @@ Last updated: **2026-11-11**
 | 16-way × 4-pitch billboard sprites | M3 | ✅ Complete |
 | Blender → stylize → atlas, 3 chassis | M4 | ✅ Complete |
 | Heightmap blocks: stairs, platforms, crates | M5 | ✅ Complete |
-| ComfyUI / MCP AI stylization | M6 | ✅ Complete (real generation needs a server + models) |
+| ComfyUI / MCP AI stylization | M6 | ✅ Complete; local ComfyUI smoke-tested |
 | 16-way and multi-character content | M7 | 🚧 Chassis, directions, behaviors done; combat pending |
 | Audio, menus, deployment | M8 | 🚧 Live + auto-deploy; audio/menus pending |
 
@@ -80,6 +80,19 @@ Browser verification (2026-11-11, headless Chrome over CDP, `http://127.0.0.1:51
   `raycast-knbwjpvue` reached Ready in 11 s.
 
 ## Session log
+
+### 2026-11-11 — Local ComfyUI environment
+
+- Installed ComfyUI 0.45.0 outside the repo at `~/Desktop/projects/ComfyUI` with a Python
+  3.12 venv and PyTorch 2.15 (MPS). Downloaded the SD1.5 `v1-5-pruned-emaonly` checkpoint
+  and the fp16 `control_v11f1p_sd15_depth` ControlNet.
+- Started the server on `127.0.0.1:8188`; `/system_stats` reports MPS and 36 GB unified
+  memory, and `/object_info` confirms the workflow's node classes and both model files.
+- Smoke-tested `assets:comfy` twice through the real pipeline: `guardian idle:0:1:0` in
+  22.1 s (cold, model load) and `idle:0:1:1` in 9.4 s (warm), both 0 palette fallbacks.
+  Output frames read as consistent pixel-art guardians with the raw silhouette intact.
+- Extrapolated full-pass cost: ~1 hour per 384-frame character. The full pass is **not**
+  run yet; committed atlases are still palette-stylized.
 
 ### 2026-11-11 — M6 ComfyUI pipeline, verification, and MCP studio
 

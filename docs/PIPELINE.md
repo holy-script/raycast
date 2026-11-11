@@ -199,6 +199,48 @@ input:  384×384 RGBA render + depth control image + style preset + fixed seed
 output: 96×96 RGBA frame with the same filename
 ```
 
+### Local setup (Apple Silicon, verified)
+
+ComfyUI lives outside the repo (not vendored). Installed at `~/Desktop/projects/ComfyUI`
+with Python 3.12, PyTorch 2.15 (MPS), and ComfyUI 0.45.0:
+
+```bash
+git clone --depth 1 https://github.com/comfyanonymous/ComfyUI
+cd ComfyUI && python3.12 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+.venv/bin/python -c "import torch; print(torch.backends.mps.is_available())"   # True
+```
+
+Models (SD1.5 base + fp16 SD1.5 depth ControlNet):
+
+```bash
+curl -L -o models/checkpoints/v1-5-pruned-emaonly.safetensors \
+  https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors
+curl -L -o models/controlnet/control_v11f1p_sd15_depth.safetensors \
+  https://huggingface.co/comfyanonymous/ControlNet-v1-1_fp16_safetensors/resolve/main/control_v11f1p_sd15_depth_fp16.safetensors
+```
+
+Start the server (first boot takes ~25 s):
+
+```bash
+cd ~/Desktop/projects/ComfyUI
+.venv/bin/python main.py --listen 127.0.0.1 --port 8188 --disable-auto-launch
+```
+
+Verify before a long run:
+
+```bash
+curl -s http://127.0.0.1:8188/system_stats
+npm run assets:comfy -- guardian --only idle:0:1:0 \
+  --checkpoint v1-5-pruned-emaonly.safetensors \
+  --controlnet control_v11f1p_sd15_depth.safetensors \
+  --out /tmp/comfy-smoke --timeout 600
+```
+
+Measured on M-series / 36 GB: ~22 s for the first frame (model load) and ~9.4 s per warm
+frame at 512² with 20 steps, so a full 384-frame character is ~1 hour (~3 hours for all
+three). Run one character at a time with `--fallback` and verify after each.
+
 ### Workflow
 
 `tools/comfy/workflow_api.json` is an API-format graph (`/prompt` format, not the UI
@@ -320,11 +362,13 @@ printf '%s\n' \
 ```
 
 The ComfyUI call path is covered by `tests/comfy-cli.test.ts`, which runs the real CLI
-against a mock HTTP server (upload → prompt → history → view → 96² frame). An actual
-generation has not been run in this repository because no ComfyUI server, checkpoint, or
-ControlNet model is bundled; start ComfyUI and pass the two model names to
-`assets:comfy`. The optional AutoSprite/Gamelabs adapter from the roadmap is not built;
-the CLI/workflow boundary is the integration point.
+against a mock HTTP server (upload → prompt → history → view → 96² frame), so the test
+suite needs no GPU or models. A real local pass has been smoke-tested on Apple Silicon
+(see [Local setup](#local-setup-apple-silicon-verified)); the full 384-frame pass per
+character has not been run yet, so the committed atlases are still palette-stylized. No
+ComfyUI server, checkpoint, or ControlNet model is bundled with this repo. The optional
+AutoSprite/Gamelabs adapter from the roadmap is not built; the CLI/workflow boundary is
+the integration point.
 
 See the spec, [AI Sprites In Raycasting Games](spec/AI-Sprites-In-Raycasting-Games.pdf),
 for the ComfyUI/MCP discussion and generator references.
