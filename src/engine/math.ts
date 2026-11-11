@@ -84,6 +84,15 @@ export function samplePitch(elevation: number, pitches = 4): PitchSample {
   return { index, next: index, mix: 0 };
 }
 
+/**
+ * Static sprites (corpses) must not blend two baked pitch views: the crossfade
+ * reads as a second, larger translucent silhouette. They snap to one row.
+ */
+export function sampleStaticPitch(elevation: number, pitches = 4): PitchSample {
+  const index = quantizePitch(elevation, pitches);
+  return { index, next: index, mix: 0 };
+}
+
 export function elevationAngle(
   cameraZ: number,
   targetCenterZ: number,

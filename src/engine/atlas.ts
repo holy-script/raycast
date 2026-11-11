@@ -25,7 +25,16 @@ export interface AtlasManifest {
   directions: number;
   pitches: number;
   pitchOrder: string[];
-  states: Record<string, { fps: number; frames: number }>;
+  states: Record<
+    string,
+    {
+      fps: number;
+      frames: number;
+      /** Wider world frame for states whose silhouette spans the whole cell. */
+      frameWorldSize?: number;
+      frameAnchorZ?: number;
+    }
+  >;
   frames: AtlasFrameEntry[];
 }
 

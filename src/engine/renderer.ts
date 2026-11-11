@@ -53,6 +53,10 @@ export interface SpriteDraw {
   alpha?: number;
   /** RGB multiplier, 1 = unchanged. Cheap per-actor recolors from one atlas. */
   tint?: [number, number, number];
+  /** Projectiles and muzzle flashes must not drop a ground shadow. */
+  noShadow?: boolean;
+  /** Scales the contact shadow; prone corpses need a wider soft patch. */
+  shadowScale?: number;
   /** Debug/tests only: ties a projected rect back to an actor. */
   id?: string;
 }
@@ -478,7 +482,7 @@ export class Renderer {
     this.stats.spriteRects.push(rect);
     if (!visible) return;
 
-    if (sprite.z < 2.5) {
+    if (!sprite.noShadow && sprite.z < 2.5) {
       this.drawShadow(cam, entry);
     }
 
@@ -623,7 +627,7 @@ export class Renderer {
       this.centerY - (cam.focal * (-forward * sinP + dz * cosP)) / zCam;
     const radiusX = Math.max(
       1,
-      (cam.focal * sprite.worldSize * 0.36) / zCam,
+      (cam.focal * sprite.worldSize * 0.36 * (sprite.shadowScale ?? 1)) / zCam,
     );
     // A ground disc becomes rounder on screen the steeper the view.
     const tilt = Math.abs(sinP);

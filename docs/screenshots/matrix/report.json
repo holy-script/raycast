@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-11T17:15:56.488Z",
+  "generatedAt": "2026-11-11T18:57:38.951Z",
   "url": "http://127.0.0.1:5201/?screenshot",
-  "durationMs": 7614,
+  "durationMs": 7672,
   "scenarios": [
     "g01-spawn-idle",
     "g02-walk-forward",
@@ -87,21 +87,23 @@
     "i05-medkit-heal",
     "i06-fuel-refill",
     "i07-empty-interact",
-    "f01-player-strike",
+    "f01-player-shot",
     "f02-player-kill",
-    "f03-attack-arc",
-    "f04-attack-range",
+    "f03-bolt-miss",
+    "f04-bolt-travel",
     "f05-hostile-damage",
     "f06-death-redeploy",
-    "f07-attack-cooldown",
+    "f07-fire-cooldown",
     "f08-enemy-windup",
+    "f09-bolt-blocked",
+    "f10-enemy-gun",
     "l01-transition-reactor",
     "l02-vault-return",
     "l03-terrace-climb",
     "l04-reactor-hover",
     "l05-beacon-loop"
   ],
-  "passed": 625,
+  "passed": 642,
   "failed": 0,
   "checks": [
     {
@@ -2853,14 +2855,14 @@
       "group": "viewmodel",
       "name": "w02-strike-viewmodel renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 55.2"
+      "detail": "512 colors, mean luma 55.4"
     },
     {
       "scenario": "w02-attack-swing",
       "group": "viewmodel",
       "name": "w02-attack-swing renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 55.2"
+      "detail": "512 colors, mean luma 55.4"
     },
     {
       "scenario": "w02-attack-swing",
@@ -2874,7 +2876,7 @@
       "group": "viewmodel",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "w02-attack-swing",
@@ -2909,7 +2911,7 @@
       "group": "viewmodel",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "w03-swing-recovery",
@@ -3070,7 +3072,7 @@
       "group": "ui",
       "name": "resuming advances the simulation",
       "ok": true,
-      "detail": "patrol dx 0.37, 23 frames, paused=false, 6.40% pixels changed"
+      "detail": "patrol dx 0.39, 23 frames, paused=false, 6.43% pixels changed"
     },
     {
       "scenario": "u05-pause-resume",
@@ -3780,63 +3782,63 @@
       "detail": "WALK · ATTRACT · fuel 100%"
     },
     {
-      "scenario": "f01-player-strike",
+      "scenario": "f01-player-shot",
       "group": "combat",
-      "name": "a forward strike damages the stalker",
+      "name": "a plasma bolt damages the stalker",
       "ok": true,
-      "detail": "hit=true · hp=25"
+      "detail": "fired=true · hp=25"
     },
     {
-      "scenario": "f01-player-strike",
+      "scenario": "f01-player-shot",
       "group": "combat",
       "name": "the hit puts the actor in hurt state",
       "ok": true,
       "detail": "hurt"
     },
     {
-      "scenario": "f01-player-strike",
+      "scenario": "f01-player-shot",
       "group": "combat",
       "name": "f01-enemy-hurt matches baseline",
       "ok": true,
       "detail": "0.00% of pixels differ"
     },
     {
-      "scenario": "f01-player-strike",
+      "scenario": "f01-player-shot",
       "group": "combat",
       "name": "f01-enemy-hurt renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 47.9"
+      "detail": "512 colors, mean luma 48.7"
     },
     {
-      "scenario": "f01-player-strike",
+      "scenario": "f01-player-shot",
       "group": "combat",
-      "name": "f01-player-strike matches baseline",
+      "name": "f01-player-shot matches baseline",
       "ok": true,
       "detail": "0.00% of pixels differ"
     },
     {
-      "scenario": "f01-player-strike",
+      "scenario": "f01-player-shot",
       "group": "combat",
-      "name": "f01-player-strike renders content",
+      "name": "f01-player-shot renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 47.9"
+      "detail": "512 colors, mean luma 48.7"
     },
     {
-      "scenario": "f01-player-strike",
+      "scenario": "f01-player-shot",
       "group": "combat",
       "name": "state and geometry stay finite",
       "ok": true,
       "detail": "17.00, 14.50, 0.00, 1.00, 384.00, 46127.00, 0.00"
     },
     {
-      "scenario": "f01-player-strike",
+      "scenario": "f01-player-shot",
       "group": "combat",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "7 rects"
+      "detail": "8 rects"
     },
     {
-      "scenario": "f01-player-strike",
+      "scenario": "f01-player-shot",
       "group": "combat",
       "name": "HUD is populated",
       "ok": true,
@@ -3845,9 +3847,9 @@
     {
       "scenario": "f02-player-kill",
       "group": "combat",
-      "name": "the second strike kills the stalker",
+      "name": "the second bolt kills the stalker",
       "ok": true,
-      "detail": "hit=true · death · hp=0"
+      "detail": "fired=true · death · hp=0"
     },
     {
       "scenario": "f02-player-kill",
@@ -3861,7 +3863,7 @@
       "group": "combat",
       "name": "the corpse drops out of targeting but stays rendered",
       "ok": true,
-      "detail": "alive=false · 6258 corpse px"
+      "detail": "alive=false · size=1.33 m · 4859 corpse px"
     },
     {
       "scenario": "f02-player-kill",
@@ -3875,7 +3877,7 @@
       "group": "combat",
       "name": "f02-enemy-corpse renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 46.8"
+      "detail": "512 colors, mean luma 47.4"
     },
     {
       "scenario": "f02-player-kill",
@@ -3889,7 +3891,7 @@
       "group": "combat",
       "name": "f02-player-kill renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 46.8"
+      "detail": "512 colors, mean luma 47.4"
     },
     {
       "scenario": "f02-player-kill",
@@ -3913,84 +3915,84 @@
       "detail": "WALK · ATTRACT · fuel 100%"
     },
     {
-      "scenario": "f03-attack-arc",
+      "scenario": "f03-bolt-miss",
       "group": "combat",
-      "name": "striking away from the target misses",
+      "name": "firing away from the target misses",
       "ok": true,
-      "detail": "hit=false · hp=70"
+      "detail": "fired=true · hp=70"
     },
     {
-      "scenario": "f03-attack-arc",
+      "scenario": "f03-bolt-miss",
       "group": "combat",
-      "name": "f03-attack-arc matches baseline",
+      "name": "f03-bolt-miss matches baseline",
       "ok": true,
       "detail": "0.00% of pixels differ"
     },
     {
-      "scenario": "f03-attack-arc",
+      "scenario": "f03-bolt-miss",
       "group": "combat",
-      "name": "f03-attack-arc renders content",
+      "name": "f03-bolt-miss renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 54.0"
+      "detail": "512 colors, mean luma 54.1"
     },
     {
-      "scenario": "f03-attack-arc",
+      "scenario": "f03-bolt-miss",
       "group": "combat",
       "name": "state and geometry stay finite",
       "ok": true,
       "detail": "17.00, 14.50, 0.00, 1.00, 384.00, 61938.00, 0.00"
     },
     {
-      "scenario": "f03-attack-arc",
+      "scenario": "f03-bolt-miss",
       "group": "combat",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "10 rects"
+      "detail": "11 rects"
     },
     {
-      "scenario": "f03-attack-arc",
+      "scenario": "f03-bolt-miss",
       "group": "combat",
       "name": "HUD is populated",
       "ok": true,
       "detail": "WALK · ATTRACT · fuel 100%"
     },
     {
-      "scenario": "f04-attack-range",
+      "scenario": "f04-bolt-travel",
       "group": "combat",
-      "name": "targets beyond 2.3 m are out of reach",
+      "name": "bolts cross four metres in flight time",
       "ok": true,
-      "detail": "hit=false · hp=70"
+      "detail": "fired=true · hp=25"
     },
     {
-      "scenario": "f04-attack-range",
+      "scenario": "f04-bolt-travel",
       "group": "combat",
-      "name": "f04-attack-range matches baseline",
+      "name": "f04-bolt-travel matches baseline",
       "ok": true,
       "detail": "0.00% of pixels differ"
     },
     {
-      "scenario": "f04-attack-range",
+      "scenario": "f04-bolt-travel",
       "group": "combat",
-      "name": "f04-attack-range renders content",
+      "name": "f04-bolt-travel renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 47.9"
+      "detail": "512 colors, mean luma 46.7"
     },
     {
-      "scenario": "f04-attack-range",
+      "scenario": "f04-bolt-travel",
       "group": "combat",
       "name": "state and geometry stay finite",
       "ok": true,
       "detail": "14.50, 14.50, 0.00, 1.00, 384.00, 46936.00, 0.00"
     },
     {
-      "scenario": "f04-attack-range",
+      "scenario": "f04-bolt-travel",
       "group": "combat",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "7 rects"
+      "detail": "8 rects"
     },
     {
-      "scenario": "f04-attack-range",
+      "scenario": "f04-bolt-travel",
       "group": "combat",
       "name": "HUD is populated",
       "ok": true,
@@ -4109,42 +4111,42 @@
       "detail": "WALK · ATTRACT · fuel 100%"
     },
     {
-      "scenario": "f07-attack-cooldown",
+      "scenario": "f07-fire-cooldown",
       "group": "combat",
-      "name": "the strike cooldown blocks immediate repeats",
+      "name": "the fire cooldown blocks immediate repeats",
       "ok": true,
       "detail": "first=true second=false hp=25"
     },
     {
-      "scenario": "f07-attack-cooldown",
+      "scenario": "f07-fire-cooldown",
       "group": "combat",
-      "name": "f07-attack-cooldown matches baseline",
+      "name": "f07-fire-cooldown matches baseline",
       "ok": true,
       "detail": "0.00% of pixels differ"
     },
     {
-      "scenario": "f07-attack-cooldown",
+      "scenario": "f07-fire-cooldown",
       "group": "combat",
-      "name": "f07-attack-cooldown renders content",
+      "name": "f07-fire-cooldown renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 48.9"
+      "detail": "512 colors, mean luma 48.7"
     },
     {
-      "scenario": "f07-attack-cooldown",
+      "scenario": "f07-fire-cooldown",
       "group": "combat",
       "name": "state and geometry stay finite",
       "ok": true,
       "detail": "17.00, 14.50, 0.00, 1.00, 384.00, 46127.00, 0.00"
     },
     {
-      "scenario": "f07-attack-cooldown",
+      "scenario": "f07-fire-cooldown",
       "group": "combat",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "7 rects"
+      "detail": "8 rects"
     },
     {
-      "scenario": "f07-attack-cooldown",
+      "scenario": "f07-fire-cooldown",
       "group": "combat",
       "name": "HUD is populated",
       "ok": true,
@@ -4187,6 +4189,125 @@
     },
     {
       "scenario": "f08-enemy-windup",
+      "group": "combat",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "f09-bolt-blocked",
+      "group": "combat",
+      "name": "a bolt fired into the wall is absorbed",
+      "ok": true,
+      "detail": "fired=true · 0 bolts in flight"
+    },
+    {
+      "scenario": "f09-bolt-blocked",
+      "group": "combat",
+      "name": "f09-bolt-wall matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "f09-bolt-blocked",
+      "group": "combat",
+      "name": "f09-bolt-wall renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 44.7"
+    },
+    {
+      "scenario": "f09-bolt-blocked",
+      "group": "combat",
+      "name": "f09-bolt-blocked matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "f09-bolt-blocked",
+      "group": "combat",
+      "name": "f09-bolt-blocked renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 44.7"
+    },
+    {
+      "scenario": "f09-bolt-blocked",
+      "group": "combat",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "11.50, 4.50, 0.00, 1.00, 384.00, 42240.00, 0.00"
+    },
+    {
+      "scenario": "f09-bolt-blocked",
+      "group": "combat",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "3 rects"
+    },
+    {
+      "scenario": "f09-bolt-blocked",
+      "group": "combat",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "f10-enemy-gun",
+      "group": "combat",
+      "name": "the marauder winds up and fires a bolt",
+      "ok": true,
+      "detail": "1 bolts in flight"
+    },
+    {
+      "scenario": "f10-enemy-gun",
+      "group": "combat",
+      "name": "f10-enemy-bolt matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "f10-enemy-gun",
+      "group": "combat",
+      "name": "f10-enemy-bolt renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 55.5"
+    },
+    {
+      "scenario": "f10-enemy-gun",
+      "group": "combat",
+      "name": "the hostile bolt damages the player",
+      "ok": true,
+      "detail": "hp=89 · flash=0.30"
+    },
+    {
+      "scenario": "f10-enemy-gun",
+      "group": "combat",
+      "name": "f10-enemy-gun matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "f10-enemy-gun",
+      "group": "combat",
+      "name": "f10-enemy-gun renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 54.7"
+    },
+    {
+      "scenario": "f10-enemy-gun",
+      "group": "combat",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "17.00, 22.50, 0.00, 1.00, 384.00, 66868.00, 0.00"
+    },
+    {
+      "scenario": "f10-enemy-gun",
+      "group": "combat",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "7 rects"
+    },
+    {
+      "scenario": "f10-enemy-gun",
       "group": "combat",
       "name": "HUD is populated",
       "ok": true,
@@ -5011,7 +5132,7 @@
       "baseline": "compared"
     },
     {
-      "name": "f01-player-strike",
+      "name": "f01-player-shot",
       "kind": "canvas",
       "diff": 0,
       "baseline": "compared"
@@ -5029,13 +5150,13 @@
       "baseline": "compared"
     },
     {
-      "name": "f03-attack-arc",
+      "name": "f03-bolt-miss",
       "kind": "canvas",
       "diff": 0,
       "baseline": "compared"
     },
     {
-      "name": "f04-attack-range",
+      "name": "f04-bolt-travel",
       "kind": "canvas",
       "diff": 0,
       "baseline": "compared"
@@ -5068,13 +5189,42 @@
       "baseline": "compared"
     },
     {
-      "name": "f07-attack-cooldown",
+      "name": "f07-fire-cooldown",
       "kind": "canvas",
       "diff": 0,
       "baseline": "compared"
     },
     {
       "name": "f08-enemy-windup",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "f09-bolt-wall",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "f09-bolt-blocked",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "f10-enemy-bolt",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "f10-enemy-shot",
+      "kind": "page",
+      "baseline": "skipped"
+    },
+    {
+      "name": "f10-enemy-gun",
       "kind": "canvas",
       "diff": 0,
       "baseline": "compared"

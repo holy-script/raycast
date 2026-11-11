@@ -218,8 +218,9 @@ actor in the array as a corpse.
 makes the matrix reproducible and level authoring cheap. Transitions reset progress (the
 keycard and opened doors do not persist), which is acceptable for a two-level demo but
 would need a session/inventory layer for a longer campaign. Actors do not collide with the
-player or each other, and strikes ignore walls, keeping combat readable at this scale;
-both would need real work before larger maps.
+player or each other, keeping combat readable at this scale; both would need real work
+before larger maps. The cone-strike portion is superseded by ADR-017; the level-reload and
+reset rules remain the contract.
 
 ## ADR-015 — Procedural WebAudio and persisted local settings
 
@@ -232,14 +233,15 @@ envelopes) in `src/engine/audio.ts`; create the AudioContext on the first real g
 drop queued events, and let the game emit a small `GameEvent` list that the soundscape
 drains each frame. Pointer-lock release now actually pauses the simulation when not in
 scripted automation, and the pause overlay became a settings panel (sensitivity
-0.4–2.0×, FOV 55–100°, mute). Settings persist in `localStorage` under
+0.4–2.0×, FOV 55–90°, mute). Settings persist in `localStorage` under
 `raycast.settings.v1` and are clamped on load.
 
 **Consequences:** No audio files, no network, and no new dependencies; headless runs stay
 silent because no gesture creates a context. Game logic remains audio-free and
 deterministic, at the cost of a small event-name coupling. LocalStorage may be blocked
 (private browsing) and fails open. Settings apply immediately; FOV also widens the
-minimap wedge and the altitude boost stays a fixed +30°.
+minimap wedge. Projection FOV is fixed at every altitude (ADR-016 supersedes the old
+altitude boost).
 
 ## ADR-016 — Per-pixel pitched rays replace the column shear
 
@@ -262,3 +264,53 @@ occlusion shares one depth metric. Render cost rises to 3.4 ms at ground level a
 at 16 m looking down (384×240), still inside a 60 FPS frame. ADR-008's per-column ray and
 horizontal-forward depth metric are superseded, as is ADR-015's altitude FOV boost: FOV is
 fixed at every altitude and clamped 55–90° from settings.
+
+## ADR-017 — Hitscan-free straight projectiles with heightmap collision
+
+**Context:** M10 needed the plasma projector to fire. A pure hitscan would be cheap and
+deterministic but invisible: no travel to read, no dodge or lead, and no impact location
+on a wall. A full physics projectile with gravity and bounce would add simulation surface
+and make deterministic tests fussier than the 2.5D world warrants. The renderer also has
+no 3D depth pass for point lights, so impacts must be billboards.
+
+**Decision:** Projectiles are straight 3D segments integrated in fixed ≤0.08 m substeps
+against the same heightmap blocks the renderer draws (`src/engine/projectile.ts`). The
+player fires from the camera eye along yaw/pitch; hostiles fire from chest height at the
+player's chest after a 3D `hasLineOfSight` check. Collision uses a shared cylinder profile
+for actors (radius 0.34, half-height 0.6) and the player (0.26, 0.5). Bolts stop at the
+first wall, floor, or target and are removed. Visuals are camera-space billboards from a
+procedural radial texture, tinted per faction, with `noShadow`; the impact billboard is
+backed out of the struck cell along the bolt vector so the per-pixel depth test does not
+cull it. Translucent pixels skip the depth write, so the glow blends over the wall.
+
+**Consequences:** Aim, travel, wall cover, and dodging are all legible, and the whole
+simulation is unit-testable without a browser (12 new tests). Bolts do not drop, lead,
+penetrate, bounce, or spawn at the viewmodel muzzle; they also cannot be shot down.
+Impact flashes near the camera can still read large. Tuning lives in constants:
+`PLAYER_BOLT_SPEED/LIFE`, `BOLT_IMPACT_LIFE` in `src/game.ts`, and each actor's `gun` spec
+in `src/content/actors.ts`.
+
+## ADR-018 — Snap the death row and give the corpse its own frame
+
+**Context:** The owner killed an enemy and stood against a nearby wall. The corpse showed
+two outlines: a larger translucent ghost and a crisp copy. Close-range elevation lands the
+corpse's frame centre inside the ±0.12 rad pitch crossfade band, so the billboard blended
+the level and high atlas rows; those rows have different baked framing, and the blend
+painted both silhouettes. The authored death pose also folded downward into the floor and
+read awkwardly from every yaw/pitch.
+
+**Decision:** Static actors (`state === "death"`) resolve pitch with `sampleStaticPitch`,
+which quantizes to a single row with `mix = 0`; moving actors keep the crossfade. The death
+animation is re-authored as a backward topple around the feet, with the root translated so
+the supine body is centred and rests on the ground plane. Prone frames span the cell, so
+the death state alone is rendered at a 1.40 ortho scale at every pitch; the manifest's
+per-state `frameWorldSize: 1.40` / `frameAnchorZ: -0.20` feed `spriteSelection` and
+`buildSprites`, and the engine skips `pitchWorldScale` for corpses. Living rows keep the
+0.78 near-overhead render plus 0.678 billboard compensation, so top-down actors do not
+grow. Corpse contact shadows widen 1.25×.
+
+**Consequences:** A corpse is one crisp, grounded silhouette at every distance and camera
+angle, while living sprite scale and the top-down compensation are unchanged. The atlas
+manifest now supports per-state frame overrides (only `death` uses one today). The
+`f02-player-kill` matrix check asserts the corpse world size (1.33 m for the 0.95-scale
+stalker), and `tests/math.test.ts` locks the static-snap side of each pitch threshold.

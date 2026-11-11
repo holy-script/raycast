@@ -1401,16 +1401,16 @@ async function main(): Promise<void> {
     });
 
     // ---------------------------------------------------------------- combat
-    define("combat", "f01-player-strike", async () => {
+    define("combat", "f01-player-shot", async () => {
       await pose(17.0, 14.5, 0, 0, 0);
       await step(0.05);
       const hit = await attack();
       await step(0.1);
       const stalker = (await debug()).actors.find((actor) => actor.name === "stalker");
       check(
-        "a forward strike damages the stalker",
+        "a plasma bolt damages the stalker",
         hit && stalker?.hp === 25,
-        `hit=${hit} · hp=${stalker?.hp}`,
+        `fired=${hit} · hp=${stalker?.hp}`,
       );
       check("the hit puts the actor in hurt state", stalker?.state === "hurt", stalker?.state ?? "missing");
       await saveCanvas("f01-enemy-hurt", true);
@@ -1426,9 +1426,9 @@ async function main(): Promise<void> {
       let dbg = await debug();
       let stalker = dbg.actors.find((actor) => actor.name === "stalker");
       check(
-        "the second strike kills the stalker",
+        "the second bolt kills the stalker",
         hit && stalker?.state === "death" && stalker.hp === 0,
-        `hit=${hit} · ${stalker?.state} · hp=${stalker?.hp}`,
+        `fired=${hit} · ${stalker?.state} · hp=${stalker?.hp}`,
       );
       const values = await hud();
       check("kill toast names the target", values.toast.includes("STALKER DOWN"), values.toast);
@@ -1438,31 +1438,35 @@ async function main(): Promise<void> {
       const corpse = dbg.stats.spriteRects.find((rect) => rect.id === "stalker");
       check(
         "the corpse drops out of targeting but stays rendered",
-        stalker?.alive === false && Boolean(corpse && corpse.pixels > 0),
-        `alive=${stalker?.alive} · ${corpse?.pixels ?? 0} corpse px`,
+        stalker?.alive === false &&
+          near(stalker.worldSize, 1.33, 0.02) &&
+          Boolean(corpse && corpse.pixels > 0),
+        `alive=${stalker?.alive} · size=${stalker?.worldSize.toFixed(2) ?? "?"} m · ${corpse?.pixels ?? 0} corpse px`,
       );
       await saveCanvas("f02-enemy-corpse", true);
     });
 
-    define("combat", "f03-attack-arc", async () => {
+    define("combat", "f03-bolt-miss", async () => {
       await pose(17.0, 14.5, 0, Math.PI, 0);
-      const hit = await attack();
+      const fired = await attack();
+      await step(0.2);
       const stalker = (await debug()).actors.find((actor) => actor.name === "stalker");
       check(
-        "striking away from the target misses",
-        hit === false && stalker?.hp === 70,
-        `hit=${hit} · hp=${stalker?.hp}`,
+        "firing away from the target misses",
+        fired === true && stalker?.hp === 70,
+        `fired=${fired} · hp=${stalker?.hp}`,
       );
     });
 
-    define("combat", "f04-attack-range", async () => {
+    define("combat", "f04-bolt-travel", async () => {
       await pose(14.5, 14.5, 0, 0, 0);
-      const hit = await attack();
+      const fired = await attack();
+      await step(0.25);
       const stalker = (await debug()).actors.find((actor) => actor.name === "stalker");
       check(
-        "targets beyond 2.3 m are out of reach",
-        hit === false && stalker?.hp === 70,
-        `hit=${hit} · hp=${stalker?.hp}`,
+        "bolts cross four metres in flight time",
+        fired === true && stalker?.hp === 25,
+        `fired=${fired} · hp=${stalker?.hp}`,
       );
     });
 
@@ -1515,13 +1519,14 @@ async function main(): Promise<void> {
       await capturePage("f06-redeployed");
     });
 
-    define("combat", "f07-attack-cooldown", async () => {
+    define("combat", "f07-fire-cooldown", async () => {
       await pose(17.0, 14.5, 0, 0, 0);
       const first = await attack();
       const second = await attack();
+      await step(0.1);
       const stalker = (await debug()).actors.find((actor) => actor.name === "stalker");
       check(
-        "the strike cooldown blocks immediate repeats",
+        "the fire cooldown blocks immediate repeats",
         first === true && second === false && stalker?.hp === 25,
         `first=${first} second=${second} hp=${stalker?.hp}`,
       );
@@ -1536,6 +1541,41 @@ async function main(): Promise<void> {
         stalker?.state === "attack",
         stalker?.state ?? "missing",
       );
+    });
+
+    define("combat", "f09-bolt-blocked", async () => {
+      await pose(11.5, 4.5, 0, -Math.PI / 2, 0);
+      const fired = await attack();
+      await step(0.25);
+      const dbg = await debug();
+      check(
+        "a bolt fired into the wall is absorbed",
+        fired && dbg.bolts.length === 0,
+        `fired=${fired} · ${dbg.bolts.length} bolts in flight`,
+      );
+      await saveCanvas("f09-bolt-wall", true);
+    });
+
+    define("combat", "f10-enemy-gun", async () => {
+      await pose(17.0, 22.5, 0, 0, 0);
+      await setHealth(100);
+      await step(0.5);
+      const firing = await debug();
+      const shotInFlight = firing.bolts.some((bolt) => !bolt.fromPlayer);
+      check(
+        "the marauder winds up and fires a bolt",
+        shotInFlight,
+        `${firing.bolts.length} bolts in flight`,
+      );
+      await saveCanvas("f10-enemy-bolt", true);
+      await step(0.4);
+      const current = await state();
+      check(
+        "the hostile bolt damages the player",
+        current.health < 100 && current.damageFlash > 0,
+        `hp=${current.health} · flash=${current.damageFlash.toFixed(2)}`,
+      );
+      await capturePage("f10-enemy-shot");
     });
 
     // ---------------------------------------------------------------- levels

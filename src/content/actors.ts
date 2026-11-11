@@ -17,6 +17,8 @@ export interface ActorSpec {
   hostile?: boolean;
   hp?: number;
   attack?: { damage: number; range: number; cooldown: number };
+  /** Ranged attack fired from the wind-up pose when the player is in sight. */
+  gun?: { damage: number; range: number; cooldown: number; speed: number };
   /** Looping dialogue shown when the player uses E nearby. */
   talk?: string[];
 }
@@ -178,6 +180,7 @@ export const COURTYARD_ACTORS: ActorSpec[] = [
     hostile: true,
     hp: 110,
     attack: { damage: 11, range: 1.5, cooldown: 1.35 },
+    gun: { damage: 11, range: 9, cooldown: 1.7, speed: 9 },
   },
 ];
 

@@ -143,6 +143,11 @@ Turns 384² renders into crisp 96² pixel art:
 
 Output: `public/assets/sprites/<character>/frames/{state}_f{frame}_p{pitch}_y{yaw}.png`.
 
+This command overwrites every frame with the palette fallback. The committed atlas is
+AI-stylized, so running it alone silently replaces the approved art. To change one state,
+restore the other frames from the committed atlas (or rerun them through `assets:comfy
+--resume`) and stylize only the new frames with ComfyUI.
+
 The outline pass is order-dependent and uses an immutable `solid` mask. Do not replace it
 with an in-place neighbor test; that bug produced opaque black rectangles.
 
@@ -332,9 +337,12 @@ Writes `artifacts/style-report.json` (gitignored) and prints a per-character tab
   so walk poses and pitch bands are compared only to their peers.
 - Missing raw renders, non-square frames, low IoU, or high mean drift fail the command.
 
-Baseline for the shipped guardian atlas (1,216 frames): IoU 1.000 at 1 px tolerance and
-mean neighbour-yaw palette drift under 7 (threshold is mean ≤ 12). The M7 repack expanded
-the report from 384 to 1,216 frames; review the per-state numbers before changing
+Baseline for the shipped guardian atlas (1,216 frames): mean IoU 0.90 at 1 px tolerance,
+with the lowest frame at 0.43 in the near-overhead hurt row where the depth model
+straightens steep foreshortening, and mean neighbour-yaw palette drift 5.9 (threshold is
+mean ≤ 12). The palette fallback reproduces the raw silhouette exactly (IoU 1.000), so the
+default `0.98` per-frame floor only applies to fallback art; for the AI atlas use
+`--min-iou 0.4` as a regression gate and review the per-state numbers before changing
 thresholds. Thresholds default to `0.98` IoU and `12` mean drift. Tune
 `--max-drift` only when a deliberate style preset shifts the palette consistently across
 all views.

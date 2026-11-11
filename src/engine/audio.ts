@@ -98,9 +98,13 @@ export class Soundscape {
 
   private play(event: GameEvent): void {
     switch (event) {
-      case "strike":
-        this.burst(0.14, 0.16, 1100, 0.9);
-        this.tone("triangle", 520, 180, 0.1, 0.05);
+      case "shot":
+        this.burst(0.1, 0.14, 1400, 0.9);
+        this.tone("square", 760, 220, 0.11, 0.06);
+        break;
+      case "enemy-shot":
+        this.tone("sawtooth", 420, 140, 0.16, 0.06);
+        this.burst(0.1, 0.05, 800, 1.2);
         break;
       case "hit":
         this.tone("square", 160, 70, 0.12, 0.12);

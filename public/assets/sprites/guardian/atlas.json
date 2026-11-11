@@ -10,7 +10,7 @@
     1,
     1,
     1,
-    0.6782608695652174
+    0.6782608695652175
   ],
   "directions": 16,
   "pitches": 4,
@@ -39,7 +39,9 @@
     },
     "death": {
       "fps": 6,
-      "frames": 4
+      "frames": 4,
+      "frameWorldSize": 1.4,
+      "frameAnchorZ": -0.19999999999999996
     },
     "talk": {
       "fps": 4,

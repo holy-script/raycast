@@ -1,9 +1,9 @@
 # Playtest matrix
 
 `npm run playtest:matrix` drives the same headless-Chrome/CDP harness as
-`npm run playtest`, but instead of one happy path it walks the game through 97
-deterministic state, interaction, combat, level, route, and viewmodel scenarios: 625
-checks (assertions plus golden-frame comparisons) and 107 captures (canvas frames plus
+`npm run playtest`, but instead of one happy path it walks the game through 99
+deterministic state, interaction, combat, level, route, and viewmodel scenarios: 642
+checks (assertions plus golden-frame comparisons) and 114 captures (canvas frames plus
 full-page UI overlays).
 
 The point is coverage the owner should not have to repeat by hand — every movement axis,
@@ -46,7 +46,7 @@ The in-page automation API makes runs reproducible instead of timing-dependent:
 | `reset()` | Reload the courtyard, respawn the player, restore actors to authored spawns with `animTime = index × 0.37`, clear keys, refill fuel and health, reset the attack cooldown. |
 | `setFuel(value)` | Pin fuel for tank/refuel/empty tests. |
 | `setHealth(value)` | Pin health for hit/death overlay tests. |
-| `attack()` | Run one strike; returns true if an actor was hit. |
+| `attack()` | Fire one plasma bolt; returns false while dead or cooling down, otherwise true even if the bolt eventually misses. |
 | `interact()` | Run one interaction; returns `none`, `talk`, `door`, `locked`, or `pickup`. |
 | `loadLevel(id)` | Swap to `courtyard` or `reactor` through the deterministic loader. |
 | `frameCount()` | Count real rAF ticks; used to prove the live loop is alive. |
@@ -75,7 +75,7 @@ Two harness details matter when extending it:
 | UI | `u01`–`u07` | Minimap toggle, HUD minimal mode, pause freeze, pause/resume, HUD values, fuel readout. |
 | Routes | `r01`–`r05` | Jet over a wall, jet forward climb, aerial look-down, mid-air respawn, sprint route. |
 | Interaction | `i01`–`i07` | Keycard pickup + toast, locked door refusal, door unlock (tile cleared), talk-line cycle, medkit heal, fuel refill, empty interact. |
-| Combat | `f01`–`f08` | Strike hit, kill → corpse, cone rejection, range rejection, hostile damage overlay, player death → redeploy, cooldown gate, enemy wind-up timing. |
+| Combat | `f01`–`f10` | Bolt hit, kill → corpse, fired-away miss, 4 m bolt travel, hostile melee damage overlay, player death → redeploy, cooldown gate, enemy wind-up timing, wall absorption, marauder gunner shot + damage. |
 | Levels | `l01`–`l05` | Courtyard → reactor transition, vault return with reloaded state, terrace climb, reactor hover actor, beacon loop. |
 
 Every scenario also runs universal checks: finite player/render state, sane projected
@@ -180,6 +180,29 @@ Two determinism fixes were required before goldens could be trusted: level loads
 `time = 0` and per-actor `animTime = index × 0.37` (instead of `Math.random()`), and every
 scenario starts from a full courtyard reload. A later M9 pass retired the scout/brute
 chassis, and the guardian's six-state atlas now backs every combat and talk capture.
+
+## M10 ranged combat extension (2026-11-11)
+
+Moving from a melee cone to projectiles grew the matrix to 99 scenarios / 642 checks and
+rewrote the combat group. The bolt scenarios are deterministic because time only advances
+through `step()` and damage resolves on the first substep that overlaps a target:
+
+| Scenario | Assertion |
+| --- | --- |
+| `f01-player-shot` | A fired bolt reduces the stalker from 70 to 25 hp and switches it to `hurt`. |
+| `f02-player-kill` | A second bolt after 0.5 s kills it (death + `STALKER DOWN`); the corpse stays rendered but drops out of targeting, keeping the 1.40-prone-frame world size (1.33 m for the 0.95-scale stalker). |
+| `f03-bolt-miss` | Firing 180° away still returns `true` but leaves hp at 70. `attack()` reports firing, not hitting. |
+| `f04-bolt-travel` | A 4 m lane hit at 0.25 s proves travel time, not hitscan. |
+| `f07-fire-cooldown` | Two immediate calls return `true` then `false`; only one bolt lands. |
+| `f09-bolt-blocked` | From `(11.5, 4.5)` facing `−π/2` into the boundary wall, the bolt is absorbed and `debug().bolts` is empty. |
+| `f10-enemy-gun` | A marauder at 9 m fires within 0.5 s (`bolts` includes `fromPlayer: false`), then the bolt lands for damage (`hp < 100`, flash > 0). |
+
+Capture notes from the first pass: a point-blank wall hit bloomed into a large blocky
+orb, so `f09` now fires from an open lane 3.5 m from the boundary wall and steps 0.25 s;
+the glow texture was raised to
+32 px, impact growth capped at 0.55 m, and alpha squared. The enemy bolt initially merged
+with the orange marauder silhouette, so `f10` captures at 0.5 s (bolt ~0.95 m from the
+camera) before stepping another 0.4 s to assert the damage.
 
 ## Extending it
 

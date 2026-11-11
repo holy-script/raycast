@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-11T17:15:21.254Z",
+  "generatedAt": "2026-11-11T18:58:06.380Z",
   "url": "http://127.0.0.1:5199/?screenshot",
   "passed": 40,
   "failed": 0,
@@ -32,7 +32,7 @@
     {
       "name": "viewmodel rests in an idle pose on the ground",
       "ok": true,
-      "detail": "idle0 at 1.2,1.0"
+      "detail": "idle0 at 1.2,0.9"
     },
     {
       "name": "attacking swings the viewmodel into the strike pose",
@@ -122,7 +122,7 @@
     {
       "name": "wall faces stay opaque while airborne",
       "ok": true,
-      "detail": "384 cols, 47802 wall px"
+      "detail": "384 cols, 47800 wall px"
     },
     {
       "name": "close wall fills the screen instead of vanishing",
@@ -172,7 +172,7 @@
     {
       "name": "walking away from the wall after landing is free",
       "ok": true,
-      "detail": "x=2.99"
+      "detail": "x=3.04"
     },
     {
       "name": "walking up two steps lands on the 0.4 platform",
@@ -192,7 +192,7 @@
     {
       "name": "the crate occludes the scholar behind it",
       "ok": true,
-      "detail": "274 drawn, 2008 occluded px"
+      "detail": "257 drawn, 1988 occluded px"
     },
     {
       "name": "landing on the crate stops at its 0.6 surface",

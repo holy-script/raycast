@@ -1,4 +1,5 @@
 import type { SpriteAtlas } from "./engine/atlas";
+import { createGlowTexture } from "./engine/glow";
 import { InputController } from "./engine/input";
 import {
   clamp,
@@ -6,6 +7,7 @@ import {
   lerp,
   quantizePitch,
   samplePitch,
+  sampleStaticPitch,
   shortestAngleDelta,
   spriteYawIndex,
   wrapAngle,
@@ -28,6 +30,14 @@ import {
   type World,
 } from "./engine/world";
 import type { ActorSpec } from "./content/actors";
+import {
+  hasLineOfSight,
+  projectileHitsActor,
+  projectileHitsPlayer,
+  spawnProjectile,
+  stepProjectile,
+  type Projectile,
+} from "./engine/projectile";
 import {
   LEVELS,
   levelIndexById,
@@ -60,9 +70,10 @@ const MAX_ALTITUDE = 18;
 
 const PLAYER_MAX_HEALTH = 100;
 const PLAYER_ATTACK_DAMAGE = 45;
-const PLAYER_ATTACK_RANGE = 2.3;
-const PLAYER_ATTACK_ARC = 0.7;
 const PLAYER_ATTACK_COOLDOWN = 0.45;
+const PLAYER_BOLT_SPEED = 22;
+const PLAYER_BOLT_LIFE = 0.9;
+const BOLT_IMPACT_LIFE = 0.14;
 const RESPAWN_DELAY = 1.4;
 const DAMAGE_FLASH_TIME = 0.45;
 const INTERACT_RANGE = 2.4;
@@ -81,7 +92,8 @@ type ActorState = "idle" | "walk" | "attack" | "hurt" | "death" | "talk";
 export type ViewmodelPose = "idle0" | "idle1" | "windup" | "strike" | "recover";
 
 export type GameEvent =
-  | "strike"
+  | "shot"
+  | "enemy-shot"
   | "hit"
   | "kill"
   | "hurt"
@@ -92,6 +104,14 @@ export type GameEvent =
   | "talk"
   | "redeploy"
   | "level";
+
+interface Impact {
+  x: number;
+  y: number;
+  z: number;
+  age: number;
+  fromPlayer: boolean;
+}
 
 export interface GameAssets {
   atlases: Record<string, SpriteAtlas>;
@@ -218,6 +238,7 @@ export interface RenderDebug {
   }>;
   pickups: Array<{ kind: string; x: number; y: number; taken: boolean }>;
   doors: Array<{ id: string; x: number; y: number; open: boolean }>;
+  bolts: Array<{ x: number; y: number; z: number; fromPlayer: boolean }>;
   health: number;
   keycard: boolean;
   stats: RenderStats;
@@ -247,6 +268,9 @@ export class Game {
   private toastText = "";
   private toastT = 0;
   private events: GameEvent[] = [];
+  private bolts: Projectile[] = [];
+  private impacts: Impact[] = [];
+  private readonly glowTexture = createGlowTexture(32);
 
   constructor(renderer: Renderer, assets: GameAssets, canvas: HTMLCanvasElement) {
     this.renderer = renderer;
@@ -296,6 +320,7 @@ export class Game {
     this.player.hitFlash = Math.max(0, this.player.hitFlash - dt);
     this.player.attackCooldown = Math.max(0, this.player.attackCooldown - dt);
     this.updateActors(dt);
+    this.updateProjectiles(dt);
 
     if (this.player.dead) {
       this.player.deathT += dt;
@@ -517,14 +542,19 @@ export class Game {
         actor.stateT += dt;
         this.faceTowards(actor, this.player.x, this.player.y, dt * 5);
         const attack = actor.spec.attack;
-        if (attack && !actor.hitLanded && actor.stateT >= ATTACK_IMPACT) {
+        const gun = actor.spec.gun;
+        if (!actor.hitLanded && actor.stateT >= ATTACK_IMPACT) {
           actor.hitLanded = true;
-          const distance = Math.hypot(
-            this.player.x - actor.x,
-            this.player.y - actor.y,
-          );
-          if (distance <= attack.range + 0.25) {
-            this.damagePlayer(attack.damage);
+          if (gun) {
+            this.fireActorBolt(actor);
+          } else if (attack) {
+            const distance = Math.hypot(
+              this.player.x - actor.x,
+              this.player.y - actor.y,
+            );
+            if (distance <= attack.range + 0.25) {
+              this.damagePlayer(attack.damage);
+            }
           }
         }
         if (actor.stateT >= ATTACK_STATE_TIME) {
@@ -571,8 +601,30 @@ export class Game {
         );
         const { speed, range } = actor.spec.chase;
         const attack = actor.spec.attack;
+        const gun = actor.spec.gun;
+        const gunReady = Boolean(
+          gun &&
+            !this.player.dead &&
+            distance <= gun.range &&
+            actor.attackCooldown <= 0 &&
+            hasLineOfSight(
+              this.world,
+              actor.x,
+              actor.y,
+              actor.z + 0.9,
+              this.player.x,
+              this.player.y,
+              this.player.z + 0.5,
+              gun.range,
+            ),
+        );
 
-        if (
+        if (gunReady && gun) {
+          actor.state = "attack";
+          actor.stateT = 0;
+          actor.hitLanded = false;
+          actor.attackCooldown = gun.cooldown;
+        } else if (
           attack &&
           !this.player.dead &&
           distance <= attack.range &&
@@ -646,48 +698,125 @@ export class Game {
   attack(): boolean {
     if (this.player.dead || this.player.attackCooldown > 0) return false;
     this.player.attackCooldown = PLAYER_ATTACK_COOLDOWN;
-    this.emit("strike");
+    const camera = this.cameraState();
+    const horizontal = Math.cos(camera.pitch);
+    this.bolts.push(
+      spawnProjectile(
+        camera.x,
+        camera.y,
+        camera.eyeZ,
+        camera.dirX * horizontal,
+        camera.dirY * horizontal,
+        Math.sin(camera.pitch),
+        PLAYER_BOLT_SPEED,
+        PLAYER_ATTACK_DAMAGE,
+        PLAYER_BOLT_LIFE,
+        true,
+      ),
+    );
+    this.emit("shot");
+    return true;
+  }
 
-    let target: Actor | null = null;
-    let best = Infinity;
+  private fireActorBolt(actor: Actor): void {
+    const gun = actor.spec.gun;
+    if (!gun) return;
+    const muzzleZ = actor.z + 0.9;
+    const targetZ = this.player.z + 0.5;
+    this.bolts.push(
+      spawnProjectile(
+        actor.x,
+        actor.y,
+        muzzleZ,
+        this.player.x - actor.x,
+        this.player.y - actor.y,
+        targetZ - muzzleZ,
+        gun.speed,
+        gun.damage,
+        gun.range / gun.speed + 0.25,
+        false,
+      ),
+    );
+    this.emit("enemy-shot");
+  }
+
+  private updateProjectiles(dt: number): void {
+    for (const impact of this.impacts) impact.age += dt;
+    this.impacts = this.impacts.filter((impact) => impact.age < BOLT_IMPACT_LIFE);
+    if (this.bolts.length === 0) return;
+
+    const survivors: Projectile[] = [];
+    for (const bolt of this.bolts) {
+      const outcome = stepProjectile(bolt, this.world, dt);
+      if (outcome !== "fly") {
+        // Back the flash out of the cell the substep entered so the wall face
+        // does not depth-cull it.
+        const speed = Math.hypot(bolt.vx, bolt.vy, bolt.vz) || 1;
+        const back = Math.min(0.06, speed * dt);
+        this.addImpact(
+          bolt.x - (bolt.vx / speed) * back,
+          bolt.y - (bolt.vy / speed) * back,
+          Math.max(0.03, bolt.z - (bolt.vz / speed) * back),
+          bolt.fromPlayer,
+        );
+        continue;
+      }
+
+      if (bolt.fromPlayer) {
+        const target = this.actorHitBy(bolt);
+        if (target) {
+          this.damageActor(target, bolt.damage);
+          this.addImpact(bolt.x, bolt.y, bolt.z, true);
+          continue;
+        }
+      } else if (
+        !this.player.dead &&
+        projectileHitsPlayer(bolt, this.player)
+      ) {
+        this.damagePlayer(bolt.damage);
+        this.addImpact(bolt.x, bolt.y, bolt.z, false);
+        continue;
+      }
+      survivors.push(bolt);
+    }
+    this.bolts = survivors;
+  }
+
+  private actorHitBy(bolt: Projectile): Actor | null {
     for (const actor of this.actors) {
       if (!actor.alive || !actor.spec.hostile) continue;
-      const dx = actor.x - this.player.x;
-      const dy = actor.y - this.player.y;
-      const distance = Math.hypot(dx, dy);
-      if (distance > PLAYER_ATTACK_RANGE) continue;
-      const angle = Math.abs(
-        shortestAngleDelta(this.player.yaw, Math.atan2(dy, dx)),
-      );
-      if (angle > PLAYER_ATTACK_ARC) continue;
-      if (distance < best) {
-        best = distance;
-        target = actor;
+      if (projectileHitsActor(bolt, actor, actor.spec.scale ?? 1)) {
+        return actor;
       }
     }
+    return null;
+  }
 
-    if (!target) return false;
-
-    target.hp = Math.max(0, target.hp - PLAYER_ATTACK_DAMAGE);
-    target.stateT = 0;
+  private damageActor(actor: Actor, amount: number): void {
+    actor.hp = Math.max(0, actor.hp - amount);
+    actor.stateT = 0;
     this.emit("hit");
-    if (target.hp <= 0) {
-      target.state = "death";
-      this.setToast(`${target.spec.name.toUpperCase()} DOWN`, 1.6);
+    if (actor.hp <= 0) {
+      actor.state = "death";
+      this.setToast(`${actor.spec.name.toUpperCase()} DOWN`, 1.6);
       this.emit("kill");
-    } else {
-      target.state = "hurt";
-      const dx = target.x - this.player.x;
-      const dy = target.y - this.player.y;
-      const length = Math.hypot(dx, dy) || 1;
-      const nextX = target.x + (dx / length) * 0.18;
-      const nextY = target.y + (dy / length) * 0.18;
-      if (canOccupy(this.world, nextX, nextY, 0.16, target.z)) {
-        target.x = nextX;
-        target.y = nextY;
-      }
+      return;
     }
-    return true;
+    actor.state = "hurt";
+    const dx = actor.x - this.player.x;
+    const dy = actor.y - this.player.y;
+    const length = Math.hypot(dx, dy) || 1;
+    const nextX = actor.x + (dx / length) * 0.18;
+    const nextY = actor.y + (dy / length) * 0.18;
+    if (canOccupy(this.world, nextX, nextY, 0.16, actor.z)) {
+      actor.x = nextX;
+      actor.y = nextY;
+    }
+  }
+
+  private addImpact(x: number, y: number, z: number, fromPlayer: boolean): void {
+    if (this.impacts.length >= 24) this.impacts.shift();
+    this.impacts.push({ x, y, z, age: 0, fromPlayer });
   }
 
   interact(): "none" | "talk" | "door" | "locked" | "pickup" {
@@ -846,6 +975,8 @@ export class Game {
     }));
     this.doors = level.doors.map((door) => ({ ...door, open: false }));
     this.exits = level.exits;
+    this.bolts = [];
+    this.impacts = [];
     this.keycard = false;
     this.placeAtSpawn();
     this.toastText = "";
@@ -886,7 +1017,7 @@ export class Game {
       this.assets.textures,
       this.assets.floor,
       this.assets.wallTop,
-      [...this.buildSprites(camera), ...this.buildPropSprites()],
+      [...this.buildSprites(camera), ...this.buildPropSprites(), ...this.buildBoltSprites()],
       this.viewmodelVisible ? this.buildViewmodel() : undefined,
     );
   }
@@ -997,21 +1128,28 @@ export class Game {
       actor.facing,
       manifest.directions,
     );
-    const worldSize = manifest.frameWorldSize * (actor.spec.scale ?? 1);
-    const centerZ =
-      actor.z +
-      (manifest.frameAnchorZ ?? 0) +
-      (manifest.frameWorldSize * (actor.spec.scale ?? 1)) / 2;
-    const pitch = samplePitch(
-      elevationAngle(camera.eyeZ, centerZ, distance),
-      manifest.pitches,
-    );
-    // The near-overhead row was rendered through a tighter ortho frame; shrink
-    // its billboard by the same ratio so actors keep a stable apparent size.
-    const pitchScaleA = manifest.pitchWorldScale?.[pitch.index] ?? 1;
-    const pitchScaleB = manifest.pitchWorldScale?.[pitch.next] ?? pitchScaleA;
-    const billboardSize = worldSize * lerp(pitchScaleA, pitchScaleB, pitch.mix);
     const stateDef = manifest.states[actor.state] ?? manifest.states.idle;
+    const frameWorldSize =
+      (stateDef?.frameWorldSize ?? manifest.frameWorldSize) *
+      (actor.spec.scale ?? 1);
+    const frameAnchorZ = stateDef?.frameAnchorZ ?? manifest.frameAnchorZ ?? 0;
+    const centerZ = actor.z + frameAnchorZ + frameWorldSize / 2;
+    const elevation = elevationAngle(camera.eyeZ, centerZ, distance);
+    const pitch =
+      actor.state === "death"
+        ? sampleStaticPitch(elevation, manifest.pitches)
+        : samplePitch(elevation, manifest.pitches);
+    const pitchIndex = pitch.index;
+    const pitchNext = pitch.next;
+    const pitchMix = pitch.mix;
+    // Death frames are rendered with one ortho frame for every pitch, so their
+    // world size is already uniform and must not shrink with the living atlas
+    // compensation.
+    const pitchScaleA =
+      actor.state === "death" ? 1 : manifest.pitchWorldScale?.[pitchIndex] ?? 1;
+    const pitchScaleB =
+      actor.state === "death" ? 1 : manifest.pitchWorldScale?.[pitchNext] ?? pitchScaleA;
+    const billboardSize = frameWorldSize * lerp(pitchScaleA, pitchScaleB, pitchMix);
     const clock =
       actor.state === "idle" || actor.state === "walk"
         ? actor.animTime
@@ -1027,9 +1165,9 @@ export class Game {
     }
     return {
       yawIndex,
-      pitchIndex: pitch.index,
-      pitchNext: pitch.next,
-      pitchMix: pitch.mix,
+      pitchIndex,
+      pitchNext,
+      pitchMix,
       frameIndex,
       worldSize: billboardSize,
     };
@@ -1063,6 +1201,7 @@ export class Game {
           ? atlas.getFrame(actor.state, pitchNext, yawIndex, frameIndex)
           : undefined;
 
+      const stateDef = manifest.states[actor.state] ?? manifest.states.idle;
       draws.push({
         x: actor.x,
         y: actor.y,
@@ -1072,7 +1211,8 @@ export class Game {
         frameB: frameB ?? undefined,
         blend: pitchMix,
         worldSize,
-        anchorZ: manifest.frameAnchorZ ?? 0,
+        anchorZ: stateDef?.frameAnchorZ ?? manifest.frameAnchorZ ?? 0,
+        shadowScale: actor.state === "death" ? 1.25 : undefined,
         tint: actor.spec.tint,
         id: actor.spec.name,
       });
@@ -1113,6 +1253,73 @@ export class Game {
     }
 
     return draws;
+  }
+
+  private buildBoltSprites(): SpriteDraw[] {
+    const draws: SpriteDraw[] = [];
+    const playerTint: [number, number, number] = [0.55, 1.15, 1.35];
+    const enemyTint: [number, number, number] = [1.35, 0.72, 0.42];
+
+    for (const bolt of this.bolts) {
+      draws.push(
+        this.glowSprite(
+          bolt.x,
+          bolt.y,
+          bolt.z,
+          0.24,
+          bolt.fromPlayer ? playerTint : enemyTint,
+          1,
+          bolt.fromPlayer ? "bolt:player" : "bolt:enemy",
+        ),
+      );
+    }
+
+    for (const impact of this.impacts) {
+      const t = clamp(impact.age / BOLT_IMPACT_LIFE, 0, 1);
+      draws.push(
+        this.glowSprite(
+          impact.x,
+          impact.y,
+          impact.z,
+          0.3 + t * 0.55,
+          impact.fromPlayer ? playerTint : enemyTint,
+          (1 - t) * (1 - t),
+          "impact",
+        ),
+      );
+    }
+
+    return draws;
+  }
+
+  private glowSprite(
+    x: number,
+    y: number,
+    z: number,
+    worldSize: number,
+    tint: [number, number, number],
+    alpha: number,
+    id: string,
+  ): SpriteDraw {
+    const texture = this.glowTexture;
+    return {
+      x,
+      y,
+      z: z - worldSize / 2,
+      facing: 0,
+      frame: {
+        texture,
+        sx: 0,
+        sy: 0,
+        sw: texture.width,
+        sh: texture.height,
+      },
+      worldSize,
+      tint,
+      alpha,
+      noShadow: true,
+      id,
+    };
   }
 
   getHudState(): HudState {
@@ -1258,6 +1465,12 @@ export class Game {
         x: door.x,
         y: door.y,
         open: door.open,
+      })),
+      bolts: this.bolts.map((bolt) => ({
+        x: bolt.x,
+        y: bolt.y,
+        z: bolt.z,
+        fromPlayer: bolt.fromPlayer,
       })),
       health: this.player.health,
       keycard: this.keycard,

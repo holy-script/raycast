@@ -9,6 +9,11 @@ const FRAME_ANCHOR_Z = -0.075;
 // rendered with a tighter ortho frame, so its billboard must cover less world
 // space or characters visibly grow while the camera rises.
 const PITCH_ORTHO_SCALES = [1.15, 1.15, 1.15, 0.78];
+// Prone corpses lie across the whole cell, so the death state is rendered with
+// a wider ortho frame at every pitch. The manifest carries the matching world
+// size and anchor so corpses still land on the ground plane.
+const DEATH_ORTHO_SCALE = 1.40;
+const DEATH_ANCHOR_Z = 0.5 - DEATH_ORTHO_SCALE / 2;
 
 const STATES = [
   { name: "idle", fps: 2, frames: 2 },
@@ -140,7 +145,19 @@ function packCharacter(dir: CharacterDirs): number {
     pitches,
     pitchOrder: ["low", "level", "high", "top"].slice(0, pitches),
     states: Object.fromEntries(
-      STATES.map((state) => [state.name, { fps: state.fps, frames: state.frames }]),
+      STATES.map((state) => {
+        const entry: {
+          fps: number;
+          frames: number;
+          frameWorldSize?: number;
+          frameAnchorZ?: number;
+        } = { fps: state.fps, frames: state.frames };
+        if (state.name === "death") {
+          entry.frameWorldSize = DEATH_ORTHO_SCALE;
+          entry.frameAnchorZ = DEATH_ANCHOR_Z;
+        }
+        return [state.name, entry];
+      }),
     ),
     frames,
   };

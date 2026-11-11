@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-11T17:14:46.866Z",
+  "generatedAt": "2026-11-11T18:58:11.597Z",
   "url": "http://127.0.0.1:5202/?screenshot",
-  "durationMs": 5277,
+  "durationMs": 4998,
   "poses": [
     {
       "id": "f01-ground-level",
@@ -166,7 +166,7 @@
       "pitch": -1.2
     }
   ],
-  "fps": 59.78975032851511,
+  "fps": 59.82905982905983,
   "passed": 109,
   "failed": 0,
   "checks": [

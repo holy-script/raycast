@@ -11,23 +11,26 @@ npm run typecheck
 npm test
 npm run build
 npm run playtest   # headless Chrome, 40 checks + screenshots
-npm run playtest:matrix  # 97 deterministic scenarios, 625 checks
+npm run playtest:matrix  # 99 deterministic scenarios, 642 checks
+npm run playtest:flight  # 18 airborne poses + live jetpack, 109 checks
 npm run playtest:states  # 42 state checks, 21 paused-state captures
 npm run dev        # http://localhost:5173
 ```
 
-Expected: typecheck clean, 57 tests passing across 8 files, Vite build succeeds, playtest
-40/40, matrix 625/625, state gallery 42/42 with zero console errors. Click the canvas,
+Expected: typecheck clean, 71 tests passing across 9 files, Vite build succeeds, playtest
+40/40, matrix 642/642, flight 109/109, state gallery 42/42 with zero console errors.
+Click the canvas,
 move with WASD, hold Space to jetpack up to 18 m, and look down to see the top-pitch
 sprite rows and the diorama. Walk up the panel stairs (x=10–13, y=18–21) onto the 0.4
 platform, jump the 0.6 crate at (4.5, 13.5), or land on a wall to perch; walk off to fall
-back. The plasma projector in the lower-right idles and swings when you strike.
+back. The plasma projector in the lower-right idles and swings when you fire; bolts
+travel straight from the camera and bloom on impact.
 
 M7 loop: pick up the keycard near the courtyard spawn, open the door at (9, 11), step on
 the beacon to reach the reactor map, climb the terraces, unlock/open the vault door at
 (13, 9), and use the vault beacon to return. `E` talks to NPCs and interacts; `F` or left
-click strikes a hostile in front of you. Medkits and fuel canisters are picked up by
-walking over them.
+click fires a plasma bolt at whatever is under the crosshair. Medkits and fuel canisters
+are picked up by walking over them.
 
 Asset pipeline after a fresh clone (raw renders are gitignored):
 
@@ -77,7 +80,7 @@ window.__raycast.automation.resume();
 window.__raycast.automation.reset();          // reload courtyard + respawn state
 window.__raycast.automation.setFuel(0.3);
 window.__raycast.automation.setHealth(40);
-window.__raycast.automation.attack();         // one strike, true if it connected
+window.__raycast.automation.attack();         // fire one bolt, false while dead/cooling
 window.__raycast.automation.interact();       // "none" | "talk" | "door" | "locked" | "pickup"
 window.__raycast.automation.loadLevel("reactor");  // levelIndexById, deterministic reload
 window.__raycast.automation.frameCount();     // real rAF ticks (harness liveness)
@@ -85,13 +88,14 @@ window.__raycast.automation.frameCount();     // real rAF ticks (harness livenes
 
 Useful for deterministic captures and tests. `game.getHudState()` returns the nearest
 actor's resolved yaw, pitch index, and sprite id, which is how directional selection was
-verified. `debug()` exposes `renderer.stats.wallColumns`, `wallPixels`, `topPixels`, and
-per-sprite `contentW/contentH/pixels/occluded` so the harness can assert on what was
-actually drawn.
+verified. `debug()` exposes `renderer.stats.wallColumns`, `wallPixels`, `topPixels`,
+per-sprite `contentW/contentH/pixels/occluded`, and the live `bolts` array
+(`x, y, z, fromPlayer`) so the harness can assert on what was actually drawn and in
+flight.
 
 `?screenshot` hides the intro overlay for headless captures. Prefer the harnesses:
 `npm run playtest` is the happy-path browser check, `npm run playtest:matrix` walks
-97 deterministic state/route scenarios (625 checks, labelled contact sheet, golden
+99 deterministic state/route scenarios (642 checks, labelled contact sheet, golden
 frames), `npm run playtest:states` pauses the sim in every player/guardian body state
 for 21 gallery captures (42 checks), and `npm run playtest:flight` sweeps 18
 altitude/pitch poses plus a live jetpack flight (109 checks) while asserting no sky
@@ -147,7 +151,12 @@ alone can leave HUD values at `--`.
   not the frame bottom.
 - **Pitch-scale compensation:** `manifest.pitchWorldScale` scales the billboard only, not
   `centerZ`, the shadow, or the actor position. Dropping it makes top-down actors look
-  oversized; applying it to `centerZ` shifts their pitch band.
+  oversized; applying it to `centerZ` shifts their pitch band. The `death` state is exempt:
+  its rows are all rendered through the 1.40 prone frame, so `spriteSelection` forces the
+  pitch scale to 1 and uses the manifest's per-state `frameWorldSize`/`frameAnchorZ`.
+- **Static corpse pitch:** `death` uses `sampleStaticPitch` (single row, no crossfade).
+  Blending the level/high rows at close range produced a larger translucent ghost plus a
+  crisp copy; moving actors keep the crossfade.
 - **Fixed FOV:** projection FOV is constant at every altitude. Do not reintroduce an
   altitude boost; it stretches geometry near the screen edges.
 - **Viewmodel overlay:** drawn last, no depth test, with integer draw coordinates.
@@ -155,6 +164,17 @@ alone can leave HUD values at `--`.
 - **Wall depenetration:** `resolveFootprint` pushes out with a `radius + 1e-4` gap and
   clamps to the map edge on every iteration; an exact wall-plane result re-wedges the
   capsule on the next landing.
+- **Projectile substep:** `BOLT_SUBSTEP` is 0.08 m, well under the 0.2 m stair tread. A
+  22 m/s bolt covers 0.37 m per 60 Hz frame, so removing subdivision lets shots tunnel
+  through ledges and crate corners.
+- **Projectile collision order:** wall/floor collision runs before actor/player cylinders,
+  and a hit removes the bolt. Do not let a bolt pass through geometry to reach a target
+  behind it.
+- **Impact depth:** the impact billboard must be backed out of the struck cell along the
+  bolt vector; placed at the hit point, the per-pixel depth test culls it entirely.
+  Glow/impact pixels are translucent and must not write depth.
+- **Thin projectiles:** bolts use `noShadow`; drawing a ground shadow under a glow sprite
+  breaks the floating-light read.
 - **Outline pass:** read from an immutable alpha mask. Never mutate the output during the
   neighbor scan.
 - **Atlas fallback:** exact pitch → level pitch → idle level. Keep this so partial
@@ -187,9 +207,12 @@ alone can leave HUD values at `--`.
   frame and the actor stays in the array (`alive = false`) so the corpse still draws.
 - **Corpses:** skip only dead actors whose state is not `death`; filtering all dead actors
   removes the corpse mid-frame, and updating them after death restarts animation.
-- **Strike contract:** one cone/range target per press, 45 damage, 0.45 s cooldown, and
-  the cooldown resets in `placeAtSpawn()`/`loadLevel()` — a leaked cooldown silently
-  swallows the first strike of the next scenario (this was a real matrix failure).
+- **Fire contract:** one bolt per press, 45 damage, 0.45 s cooldown. `attack()` returns
+  true when a bolt spawns, not when it hits; the projectile step owns damage. The cooldown
+  resets in `placeAtSpawn()`/`loadLevel()` — a leaked cooldown silently swallows the first
+  shot of the next scenario (this was a real matrix failure).
+- **Combat reset:** `loadLevel()` clears `bolts` and `impacts`; carrying them across a
+  transition leaves stray projectiles and flashes in the new map.
 - **Doors and exits:** opening a door clears both its tile id and height so movement and
   raycasts agree; exits and pickups are radius checks in `update`, not tile triggers.
 
@@ -230,8 +253,10 @@ alone can leave HUD values at `--`.
 - Heights are blocks grown from `z = 0`; there are no sunken floors/pits, overhangs, or
   ceilings. The walkable floor is one plane at 0.
 - No ceiling geometry; sky is visible above the outer walls from ground level.
-- Actors are non-blocking (no player/actor or actor/actor collision). Hostiles deal
-  contact damage and can be killed; the strike cone has no wall-occlusion check.
+- Actors are non-blocking (no player/actor or actor/actor collision). Hostiles deal melee
+  contact damage and marauders fire bolts; both can be killed. Bolts are straight,
+  gravity-free, and do not penetrate or bounce. The player bolt spawns at the eye, not
+  the viewmodel muzzle.
 - Levels reload from their definitions on every transition, which resets pickups, doors,
   and the keycard. The demo loop is therefore one-way per visit: after the courtyard
   beacon return you can re-collect the keycard and run it again.
@@ -248,24 +273,23 @@ alone can leave HUD values at `--`.
   (`raycast.settings.v1`) and fail open when storage is blocked.
 - No license file yet.
 
-## Next task: M9 owner playtest and optional polish
+## Next task: M10 owner playtest and combat tuning
 
-M9 is complete and deployed: the first-person viewmodel, fixed FOV, pitch-scale
-compensation, wall-side depenetration, and guardian-only content are covered by
-`playtest` (40), `playtest:matrix` (625), and `playtest:states` (42). The owner should
-playtest the viewmodel and M7 loop and report feel/balance issues.
+M10 is complete locally (not yet deployed): ranged plasma bolts, the marauder gunner,
+and glow impacts are covered by `playtest` (40), `playtest:matrix` (642 across 99
+scenarios), `playtest:flight` (109), and `playtest:states` (42), plus 71 unit tests. The
+owner should playtest the shot feel and balance before any push to `main`.
 
-1. If the weapon swing or muzzle flash needs another pass, edit the poses in
-   `tools/blender/render_viewmodel.py` and regenerate with `npm run assets:blender`
-   (or run only that script); the game reads the five committed pose PNGs directly.
-2. If a new visual change lands, rerun `npm run playtest:matrix -- --update-golden`,
+1. Tune `PLAYER_BOLT_SPEED/LIFE` and `PLAYER_ATTACK_DAMAGE/COOLDOWN` in `src/game.ts`,
+   and each actor's `gun` spec in `src/content/actors.ts`. Keep the matrix's ranged
+   assertions in sync if damage or timing changes.
+2. If the eye-spawned bolt should align with the viewmodel, add a camera-space muzzle
+   offset in `attack()` and review the `f09`/`f10` captures for parallax.
+3. If a new visual change lands, rerun `npm run playtest:matrix -- --update-golden`,
    inspect the first mismatching run before committing, then run typecheck/tests/build,
    both playtests, and check Vercel.
-3. Optional deferred work: true stacked-slice actor rendering behind a feature flag,
-   keeping the turntable atlas as the fallback; additional chassis art only if the
-   guardian look and gameplay are confirmed.
-4. Audio/pause/settings and the profiled renderer are complete; a five-minute production
-   session ran with no application errors (a favicon 404 was fixed and re-verified).
+4. Optional deferred work: true stacked-slice actor rendering; muzzle-aligned spawns,
+   projectile drop/penetration, or destructible bolts.
 
 If a design choice could go either way, record it in [DECISIONS.md](DECISIONS.md) with the
 tradeoff, then proceed.

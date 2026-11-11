@@ -134,7 +134,8 @@ Rendering order: sky → clear depth → floors/wall faces/wall tops (one per-pi
 shadows and sprites (far to near).
 
 A sprite is centered on `(x, y)`, has `worldSize` world units of height, and its frame
-bottom is offset by `anchorZ` (currently `-0.075`). Sprites are screen-aligned billboards:
+bottom is offset by `anchorZ` (`-0.075` for most states; the prone `death` frames use a
+1.40 world frame anchored at `-0.20`). Sprites are screen-aligned billboards:
 the atlas already supplies the correct pitch view, so the quad is not tilted in 3D.
 
 ```ts
@@ -157,7 +158,10 @@ depth share one metric under pitch.
 
 Per pixel: sample the atlas rect, multiply RGB by the actor tint and distance shade,
 blend by alpha, and update depth for opaque pixels. A soft elliptical shadow fades out at
-the actor's ground position when `z < 2.5`.
+the actor's ground position when `z < 2.5`; `SpriteDraw.shadowScale` widens it for prone
+corpses. `SpriteDraw.noShadow` skips the shadow for glowing projectiles and impact
+flashes; their translucent pixels do not write depth, so the glow blends over the wall it
+struck instead of clipping against it.
 
 ### Directional frame selection
 
@@ -178,15 +182,25 @@ state began for `attack`/`hurt`/`death`/`talk`. `death` clamps to its final fram
 `-0.155 → level`, otherwise low. A three-pitch atlas keeps the earlier ±0.1 bands, so
 manifest-driven atlases of either size work.
 
+Moving actors crossfade between adjacent pitch rows inside ±0.12 rad bands of a
+threshold. Static corpses snap to the nearest row instead (`sampleStaticPitch`):
+blending two baked views of a still body reads as a second, larger translucent
+silhouette, which is especially visible when the player stands over a corpse pinned
+against a wall.
+
 `ActorSpec.sprite` selects the loaded atlas (`guardian` is the only shipped chassis).
 `SpriteAtlas.getFrame(state, pitch, yaw, frame)` resolves exact entries, falls back to the
 level row, then to `idle/level/yaw/0`, so partially generated atlases still render.
 
-The near-overhead turntable row is rendered through a tighter orthographic frame, which
-would make distant actors look large when the camera rises. The manifest therefore carries
-`pitchWorldScale` ([1, 1, 1, 0.678] for guardian), and `spriteSelection` multiplies the
-billboard size by the pitch-lerped factor. This keeps apparent actor size stable at every
-elevation; it is applied to the billboard only, not the actor's world position or shadow.
+The near-overhead row is rendered through a tighter 0.78 orthographic frame, and the
+manifest's `pitchWorldScale` (`[1, 1, 1, 0.678]`) shrinks that billboard so actors do not
+grow as the camera rises. The death state is the exception: a prone body spans the whole
+cell length, so every pitch row is rendered with a 1.40 ortho scale, its manifest entry
+carries `frameWorldSize: 1.40` / `frameAnchorZ: -0.20`, and `spriteSelection` skips the
+pitch compensation for corpses. `spriteSelection` and `buildSprites` read that per-state
+frame size and anchor, keeping the corpse's ground contact on the floor at every pitch.
+Corpses also widen the soft contact shadow (`shadowScale 1.25`) so the low body reads
+against the floor.
 
 Tint is an RGB multiplier; one atlas can therefore serve several color variants without
 new renders.
@@ -228,8 +242,9 @@ Holding `Space` burns fuel and thrusts upward from the ground or midair. At `MAX
 the clamp zeroes upward velocity while thrusting, so the player can hover and look down
 without chattering. Landing refuels. `F2` toggles a fuel-free freefly debug mode.
 
-The field of view widens from 70° to 100° as altitude rises from 1 to 11 units, and fog
-attenuation scales down at altitude so the whole courtyard stays readable.
+Projection FOV is fixed at every altitude (55–90° from settings, 70° default), so scale
+and straight lines stay stable while flying. Only fog attenuation scales down at altitude
+(`fogScale = clamp(1 − (eyeZ − 1.5)/24, 0.35, 1)`) so the whole courtyard stays readable.
 
 ## Levels, combat, and interaction
 
@@ -247,16 +262,23 @@ stalk the player, and once within reach they enter `attack`:
 | --- | --- |
 | Enemy attack impact / total | 0.20 s / 0.40 s |
 | Hurt / death state time | 0.25 s / 0.67 s |
-| Player strike | 45 dmg, range 2.3, half-angle 0.7 rad (80° cone), 0.45 s cooldown |
+| Player bolt | 45 dmg, 22 m/s, 0.9 s life, 0.45 s cooldown |
 | Player max health / redeploy | 100 / 1.4 s |
-| Hostile damage (wind-up) | 8–14 per hit |
+| Hostile melee (wind-up) | 8–14 per hit |
+| Marauder gun | 11 dmg, 9 m range, 1.7 s cooldown, 9 m/s bolt |
 | Interaction radius | talk/door 2.4 m, pickup 0.5 m, exit pad 0.6 m |
 
-`attack()` picks the nearest living actor inside the cone and range, applies damage plus
-0.18 knockback, and switches it to `hurt` or `death`. Dead actors stay in the actor array
-with `alive = false` so the final death frame still draws as a corpse; they no longer
-update, attack, or block the strike target search. Wall occlusion is not part of the
-strike test.
+`attack()` spawns a player bolt at the camera eye along yaw and pitch (horizontal
+component scaled by `cos(pitch)`, vertical by `sin(pitch)`); damage, travel, and hit
+resolution are owned by the projectile step. A hit applies damage plus 0.18 knockback and
+switches the actor to `hurt` or `death`. Dead actors stay in the actor array with
+`alive = false` so the final death frame still draws as a corpse; they no longer update,
+attack, or accept further hits.
+
+Hostiles with a `gun` spec (currently the marauder) check distance, cooldown, and a
+3D-sampled `hasLineOfSight` before entering `attack`; at `ATTACK_IMPACT` (0.20 s) they fire
+a bolt aimed at the player's chest. Without a clear shot they keep chasing and fall back
+to melee inside `attack.range`. Enemy bolts do not lead the target.
 
 `interact()` returns `none | talk | door | locked | pickup`. Doors are grid cells marked
 `D` with a `DoorSpec`; opening one clears both the tile id and its height so movement and
@@ -267,6 +289,35 @@ keycard required`, …) and a transient toast for outcomes.
 
 Prop billboards (pickups, beacon) share the sprite renderer with `worldSize` and a fixed
 z offset; the beacon pulses and the pickups bob so they read as interactive objects.
+
+## Projectiles and impacts
+
+`src/engine/projectile.ts` owns the simulation. A projectile is a straight segment
+`{x, y, z, vx, vy, vz, life, damage, fromPlayer}`. `stepProjectile` splits each frame's
+travel into slices of at most `BOLT_SUBSTEP = 0.08` m so a 22 m/s bolt cannot tunnel
+through a 0.2 m stair tread, and reports `fly | wall | floor | expired`:
+
+- `floor` when the segment reaches `z ≤ 0`.
+- `wall` on an out-of-bounds cell or when `z ≤ height + 1e-4` for a solid cell.
+- `expired` when `life` runs out; the bolt is discarded.
+
+Wall/floor hits and actor hits are checked only on surviving slices. Player bolts test
+hostile actors with `projectileHitsActor` (center `z + 0.62`, radius 0.34, half-height
+0.6); enemy bolts test the player with `projectileHitsPlayer` (center `z + 0.5`, radius
+0.26, half-height 0.5). A bolt damages only the first target and is removed.
+
+`hasLineOfSight` walks the same world in 0.1 m samples in 3D, returning false when a
+solid cell is above the sample height. The marauder samples from `actor.z + 0.9` to
+`player.z + 0.5`; the player's own shots need no LOS check because the bolt collides.
+
+Glow billboards make the shots readable. `createGlowTexture(32)` builds a white radial
+alpha ramp; `Game.buildBoltSprites()` projects bolts as `worldSize 0.24` sprites tinted
+cyan (`[0.55, 1.15, 1.35]`) for the player and orange (`[1.35, 0.72, 0.42]`) for
+hostiles. Impacts are `0.3 + t·0.55` m, fade with `(1 − t)²` over `BOLT_IMPACT_LIFE =
+0.14` s, and skip shadows. Because the depth test would cull a billboard sitting inside
+the struck cell, `updateProjectiles` backs the impact out by `min(0.06, speed·dt)` along
+the bolt direction (minimum `z = 0.03`). Translucent glow pixels do not write depth, so
+they blend over wall faces.
 
 ## First-person viewmodel
 
@@ -360,7 +411,7 @@ Screenshots and a JSON report land in `docs/screenshots/playtest/`.
 The companion harnesses share `tools/playtest/support.ts` (contact sheets, sky-row
 classification, image metrics):
 
-- `playtest:matrix` — 97 deterministic scenarios, 625 checks, golden-frame comparison.
+- `playtest:matrix` — 99 deterministic scenarios, 642 checks, golden-frame comparison.
 - `playtest:states` — paused player/guardian animation gallery, 42 checks.
 - `playtest:flight` — 18 altitude/pitch poses plus a live jetpack flight. It classifies
   every canvas pixel against the sky gradient, flags enclosed sky holes, fits the

@@ -50,6 +50,11 @@ PITCH_NAMES = ["low", "level", "high", "top"]
 # The near-overhead view projects the character's height into a small footprint,
 # so tighten the ortho frame there to keep the silhouette readable in-game.
 PITCH_SCALES = [1.15, 1.15, 1.15, 0.78]
+# A prone corpse spans the whole cell length, so the death state gets a wider
+# frame at every pitch. atlas/pack.ts records the matching world size and ground
+# anchor, and the engine keeps that size uniform instead of applying the
+# near-overhead compensation.
+STATE_ORTHO = {"death": 1.40}
 
 
 def parse_args():
@@ -318,6 +323,8 @@ def build_character(character):
 
 def reset_pose(rig):
     """Every pose starts from the neutral rig so states never inherit joint drift."""
+    rig["root"].location = (0, 0, 0)
+    rig["root"].rotation_euler = (0, 0, 0)
     rig["torso"].location = (0, 0, 0.45)
     rig["torso"].rotation_euler = (0, 0, 0)
     rig["head"].rotation_euler = (0, 0, 0)
@@ -400,28 +407,31 @@ def hurt_pose(rig, frame):
     rig["hip_r"].rotation_euler = (-hip_l, 0, 0)
 
 
-# Stagger -> buckle -> kneel -> slumped. Folding at the hips keeps the body
-# inside the turntable frame instead of rotating it through the floor.
+# Stagger -> buckle -> topple -> settling flat. The root tips the whole body
+# backward around the feet; the final frame translates it so the supine body is
+# centered in the turntable frame with the backpack resting on the ground plane.
 DEATH_POSES = [
-    (0.45, -0.3, -0.45, 0.75, 0.55, 0.0, 0.0),
-    (0.36, 0.22, 0.25, 0.1, 0.2, 0.9, 0.6),
-    (0.2, 0.42, 0.45, -0.45, -0.3, 1.5, 1.4),
-    (0.11, 0.85, 0.65, -0.85, -0.7, 1.65, 1.55),
+    # root_x, root_y, root_z, torso_x, head_x, arm_r, arm_l, arm_z, hip_l, hip_r
+    (-0.10, 0.00, 0.00, -0.24, -0.30, 0.55, 0.35, 0.10, 0.10, -0.06),
+    (-0.42, -0.02, 0.07, -0.12, -0.22, 0.95, 0.75, 0.16, 0.55, 0.42),
+    (-1.02, -0.30, 0.18, 0.10, -0.08, 1.05, 0.85, 0.22, 0.70, 0.55),
+    (-1.5708, -0.50, 0.215, 0.04, 0.16, 0.30, 0.22, 0.16, 0.32, 0.24),
 ]
 
 
 def death_pose(rig, frame):
     reset_pose(rig)
-    torso_z, torso_x, head_x, arm_r, arm_l, hip_l, hip_r = DEATH_POSES[
-        frame % len(DEATH_POSES)
-    ]
-    rig["torso"].location = (0, 0.02 * frame, torso_z)
-    rig["torso"].rotation_euler = (torso_x, 0, 0.08)
-    rig["head"].rotation_euler = (head_x, 0, 0)
-    rig["shoulder_r"].rotation_euler = (arm_r, 0, 0.15)
-    rig["shoulder_l"].rotation_euler = (arm_l, 0, -0.15)
-    rig["hip_l"].rotation_euler = (hip_l, 0, 0.05)
-    rig["hip_r"].rotation_euler = (hip_r, 0, -0.05)
+    root_x, root_y, root_z, torso_x, head_x, arm_r, arm_l, arm_z, hip_l, hip_r = (
+        DEATH_POSES[frame % len(DEATH_POSES)]
+    )
+    rig["root"].location = (0, root_y, root_z)
+    rig["root"].rotation_euler = (root_x, 0, 0)
+    rig["torso"].rotation_euler = (torso_x, 0, 0.06)
+    rig["head"].rotation_euler = (head_x, 0, 0.05)
+    rig["shoulder_r"].rotation_euler = (arm_r, 0, arm_z)
+    rig["shoulder_l"].rotation_euler = (arm_l, 0, -arm_z)
+    rig["hip_l"].rotation_euler = (hip_l, 0, -0.04)
+    rig["hip_r"].rotation_euler = (hip_r, 0, 0.04)
 
 
 # Talk is a small looping gesture: raised forearm, head tilt, then a nod.
@@ -631,7 +641,9 @@ def main():
             pose_fn(rig, frame)
             bpy.context.view_layer.update()
             for pitch in selected_pitches:
-                camera.data.ortho_scale = PITCH_SCALES[pitch]
+                camera.data.ortho_scale = STATE_ORTHO.get(
+                    state_name, PITCH_SCALES[pitch]
+                )
                 for yaw in range(args.yaws):
                     if only and only != (state_name, frame, pitch, yaw):
                         continue

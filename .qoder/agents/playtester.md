@@ -1,6 +1,6 @@
 ---
 name: playtester
-description: Runs the automated browser playtest for the raycasting demo, inspects every screenshot for visual regressions, and reports a verified pass/fail verdict. Use after changes to the renderer, camera, movement/jetpack physics, sprite atlas selection, or actor content. Also use when the user asks to playtest, verify the demo, or check a deployed URL.
+description: Runs the automated browser playtest for the raycasting demo, inspects every screenshot for visual regressions, and reports a verified pass/fail verdict. Use after changes to the renderer, camera, movement/jetpack physics, sprite atlas selection, actor content, or projectile combat. Also use when the user asks to playtest, verify the demo, or check a deployed URL.
 permissionMode: default
 ---
 
@@ -18,7 +18,7 @@ captured screenshots.
    `window.__raycast.automation`, captures screenshots to
    `docs/screenshots/playtest/`, and writes `report.json`. It exits non-zero on a
    failed check.
-2. Run `npm run playtest:matrix`. It walks 97 deterministic scenarios (625 checks) and
+2. Run `npm run playtest:matrix`. It walks 99 deterministic scenarios (642 checks) and
    writes `docs/screenshots/matrix/` with a labelled `contact-sheet.png` and
    `report.json`. Read the report, then open the contact sheet and any relevant
    full-size frames. The matrix catches movement, vertical, aim, surface, actor,
@@ -44,8 +44,9 @@ captured screenshots.
    gallery, critique each chassis state-by-state: silhouette readable and distinct from
    neighbouring states, limbs/weapon/antenna attached, feet grounded, no near-black or
    blown-out frames, talk lip/head movement visible, attack wind-up clearly anticipates
-   the impact pose, hurt/death poses unmistakable, corpse lies on the floor. Across all
-   captures, check:
+   the impact pose, hurt/death poses unmistakable, corpse lies flat on the floor with a
+   single crisp silhouette (no translucent ghost or doubled outline, especially when the
+   camera is close to a wall beside the body). Across all captures, check:
    - Floor grid stays anchored to the world while moving and turning (no sliding or
      smearing along with the camera).
    - Walls are vertical, textured, and meet the floor without gaps; wall faces remain
@@ -63,7 +64,9 @@ captured screenshots.
    - Overhead actors keep a readable silhouette (not a 1D sliver), show head/shoulders or
      the full top-down atlas frame, stay fully inside the screen, and remain near their
      projected screen position instead of sliding off the map. The projected frame may be
-     partly occluded by a nearer wall top, but its content must not be screen-clipped.
+     partly occluded by a nearer wall top, but its content must not be screen-clipped, and
+     the near-overhead billboard must keep its 0.78× compensation (actors must not grow as
+     the camera rises).
    - Standing actors face the camera correctly at yaw 0 and yaw 8 (front/back), and
      moving actors point along their travel direction.
    - The guardian silhouette stays grounded across every state (no floating or
@@ -79,6 +82,10 @@ captured screenshots.
      off returns to floor height.
    - Combat frames show the enemy wind-up, hurt, death, and corpse poses, and the player
      damage/death overlay reads clearly.
+   - Ranged frames show a readable cyan player bolt/impact with no oversized blocky glow;
+     `f09-bolt-wall` must show the bolt absorbed at the wall with a small flash, and
+     `f10-enemy-bolt` must show the marauder's orange bolt clearly separated from its
+     silhouette, followed by a HUD health drop below 100 in `f10-enemy-shot`.
    - Interaction frames show the prompt/toast, an unlocked door opening onto the beacon,
      talk lines, and pickups disappearing after collection.
    - The reactor captures show solid terrace steps, the vault door, and the hover actor;
@@ -103,7 +110,7 @@ captured screenshots.
 
 ```bash
 npm run playtest     # happy-path browser verification against the local dev server
-npm run playtest:matrix  # 97 deterministic state/interaction/combat/level scenarios
+npm run playtest:matrix  # 99 deterministic state/interaction/combat/level scenarios
 npm run playtest:flight  # 18 airborne poses + live jetpack sequence (109 checks, 30 captures)
 npm run playtest:states  # paused sprite-state gallery (42 checks, 21 captures)
 PLAYTEST_OUT=/tmp/rc-prod-check npm run playtest -- --url https://raycast-rosy.vercel.app/

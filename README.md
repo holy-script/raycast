@@ -28,13 +28,16 @@ hurt, death, and talk), stylized to 96×96 pixel art by SD1.5 + depth ControlNet
 drive frame selection, including a dedicated near-overhead row with a compensating
 billboard scale, so actors keep a stable apparent size from the floor to the ceiling. A
 Blender-rendered first-person viewmodel (both gauntlets plus a plasma projector) animates
-through idle, wind-up, strike, and recovery, and bob follows the walk cycle.
+through idle, wind-up, strike, and recovery, and bob follows the walk cycle. F/click
+launches a plasma bolt along the camera aim; marauder gunners answer with orange bolts
+that respect walls, and impacts bloom as depth-tested glow billboards.
 
-**Status:** playable build with two levels, combat with hurt/death states, NPC dialogue,
-doors, keycard/medkit/fuel pickups, level transitions, synthesized audio, and a
-pause/settings menu. Verification runs a 97-scenario deterministic matrix (625 checks),
-a 40-check happy-path browser run, an 18-pose airborne flight sweep with a live jetpack
-sequence (109 checks), and a 42-check paused-state gallery capturing every body state.
+**Status:** playable build with two levels, ranged and melee combat with hurt/death
+states, NPC dialogue, doors, keycard/medkit/fuel pickups, level transitions, synthesized
+audio, and a pause/settings menu. Verification runs a 99-scenario deterministic matrix
+(642 checks), a 40-check happy-path browser run, an 18-pose airborne flight sweep with a
+live jetpack sequence (109 checks), and a 42-check paused-state gallery capturing every
+body state.
 The M6 AI stylization infrastructure (Blender depth/normal controls, ComfyUI
 img2img + ControlNet, silhouette/palette verification, MCP studio server) remains the
 asset path. See the [roadmap](docs/ROADMAP.md), [pipeline](docs/PIPELINE.md), and
@@ -51,7 +54,7 @@ npm test           # unit tests
 npm run typecheck
 npm run build      # static build in dist/
 npm run playtest   # headless Chrome: input, physics, atlas, viewmodel, screenshot checks
-npm run playtest:matrix  # 97 deterministic state/interaction/combat/level scenarios
+npm run playtest:matrix  # 99 deterministic state/interaction/combat/level scenarios
 npm run playtest:flight  # 18 airborne poses + live jetpack sweep, wall/sky/sprite analysis
 npm run playtest:states  # paused-state gallery: 42 checks, 21 captures
 ```
@@ -65,7 +68,7 @@ npm run playtest:states  # paused-state gallery: 42 checks, 21 captures
 | `W A S D` | Move |
 | `Shift` | Sprint |
 | `Space` | Ignite/hold jetpack (ground jump or sustained lift) |
-| `F` / left click | Strike (45 damage, 2.3 m cone, 0.45 s cooldown) |
+| `F` / left click | Fire plasma bolt (45 damage, 22 m/s, 0.9 s life, 0.45 s cooldown) |
 | `E` | Interact: talk, open doors, collect pickups |
 | `F2` | Toggle freefly debug mode (`Space` up, `Ctrl`/`C` down) |
 | `M` / `Tab` | Toggle minimap |
@@ -111,7 +114,7 @@ renders and a stylized frame set.
 ## Repository map
 
 ```
-src/engine/      DDA, world/collision, renderer, atlas loader, input, audio, math
+src/engine/      DDA, world/collision, renderer, projectiles, glow, atlas loader, input, audio, math
 src/content/      courtyard + reactor level definitions, actors, props
 src/game.ts       player physics, jetpack, camera, animation, minimap, HUD
 src/main.ts       asset boot, render loop, pointer lock, debug API
@@ -124,7 +127,7 @@ tools/atlas/      atlas packer + manifest generator
 tools/mcp/        stdio MCP server for atlas generation and single-view repair
 tools/playtest/   CDP harness: happy-path run, state matrix, flight sweep, state gallery
 .qoder/agents/    playtester subagent definition
-tests/            Vitest coverage for DDA, math, world, atlas, settings, Comfy workflow, style metrics
+tests/            Vitest coverage for DDA, math, world, projectiles, atlas, settings, Comfy workflow, style metrics
 docs/             spec, roadmap, progress, architecture, pipeline, handoff, ADRs
 ```
 

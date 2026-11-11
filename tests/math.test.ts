@@ -3,6 +3,8 @@ import {
   elevationAngle,
   quantizeDirection,
   quantizePitch,
+  samplePitch,
+  sampleStaticPitch,
   shortestAngleDelta,
   spriteYawIndex,
   TAU,
@@ -54,6 +56,20 @@ describe("pitch selection", () => {
     expect(quantizePitch(0.2, 3)).toBe(2);
     expect(quantizePitch(-0.2, 3)).toBe(0);
     expect(quantizePitch(0.05, 3)).toBe(1);
+  });
+
+  it("crossfades moving actors inside the fade bands", () => {
+    const inside = samplePitch(0.245, 4);
+    expect(inside.index).toBe(1);
+    expect(inside.next).toBe(2);
+    expect(inside.mix).toBeCloseTo(0.5);
+    expect(samplePitch(0.7, 4).mix).toBe(0);
+  });
+
+  it("snaps static corpses to a single row so they never ghost", () => {
+    expect(sampleStaticPitch(0.244, 4)).toEqual({ index: 1, next: 1, mix: 0 });
+    expect(sampleStaticPitch(0.245, 4)).toEqual({ index: 2, next: 2, mix: 0 });
+    expect(sampleStaticPitch(0.88, 4)).toEqual({ index: 3, next: 3, mix: 0 });
   });
 
   it("computes elevation from eye and target heights", () => {
