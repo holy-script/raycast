@@ -1,12 +1,13 @@
 import { castRay } from "./dda";
 import { clamp, fract } from "./math";
-import type { World } from "./world";
+import { WALL_HEIGHT, type World } from "./world";
 
-export const WALL_HEIGHT = 1.4;
+export { WALL_HEIGHT };
 
 const FOG_R = 16;
 const FOG_G = 18;
 const FOG_B = 30;
+const NEAR_PLANE = 0.01;
 
 export interface Texture {
   width: number;
@@ -50,6 +51,30 @@ export interface SpriteDraw {
   alpha?: number;
   /** RGB multiplier, 1 = unchanged. Cheap per-actor recolors from one atlas. */
   tint?: [number, number, number];
+  /** Debug/tests only: ties a projected rect back to an actor. */
+  id?: string;
+}
+
+export interface SpriteScreenRect {
+  id: string;
+  /** Projected center in framebuffer pixels. */
+  x: number;
+  y: number;
+  /** Projected size in framebuffer pixels. */
+  w: number;
+  h: number;
+  visible: boolean;
+  /** Opaque pixels actually written (after alpha and depth tests). */
+  pixels: number;
+  /** Bounding box of the written pixels, 0 when nothing was drawn. */
+  contentW: number;
+  contentH: number;
+}
+
+export interface RenderStats {
+  wallColumns: number;
+  wallPixels: number;
+  spriteRects: SpriteScreenRect[];
 }
 
 export class Renderer {
@@ -57,6 +82,11 @@ export class Renderer {
   readonly height: number;
   readonly pixels: Uint8ClampedArray;
   readonly depth: Float32Array;
+  readonly stats: RenderStats = {
+    wallColumns: 0,
+    wallPixels: 0,
+    spriteRects: [],
+  };
   private readonly image: ImageData;
   private readonly ctx: CanvasRenderingContext2D;
   private readonly skyRows: Uint8Array;
@@ -81,14 +111,18 @@ export class Renderer {
   /**
    * Projects a point `forward` units ahead of the camera at height `dz` relative
    * to the eye. Uses a true pitch rotation so the view can look straight down.
+   * Points at or behind the near plane project far off-screen instead of
+   * returning NaN, so a wall that crosses the near plane stays solid.
    */
-  private projectY(cam: CameraState, forward: number, dz: number): number {
+  private projectYClipped(cam: CameraState, forward: number, dz: number): number {
     const cos = Math.cos(cam.pitch);
     const sin = Math.sin(cam.pitch);
     const zCam = forward * cos + dz * sin;
-    if (zCam <= 0.01) return Number.NaN;
     const yCam = -forward * sin + dz * cos;
-    return this.centerY - (cam.focal * yCam) / zCam;
+    if (zCam > NEAR_PLANE) {
+      return this.centerY - (cam.focal * yCam) / zCam;
+    }
+    return yCam >= 0 ? -1e6 : 1e6;
   }
 
   private buildSky(): Uint8Array {
@@ -118,6 +152,9 @@ export class Renderer {
     floorTexture: Texture,
     sprites: SpriteDraw[],
   ): void {
+    this.stats.wallColumns = 0;
+    this.stats.wallPixels = 0;
+    this.stats.spriteRects = [];
     this.drawSky();
     this.depth.fill(Infinity);
     this.drawWalls(cam, world, textures);
@@ -149,7 +186,10 @@ export class Renderer {
     textures: Record<number, Texture>,
   ): void {
     const { width, height, pixels, depth } = this;
-    if (cam.eyeZ > WALL_HEIGHT + 0.02) return;
+    const cosP = Math.cos(cam.pitch);
+    const sinP = Math.sin(cam.pitch);
+    let columns = 0;
+    let painted = 0;
 
     for (let x = 0; x < width; x += 1) {
       const cameraX = (2 * x) / width - 1;
@@ -162,9 +202,13 @@ export class Renderer {
       if (!texture) continue;
 
       const distance = hit.distance;
-      const yTopF = this.projectY(cam, distance, WALL_HEIGHT - cam.eyeZ);
-      const yBottomF = this.projectY(cam, distance, -cam.eyeZ);
-      if (!Number.isFinite(yTopF) || !Number.isFinite(yBottomF)) continue;
+      const zTop = distance * cosP + (WALL_HEIGHT - cam.eyeZ) * sinP;
+      const zBottom = distance * cosP - cam.eyeZ * sinP;
+      // The whole face is behind the near plane.
+      if (zTop <= NEAR_PLANE && zBottom <= NEAR_PLANE) continue;
+
+      const yTopF = this.projectYClipped(cam, distance, WALL_HEIGHT - cam.eyeZ);
+      const yBottomF = this.projectYClipped(cam, distance, -cam.eyeZ);
       const yStart = Math.max(0, Math.ceil(yTopF));
       const yEnd = Math.min(height - 1, Math.floor(yBottomF));
       if (yStart > yEnd) continue;
@@ -173,16 +217,29 @@ export class Renderer {
         texture.width - 1,
         Math.floor(clamp(hit.wallU, 0.0001, 0.9999) * texture.width),
       );
-      const vStep = texture.height / (yBottomF - yTopF);
-      let v = (yStart - yTopF) * vStep;
-
+      const sideShade = hit.side === 0 ? 1 : 0.76;
       const shade =
         clamp(1 / (1 + distance * 0.085 * (cam.fogScale ?? 1)), 0.08, 1) *
-        (hit.side === 0 ? 1 : 0.76);
+        sideShade;
       const fog = 1 - shade;
 
+      columns += 1;
       for (let y = yStart; y <= yEnd; y += 1) {
-        const texY = clamp(Math.floor(v), 0, texture.height - 1);
+        // Invert the pitch projection for this scanline: `s` is the camera-space
+        // slope (up/forward) at the pixel. This keeps texture V correct even
+        // when the face crosses the near plane and `yTopF` is clipped.
+        const s = (this.centerY - (y + 0.5)) / cam.focal;
+        const denominator = cosP - s * sinP;
+        if (Math.abs(denominator) < 1e-6) continue;
+        const dz = (distance * (sinP + s * cosP)) / denominator;
+        const t = (dz + cam.eyeZ) / WALL_HEIGHT;
+        if (t < 0 || t > 1) continue;
+
+        const texY = clamp(
+          Math.floor((1 - t) * texture.height),
+          0,
+          texture.height - 1,
+        );
         const src = (texY * texture.width + texX) * 4;
         const dst = (y * width + x) * 4;
         const idx = y * width + x;
@@ -191,9 +248,12 @@ export class Renderer {
         pixels[dst + 2] = texture.data[src + 2] * shade + FOG_B * fog;
         pixels[dst + 3] = 255;
         depth[idx] = distance;
-        v += vStep;
+        painted += 1;
       }
     }
+
+    this.stats.wallColumns = columns;
+    this.stats.wallPixels = painted;
   }
 
   private drawFloor(
@@ -343,74 +403,103 @@ export class Renderer {
   }
 
   private drawSprites(cam: CameraState, sprites: SpriteDraw[]): void {
-    const prepared = sprites
-      .map((sprite) => ({
-        sprite,
-        depth: (sprite.x - cam.x) * cam.dirX + (sprite.y - cam.y) * cam.dirY,
-      }))
-      .filter((entry) => entry.depth > 0.08)
-      .sort((a, b) => b.depth - a.depth);
+    const cosP = Math.cos(cam.pitch);
+    const sinP = Math.sin(cam.pitch);
+    const prepared: PreparedSprite[] = [];
 
+    for (const sprite of sprites) {
+      const dx = sprite.x - cam.x;
+      const dy = sprite.y - cam.y;
+      const forward = dx * cam.dirX + dy * cam.dirY;
+      const side = -dx * cam.dirY + dy * cam.dirX;
+      const centerZ =
+        sprite.z + (sprite.anchorZ ?? 0) + sprite.worldSize / 2;
+      const dz = centerZ - cam.eyeZ;
+      // Camera-space depth. This stays positive for actors below the camera even
+      // when their horizontal forward distance is near zero (looking straight
+      // down), which is what used to make overhead sprites vanish off-screen.
+      const zCam = forward * cosP + dz * sinP;
+      if (zCam <= 0.12) continue;
+      prepared.push({
+        sprite,
+        forward,
+        zCam,
+        xCam: side,
+        yCam: -forward * sinP + dz * cosP,
+      });
+    }
+
+    prepared.sort((a, b) => b.zCam - a.zCam);
     for (const entry of prepared) {
-      this.drawSprite(cam, entry.sprite, entry.depth);
+      this.drawSprite(cam, entry);
     }
   }
 
-  private drawSprite(cam: CameraState, sprite: SpriteDraw, distance: number): void {
+  private drawSprite(cam: CameraState, entry: PreparedSprite): void {
+    const { sprite, forward, zCam, xCam, yCam } = entry;
     const { width, height, pixels, depth } = this;
-    const dx = sprite.x - cam.x;
-    const dy = sprite.y - cam.y;
-    const lateral = (dy * cam.dirX - dx * cam.dirY) / (distance * cam.tanHalf);
-    const screenX = (width / 2) * (1 + lateral);
+    const screenX = width / 2 + (cam.focal * xCam) / zCam;
+    const screenY = this.centerY - (cam.focal * yCam) / zCam;
 
-    const worldSize = sprite.worldSize;
-    const anchorZ = sprite.anchorZ ?? 0;
-    const halfWidth = (cam.focal * worldSize) / (2 * distance);
-    const xStart = Math.max(0, Math.ceil(screenX - halfWidth));
-    const xEnd = Math.min(width - 1, Math.floor(screenX + halfWidth));
-    if (xStart > xEnd) return;
+    // Screen-aligned billboard: the atlas already supplies the correct pitch
+    // view, so keep a readable angular size instead of projecting a vertical
+    // quad that collapses to a line when viewed from above.
+    const worldSize = Math.max(0.2, sprite.worldSize);
+    const heightPx = Math.max(2, (cam.focal * worldSize) / zCam);
+    const { texture, sx, sy, sw, sh } = sprite.frame;
+    const widthPx = Math.max(2, heightPx * (sw / sh));
+    const left = screenX - widthPx / 2;
+    const top = screenY - heightPx / 2;
 
-    const yFeet = this.projectY(
-      cam,
-      distance,
-      sprite.z + anchorZ - cam.eyeZ,
-    );
-    const yHead = this.projectY(
-      cam,
-      distance,
-      sprite.z + anchorZ + worldSize - cam.eyeZ,
-    );
-    if (!Number.isFinite(yFeet) || !Number.isFinite(yHead)) return;
-    if (yHead > height || yFeet < 0) return;
+    const xStart = Math.max(0, Math.ceil(left));
+    const xEnd = Math.min(width - 1, Math.floor(left + widthPx));
+    const yStart = Math.max(0, Math.ceil(top));
+    const yEnd = Math.min(height - 1, Math.floor(top + heightPx));
+    const visible = xStart <= xEnd && yStart <= yEnd;
+    const rect: SpriteScreenRect = {
+      id: sprite.id ?? "",
+      x: screenX,
+      y: screenY,
+      w: widthPx,
+      h: heightPx,
+      visible,
+      pixels: 0,
+      contentW: 0,
+      contentH: 0,
+    };
+    this.stats.spriteRects.push(rect);
+    if (!visible) return;
 
-    const yStart = Math.max(0, Math.ceil(yHead));
-    const yEnd = Math.min(height - 1, Math.floor(yFeet));
-
-    if (sprite.z < 0.25) {
-      const groundY = this.projectY(cam, distance, sprite.z - cam.eyeZ);
-      if (Number.isFinite(groundY)) {
-        this.drawShadow(screenX, groundY, halfWidth, distance);
-      }
+    if (sprite.z < 2.5) {
+      this.drawShadow(cam, entry);
     }
 
-    const { texture, sx, sy, sw, sh } = sprite.frame;
     const data = texture.data;
     const spriteAlpha = sprite.alpha ?? 1;
     const tint = sprite.tint ?? [1, 1, 1];
-    const shade = clamp(1 / (1 + distance * 0.05 * (cam.fogScale ?? 1)), 0.1, 1);
+    const shade = clamp(
+      1 / (1 + zCam * 0.05 * (cam.fogScale ?? 1)),
+      0.1,
+      1,
+    );
     const fog = 1 - shade;
-    const uScale = 1 / (2 * halfWidth);
-    const vScale = 1 / (yFeet - yHead);
+    const uScale = 1 / widthPx;
+    const vScale = 1 / heightPx;
+    let drawn = 0;
+    let minX = width;
+    let maxX = -1;
+    let minY = height;
+    let maxY = -1;
 
     for (let x = xStart; x <= xEnd; x += 1) {
-      const u = (x + 0.5 - (screenX - halfWidth)) * uScale;
+      const u = (x + 0.5 - left) * uScale;
       if (u < 0 || u >= 1) continue;
       const texX = sx + Math.min(sw - 1, Math.floor(u * sw));
       for (let y = yStart; y <= yEnd; y += 1) {
-        const v = (y + 0.5 - yHead) * vScale;
+        const v = (y + 0.5 - top) * vScale;
         if (v < 0 || v >= 1) continue;
         const idx = y * width + x;
-        if (distance >= depth[idx]) continue;
+        if (forward >= depth[idx]) continue;
 
         const texY = sy + Math.min(sh - 1, Math.floor(v * sh));
         const src = (texY * texture.width + texX) * 4;
@@ -425,35 +514,56 @@ export class Renderer {
         pixels[dst + 1] = g * alpha + pixels[dst + 1] * (1 - alpha);
         pixels[dst + 2] = b * alpha + pixels[dst + 2] * (1 - alpha);
         pixels[dst + 3] = 255;
-        if (alpha > 0.6) depth[idx] = distance;
+        if (alpha > 0.6) depth[idx] = forward;
+        drawn += 1;
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
       }
     }
+
+    rect.pixels = drawn;
+    rect.contentW = maxX >= minX ? maxX - minX + 1 : 0;
+    rect.contentH = maxY >= minY ? maxY - minY + 1 : 0;
   }
 
-  private drawShadow(
-    screenX: number,
-    yFeet: number,
-    halfWidth: number,
-    distance: number,
-  ): void {
+  private drawShadow(cam: CameraState, entry: PreparedSprite): void {
+    const { sprite, forward, xCam } = entry;
     const { width, height, pixels, depth } = this;
-    const radiusX = Math.max(1, halfWidth * 0.72);
-    const radiusY = Math.max(1, radiusX * 0.32);
-    const xStart = Math.max(0, Math.floor(screenX - radiusX));
-    const xEnd = Math.min(width - 1, Math.ceil(screenX + radiusX));
-    const yStart = Math.max(0, Math.floor(yFeet - radiusY));
-    const yEnd = Math.min(height - 1, Math.ceil(yFeet + radiusY));
+    const cosP = Math.cos(cam.pitch);
+    const sinP = Math.sin(cam.pitch);
+    const dz = -cam.eyeZ;
+    const zCam = forward * cosP + dz * sinP;
+    if (zCam <= 0.12) return;
+
+    const groundX = width / 2 + (cam.focal * xCam) / zCam;
+    const groundY =
+      this.centerY - (cam.focal * (-forward * sinP + dz * cosP)) / zCam;
+    const radiusX = Math.max(
+      1,
+      (cam.focal * sprite.worldSize * 0.36) / zCam,
+    );
+    // A ground disc becomes rounder on screen the steeper the view.
+    const tilt = Math.abs(sinP);
+    const radiusY = Math.max(1, radiusX * (0.32 + 0.68 * tilt));
+    const fade = clamp(1 - sprite.z / 2.5, 0, 1);
+
+    const xStart = Math.max(0, Math.floor(groundX - radiusX));
+    const xEnd = Math.min(width - 1, Math.ceil(groundX + radiusX));
+    const yStart = Math.max(0, Math.floor(groundY - radiusY));
+    const yEnd = Math.min(height - 1, Math.ceil(groundY + radiusY));
 
     for (let y = yStart; y <= yEnd; y += 1) {
-      const ny = (y - yFeet) / radiusY;
+      const ny = (y - groundY) / radiusY;
       for (let x = xStart; x <= xEnd; x += 1) {
-        const nx = (x - screenX) / radiusX;
+        const nx = (x - groundX) / radiusX;
         const d2 = nx * nx + ny * ny;
         if (d2 >= 1) continue;
         const idx = y * width + x;
         const floorDepth = depth[idx];
-        if (!Number.isFinite(floorDepth) || floorDepth < distance * 0.85) continue;
-        const alpha = 0.32 * (1 - d2) * (1 - d2);
+        if (!Number.isFinite(floorDepth) || floorDepth < forward - 0.2) continue;
+        const alpha = 0.32 * fade * (1 - d2) * (1 - d2);
         const dst = idx * 4;
         pixels[dst] = pixels[dst] * (1 - alpha);
         pixels[dst + 1] = pixels[dst + 1] * (1 - alpha);
@@ -461,4 +571,12 @@ export class Renderer {
       }
     }
   }
+}
+
+interface PreparedSprite {
+  sprite: SpriteDraw;
+  forward: number;
+  zCam: number;
+  xCam: number;
+  yCam: number;
 }

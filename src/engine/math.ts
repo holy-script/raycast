@@ -35,15 +35,25 @@ export function spriteYawIndex(
   return quantizeDirection(facing - angleToCamera, directions);
 }
 
-export type PitchIndex = 0 | 1 | 2;
+export type PitchIndex = 0 | 1 | 2 | 3;
 
 /**
- * 0 = camera below the entity (low angle), 1 = level, 2 = camera above (high angle).
+ * 0 = camera below the entity (low), 1 = level, 2 = above (high),
+ * 3 = near-overhead (top). Thresholds sit between the atlas elevations
+ * [-0.31, 0, 0.49, 1.25] rad so each frame covers its full band.
  */
-export function quantizePitch(elevation: number, threshold = 0.1): PitchIndex {
-  if (elevation > threshold) return 2;
-  if (elevation < -threshold) return 0;
-  return 1;
+export function quantizePitch(elevation: number, pitches = 4): PitchIndex {
+  if (pitches <= 1) return 0;
+  if (pitches === 2) return elevation > 0 ? 1 : 0;
+  if (pitches === 3) {
+    if (elevation > 0.1) return 2;
+    if (elevation < -0.1) return 0;
+    return 1;
+  }
+  if (elevation >= 0.87) return 3;
+  if (elevation >= 0.245) return 2;
+  if (elevation >= -0.155) return 1;
+  return 0;
 }
 
 export function elevationAngle(

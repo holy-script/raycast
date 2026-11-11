@@ -41,11 +41,19 @@ describe("directional quantization", () => {
 });
 
 describe("pitch selection", () => {
-  it("classifies level, high and low camera elevations", () => {
-    expect(quantizePitch(0)).toBe(1);
-    expect(quantizePitch(0.2)).toBe(2);
-    expect(quantizePitch(-0.2)).toBe(0);
-    expect(quantizePitch(0.05)).toBe(1);
+  it("uses the top-down frame band for steep overhead views", () => {
+    expect(quantizePitch(-0.3, 4)).toBe(0);
+    expect(quantizePitch(0, 4)).toBe(1);
+    expect(quantizePitch(0.5, 4)).toBe(2);
+    expect(quantizePitch(0.86, 4)).toBe(2);
+    expect(quantizePitch(0.87, 4)).toBe(3);
+    expect(quantizePitch(1.4, 4)).toBe(3);
+  });
+
+  it("keeps three-pitch atlases on their old bands", () => {
+    expect(quantizePitch(0.2, 3)).toBe(2);
+    expect(quantizePitch(-0.2, 3)).toBe(0);
+    expect(quantizePitch(0.05, 3)).toBe(1);
   });
 
   it("computes elevation from eye and target heights", () => {

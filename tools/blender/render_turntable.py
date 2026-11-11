@@ -8,7 +8,7 @@ Characters: guardian, scout, brute. Output defaults to
 assets-src/characters/{character}/raw.
 
 Frame naming: {state}_f{frame}_p{pitch}_y{yaw}.png
-  pitch 0 = camera below, 1 = level, 2 = camera above
+  pitch 0 = camera below, 1 = level, 2 = above, 3 = near-overhead
   yaw 0 = camera in front of the character, increasing counter-clockwise
 """
 
@@ -84,8 +84,11 @@ CHARACTERS = {
     },
 }
 
-PITCH_ANGLES = [-0.31, 0.0, 0.49]
-PITCH_NAMES = ["low", "level", "high"]
+PITCH_ANGLES = [-0.31, 0.0, 0.49, 1.25]
+PITCH_NAMES = ["low", "level", "high", "top"]
+# The near-overhead view projects the character's height into a small footprint,
+# so tighten the ortho frame there to keep the silhouette readable in-game.
+PITCH_SCALES = [1.15, 1.15, 1.15, 0.78]
 
 
 def parse_args():
@@ -97,6 +100,7 @@ def parse_args():
     parser.add_argument("--samples", type=int, default=24)
     parser.add_argument("--yaws", type=int, default=16)
     parser.add_argument("--only", default="", help="state:frame:pitch:yaw for a single test render")
+    parser.add_argument("--pitches", default="", help="comma-separated pitch indices to render")
     args = parser.parse_args(argv)
     if not args.out:
         args.out = os.path.join("assets-src", "characters", args.character, "raw")
@@ -440,13 +444,19 @@ def main():
         parts = args.only.split(":")
         only = (parts[0], int(parts[1]), int(parts[2]), int(parts[3]))
 
-    pitch_angles = [PITCH_ANGLES[0], PITCH_ANGLES[1], PITCH_ANGLES[2]]
+    pitch_angles = PITCH_ANGLES
+    selected_pitches = (
+        [int(index) for index in args.pitches.split(",") if index != ""]
+        if args.pitches
+        else list(range(len(pitch_angles)))
+    )
     rendered = 0
     for state_name, frame_count, pose_fn in states:
         for frame in range(frame_count):
             pose_fn(rig, frame)
             bpy.context.view_layer.update()
-            for pitch in range(3):
+            for pitch in selected_pitches:
+                camera.data.ortho_scale = PITCH_SCALES[pitch]
                 for yaw in range(args.yaws):
                     if only and only != (state_name, frame, pitch, yaw):
                         continue

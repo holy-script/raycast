@@ -1,4 +1,4 @@
-export type ActorBehavior = "idle" | "watcher" | "patrol";
+export type ActorBehavior = "idle" | "watcher" | "patrol" | "chase" | "hover";
 export type SpriteId = "guardian" | "scout" | "brute";
 
 export interface ActorSpec {
@@ -11,6 +11,8 @@ export interface ActorSpec {
   tint: [number, number, number];
   scale?: number;
   patrol?: { ax: number; ay: number; bx: number; by: number; speed: number };
+  chase?: { speed: number; range: number };
+  hover?: { height: number; bob: number; speed: number };
 }
 
 const EAST = 0;
@@ -97,5 +99,60 @@ export const DEMO_ACTORS: ActorSpec[] = [
     facing: WEST,
     behavior: "watcher",
     tint: [0.82, 1.0, 1.3],
+  },
+  {
+    name: "drone",
+    sprite: "scout",
+    x: 11.5,
+    y: 9.5,
+    facing: EAST,
+    behavior: "hover",
+    tint: [0.7, 1.1, 1.25],
+    scale: 0.82,
+    hover: { height: 1.1, bob: 0.28, speed: 1.7 },
+  },
+  {
+    name: "wisp",
+    sprite: "scout",
+    x: 2.5,
+    y: 14.5,
+    facing: SOUTH,
+    behavior: "hover",
+    tint: [0.85, 1.2, 1.0],
+    scale: 0.72,
+    hover: { height: 1.8, bob: 0.35, speed: 2.1 },
+  },
+  {
+    name: "stalker",
+    sprite: "scout",
+    x: 18.5,
+    y: 14.5,
+    facing: WEST,
+    behavior: "chase",
+    tint: [1.1, 0.9, 1.25],
+    scale: 0.95,
+    chase: { speed: 1.5, range: 10 },
+  },
+  {
+    name: "prowler",
+    sprite: "brute",
+    x: 6.5,
+    y: 20.5,
+    facing: WEST,
+    behavior: "chase",
+    tint: [1.25, 0.8, 0.85],
+    scale: 1.12,
+    chase: { speed: 1.05, range: 9 },
+  },
+  {
+    name: "marauder",
+    sprite: "guardian",
+    x: 20.5,
+    y: 22.5,
+    facing: NORTH,
+    behavior: "chase",
+    tint: [1.2, 0.95, 0.8],
+    scale: 1.04,
+    chase: { speed: 0.9, range: 8 },
   },
 ];

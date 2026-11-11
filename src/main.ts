@@ -1,7 +1,7 @@
 import "./style.css";
 import { loadAtlas, loadTexture } from "./engine/atlas";
 import { Renderer } from "./engine/renderer";
-import { Game, type HudState } from "./game";
+import { Game, type HudState, type RenderDebug } from "./game";
 
 const BASE = import.meta.env.BASE_URL;
 const MINIMAP_SIZE = 168;
@@ -119,9 +119,11 @@ async function boot(): Promise<void> {
         ? "FREEFLY · DEBUG"
         : state.thrusting
           ? "JETPACK · BURN"
-          : state.airborne
-            ? "AIRBORNE · FALL"
-            : `WALK · ${started ? "LIVE" : "ATTRACT"}`;
+          : state.support > 0.01 && state.onGround
+            ? `PERCH · WALL ${state.support.toFixed(1)} m`
+            : state.airborne
+              ? "AIRBORNE · FALL"
+              : `WALK · ${started ? "LIVE" : "ATTRACT"}`;
       hudFuel.textContent = `${Math.round(state.fuel * 100)}%`;
       hudFuelFill.style.width = `${state.fuel * 100}%`;
       hudSprite.textContent =
@@ -139,6 +141,7 @@ async function boot(): Promise<void> {
     game,
     setPose: (x, y, z, yaw, pitch) => game.setPose(x, y, z, yaw, pitch),
     setFlying: (value) => game.setFlying(value),
+    debug: () => game.getRenderDebug(),
     dismissIntro: () => {
       intro.classList.add("hidden");
       resume.classList.add("hidden");
@@ -165,6 +168,7 @@ declare global {
       game: Game;
       setPose: (x: number, y: number, z: number, yaw: number, pitch: number) => void;
       setFlying: (value: boolean) => void;
+      debug: () => RenderDebug;
       dismissIntro: () => void;
       automation: {
         enable: () => void;

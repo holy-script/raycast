@@ -3,7 +3,10 @@ import {
   canOccupy,
   createWorld,
   isSolidAt,
+  supportHeight,
   tileAt,
+  tileHeightAt,
+  WALL_HEIGHT,
 } from "../src/engine/world";
 
 const MAP = [
@@ -33,6 +36,33 @@ describe("world grid", () => {
     expect(canOccupy(world, 1.5, 2.5, 0.2)).toBe(true);
     expect(canOccupy(world, 1.9, 2.5, 0.2)).toBe(false);
     expect(canOccupy(world, 2.5, 2.5, 0.2)).toBe(false);
+  });
+
+  it("treats wall tops as surfaces above the block", () => {
+    expect(tileHeightAt(world, 1.5, 1.5)).toBe(0);
+    expect(tileHeightAt(world, 2.5, 2.5)).toBe(WALL_HEIGHT);
+    expect(tileHeightAt(world, -1, 2)).toBe(WALL_HEIGHT);
+    expect(supportHeight(world, 1.5, 1.5)).toBe(0);
+    expect(supportHeight(world, 2.5, 2.5)).toBe(WALL_HEIGHT);
+  });
+
+  it("does not lift a player standing next to a wall", () => {
+    expect(supportHeight(world, 1.7, 2.5)).toBe(0);
+    expect(supportHeight(world, 1.8, 2.5)).toBe(0);
+  });
+
+  it("only lets the player occupy a wall cell from above it", () => {
+    expect(canOccupy(world, 2.5, 2.5, 0.2, 0)).toBe(false);
+    expect(canOccupy(world, 2.5, 2.5, 0.2, 0.8)).toBe(false);
+    expect(canOccupy(world, 2.5, 2.5, 0.2, 1.3)).toBe(false);
+    expect(canOccupy(world, 2.5, 2.5, 0.2, WALL_HEIGHT)).toBe(true);
+    expect(canOccupy(world, 2.5, 2.5, 0.2, 2.2)).toBe(true);
+  });
+
+  it("keeps the map edge blocked at any altitude", () => {
+    expect(canOccupy(world, 0.05, 2.5, 0.2, 10)).toBe(false);
+    expect(canOccupy(world, 4.95, 2.5, 0.2, 10)).toBe(false);
+    expect(canOccupy(world, 2.5, 0.05, 0.2, 10)).toBe(false);
   });
 
   it("rejects maps with inconsistent row widths", () => {

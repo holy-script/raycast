@@ -127,7 +127,7 @@ function packCharacter(dir: CharacterDirs): number {
     frameAnchorZ: FRAME_ANCHOR_Z,
     directions,
     pitches,
-    pitchOrder: ["low", "level", "high"].slice(0, pitches),
+    pitchOrder: ["low", "level", "high", "top"].slice(0, pitches),
     states: Object.fromEntries(
       STATES.map((state) => [state.name, { fps: state.fps, frames: state.frames }]),
     ),

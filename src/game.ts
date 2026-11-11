@@ -12,10 +12,16 @@ import {
 import {
   Renderer,
   type CameraState,
+  type RenderStats,
   type SpriteDraw,
   type Texture,
 } from "./engine/renderer";
-import { canOccupy, createWorld, type World } from "./engine/world";
+import {
+  canOccupy,
+  createWorld,
+  supportHeight,
+  type World,
+} from "./engine/world";
 import { DEMO_ACTORS, type ActorSpec } from "./content/actors";
 import { DEMO_MAP, DEMO_SPAWN } from "./content/demo-map";
 
@@ -35,7 +41,7 @@ const JET_FUEL_SECONDS = 5.0;
 const JET_REFUEL_RATE = 0.5;
 const MOUSE_SENSITIVITY = 0.0022;
 const GROUND_PITCH_LIMIT = 1.1;
-const AIR_PITCH_LIMIT = 0.92;
+const AIR_PITCH_LIMIT = 1.45;
 const MAX_ALTITUDE = 18;
 
 export interface GameAssets {
@@ -74,6 +80,8 @@ export interface HudState {
   y: number;
   z: number;
   vz: number;
+  support: number;
+  onGround: boolean;
   yawDeg: number;
   pitchDeg: number;
   flying: boolean;
@@ -87,7 +95,28 @@ export interface HudState {
   nearestPitch: number;
 }
 
-const PITCH_LABELS = ["LOW", "LEVEL", "HIGH"];
+export interface RenderDebug {
+  camera: {
+    x: number;
+    y: number;
+    eyeZ: number;
+    yaw: number;
+    pitch: number;
+    forwardX: number;
+    forwardY: number;
+  };
+  player: {
+    x: number;
+    y: number;
+    z: number;
+    support: number;
+    onGround: boolean;
+  };
+  actors: Array<{ name: string; x: number; y: number; z: number }>;
+  stats: RenderStats;
+}
+
+const PITCH_LABELS = ["LOW", "LEVEL", "HIGH", "TOP"];
 
 export class Game {
   readonly world: World;
@@ -175,14 +204,24 @@ export class Game {
 
     if (moveX !== 0 || moveY !== 0) {
       const nextX = this.player.x + moveX * stepDistance;
-      if (canOccupy(this.world, nextX, this.player.y, PLAYER_RADIUS)) {
+      if (
+        canOccupy(this.world, nextX, this.player.y, PLAYER_RADIUS, this.player.z)
+      ) {
         this.player.x = nextX;
       }
       const nextY = this.player.y + moveY * stepDistance;
-      if (canOccupy(this.world, this.player.x, nextY, PLAYER_RADIUS)) {
+      if (
+        canOccupy(this.world, this.player.x, nextY, PLAYER_RADIUS, this.player.z)
+      ) {
         this.player.y = nextY;
       }
     }
+
+    const support = supportHeight(
+      this.world,
+      this.player.x,
+      this.player.y,
+    );
 
     if (this.flying) {
       const vertical =
@@ -194,11 +233,11 @@ export class Game {
           : 0);
       this.player.z = clamp(
         this.player.z + vertical * FLY_SPEED * dt,
-        0,
+        support,
         MAX_ALTITUDE,
       );
       this.player.vz = 0;
-      this.player.onGround = this.player.z <= 0.001;
+      this.player.onGround = this.player.z <= support + 0.001;
       this.player.thrusting = false;
     } else {
       const wantsThrust =
@@ -226,13 +265,16 @@ export class Game {
         this.player.vz = this.player.thrusting ? 0 : Math.min(this.player.vz, 0);
       }
 
-      if (this.player.z <= 0) {
-        this.player.z = 0;
+      if (this.player.z <= support) {
+        this.player.z = support;
         this.player.vz = 0;
         this.player.onGround = true;
-        this.player.fuel = Math.min(1, this.player.fuel + JET_REFUEL_RATE * dt);
       } else {
         this.player.onGround = false;
+      }
+
+      if (this.player.onGround) {
+        this.player.fuel = Math.min(1, this.player.fuel + JET_REFUEL_RATE * dt);
       }
     }
 
@@ -271,6 +313,39 @@ export class Game {
         );
         actor.facing +=
           shortestAngleDelta(actor.facing, target) * Math.min(1, dt * 2.4);
+      }
+
+      if (actor.spec.behavior === "chase" && actor.spec.chase) {
+        const dx = this.player.x - actor.x;
+        const dy = this.player.y - actor.y;
+        const distance = Math.hypot(dx, dy);
+        const target = Math.atan2(dy, dx);
+        actor.facing = wrapAngle(
+          actor.facing +
+            shortestAngleDelta(actor.facing, target) * Math.min(1, dt * 4),
+        );
+        const { speed, range } = actor.spec.chase;
+        if (distance > 1.5 && distance < range) {
+          const step = Math.min(speed * dt, distance - 1.4);
+          const nextX = actor.x + Math.cos(target) * step;
+          if (canOccupy(this.world, nextX, actor.y, 0.16, actor.z)) {
+            actor.x = nextX;
+          }
+          const nextY = actor.y + Math.sin(target) * step;
+          if (canOccupy(this.world, actor.x, nextY, 0.16, actor.z)) {
+            actor.y = nextY;
+          }
+          actor.state = "walk";
+        } else {
+          actor.state = "idle";
+        }
+      }
+
+      if (actor.spec.behavior === "hover" && actor.spec.hover) {
+        const { height, bob, speed } = actor.spec.hover;
+        actor.z = height + Math.sin(actor.animTime * speed) * bob;
+        actor.facing = wrapAngle(actor.facing + dt * 0.7);
+        actor.state = "idle";
       }
 
       if (actor.spec.behavior === "patrol" && actor.spec.patrol) {
@@ -352,7 +427,7 @@ export class Game {
         (manifest.frameWorldSize * (actor.spec.scale ?? 1)) / 2;
       const pitchIndex = quantizePitch(
         elevationAngle(camera.eyeZ, centerZ, distance),
-        0.08,
+        manifest.pitches,
       );
       const stateDef = manifest.states[actor.state] ?? manifest.states.idle;
       const frameIndex = stateDef
@@ -370,6 +445,7 @@ export class Game {
         worldSize,
         anchorZ: manifest.frameAnchorZ ?? 0,
         tint: actor.spec.tint,
+        id: actor.spec.name,
       });
     }
 
@@ -403,19 +479,27 @@ export class Game {
           nearest.z + (manifest.frameAnchorZ ?? 0) + manifest.frameWorldSize / 2,
           best,
         ),
-        0.08,
+        manifest.pitches,
       );
     }
+
+    const support = supportHeight(
+      this.world,
+      this.player.x,
+      this.player.y,
+    );
 
     return {
       x: this.player.x,
       y: this.player.y,
       z: this.player.z,
       vz: this.player.vz,
+      support,
+      onGround: this.player.onGround,
       yawDeg: Math.round((wrapAngle(this.player.yaw) * 180) / Math.PI),
       pitchDeg: Math.round((this.player.pitch * 180) / Math.PI),
       flying: this.flying,
-      airborne: this.player.z > 0.04,
+      airborne: !this.player.onGround,
       thrusting: this.player.thrusting,
       fuel: this.player.fuel,
       nearestName: nearest?.spec.name ?? "none",
@@ -423,6 +507,40 @@ export class Game {
       nearestDistance: best,
       nearestYaw,
       nearestPitch,
+    };
+  }
+
+  getRenderDebug(): RenderDebug {
+    const camera = this.cameraState();
+    const support = supportHeight(
+      this.world,
+      this.player.x,
+      this.player.y,
+    );
+    return {
+      camera: {
+        x: camera.x,
+        y: camera.y,
+        eyeZ: camera.eyeZ,
+        yaw: camera.yaw,
+        pitch: camera.pitch,
+        forwardX: camera.dirX,
+        forwardY: camera.dirY,
+      },
+      player: {
+        x: this.player.x,
+        y: this.player.y,
+        z: this.player.z,
+        support,
+        onGround: this.player.onGround,
+      },
+      actors: this.actors.map((actor) => ({
+        name: actor.spec.name,
+        x: actor.x,
+        y: actor.y,
+        z: actor.z,
+      })),
+      stats: this.renderer.stats,
     };
   }
 
@@ -510,7 +628,8 @@ export class Game {
     this.player.y = y;
     this.player.z = z;
     this.player.vz = 0;
-    this.player.onGround = z <= 0.001;
+    const support = supportHeight(this.world, x, y);
+    this.player.onGround = z <= support + 0.001;
     this.player.yaw = wrapAngle(yaw);
     const limit = this.pitchLimit();
     this.player.pitch = clamp(pitch, -limit, limit);
