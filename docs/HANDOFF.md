@@ -11,11 +11,12 @@ npm run typecheck
 npm test
 npm run build
 npm run playtest   # headless Chrome, 29 checks + screenshots
+npm run playtest:matrix  # 70 deterministic state/route scenarios, 428 checks
 npm run dev        # http://localhost:5173
 ```
 
 Expected: typecheck clean, 43 tests passing across 6 files, Vite build succeeds, playtest
-29/29. Click the canvas, move with WASD, hold Space to jetpack up to 18 m, and look down
+29/29, matrix 428/428 with zero console errors. Click the canvas, move with WASD, hold Space to jetpack up to 18 m, and look down
 to see the top-pitch sprite rows and the diorama. Walk up the panel stairs (x=10–13,
 y=18–21) onto the 0.4 platform, jump the 0.6 crate at (4.5, 13.5), or land on a wall to
 perch; walk off to fall back.
@@ -60,6 +61,13 @@ window.__raycast.automation.press("KeyW");
 window.__raycast.automation.look(120, 0);
 window.__raycast.automation.state();          // HudState
 window.__raycast.debug();                     // camera, player, actor rects, render stats
+
+window.__raycast.automation.pause();          // freeze the live frame loop
+window.__raycast.automation.step(0.5);        // fixed-dt ticks while paused, then render
+window.__raycast.automation.resume();
+window.__raycast.automation.reset();          // respawn + actor spawns + fuel
+window.__raycast.automation.setFuel(0.3);
+window.__raycast.automation.frameCount();     // real rAF ticks (harness liveness)
 ```
 
 Useful for deterministic captures and tests. `game.getHudState()` returns the nearest
@@ -68,10 +76,12 @@ verified. `debug()` exposes `renderer.stats.wallColumns`, `wallPixels`, `topPixe
 per-sprite `contentW/contentH/pixels/occluded` so the harness can assert on what was
 actually drawn.
 
-`?screenshot` hides the intro overlay for headless captures. Prefer the harness:
-`npm run playtest` starts Vite, drives Chrome over CDP, writes screenshots plus
-`report.json`, and exits non-zero on failure. To verify a deployed build instead of the
-local server:
+`?screenshot` hides the intro overlay for headless captures. Prefer the harnesses:
+`npm run playtest` is the happy-path browser check, and `npm run playtest:matrix` walks
+70 deterministic state/route scenarios (428 checks, labelled contact sheet, golden
+frames). Both start Vite, drive Chrome over CDP, write screenshots plus `report.json`,
+and exit non-zero on failure; see [PLAYTEST-MATRIX.md](PLAYTEST-MATRIX.md). To verify a
+deployed build instead of the local server:
 
 ```bash
 PLAYTEST_OUT=/tmp/rc-prod-check npm run playtest -- --url https://raycast-rosy.vercel.app/
@@ -127,6 +137,11 @@ leave HUD values at `--`.
   and the SD1.5 pass (5.4–6.2).
 - **MCP framing:** `tools/mcp/studio.ts` must write only JSON-RPC lines to stdout; logs
   belong on stderr. Tool calls spawn `tsx` with an argv array, never a shell string.
+- **Actor reset:** `Game.resetActors()` must restore hover actors to `spec.hover.height`;
+  zeroing `z` leaves them on the floor until the next update and corrupts pitch-band tests.
+- **Headless frames:** Chrome only emits rAF for a foregrounded target. The CDP launcher
+  calls `Page.bringToFront`, and the matrix re-fronts before `resume()`; removing either
+  silently freezes real-time checks while `isPaused()` still reads false.
 
 ## Conventions
 
@@ -134,8 +149,9 @@ leave HUD values at `--`.
 - Runtime code has no dependencies; tooling uses `pngjs` and `tsx` only.
 - Comments explain non-obvious math or a bug workaround, not every line.
 - Unit tests cover pure math/data code. Browser behavior is verified by
-  `npm run playtest`; the playtester agent (`.qoder/agents/playtester.md`) also reviews
-  the captured screenshots for visual regressions.
+  `npm run playtest` plus the state matrix (`npm run playtest:matrix`); the playtester
+  agent (`.qoder/agents/playtester.md`) reviews the captured screenshots for visual
+  regressions.
 - Keep documentation current in the same commit as the change it describes.
 
 ## Git workflow
@@ -175,7 +191,8 @@ M6 is complete: Blender controls, the ComfyUI workflow/CLI, style verification, 
 MCP studio server are in place. The owner is playtesting the current build next; treat
 their bug/feel report as the first input before starting new content.
 
-After that, resume M7:
+After that, resume M7. The matrix gives each new feature a place to land: add a scenario
+group for combat damage, interaction, doors/pickups, and the second map.
 
 1. Add attack/hurt/death/talk states to the Blender timeline, state constants, atlas
    manifests, and frame selection.

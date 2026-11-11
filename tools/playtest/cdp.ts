@@ -119,7 +119,11 @@ export class Browser {
       );
     });
 
-    return new Browser(chrome, profileDir, socket, target.id, port);
+    const browser = new Browser(chrome, profileDir, socket, target.id, port);
+    // Headless Chrome only emits animation frames for a foregrounded target;
+    // without this, rAF stalls seconds into a run and real-time checks freeze.
+    await browser.send("Page.bringToFront");
+    return browser;
   }
 
   private attachReaders(): void {

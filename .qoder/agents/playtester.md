@@ -18,9 +18,13 @@ captured screenshots.
    `window.__raycast.automation`, captures screenshots to
    `docs/screenshots/playtest/`, and writes `report.json`. It exits non-zero on a
    failed check.
-2. Read `docs/screenshots/playtest/report.json`. List every failed check with its
-   measured detail.
-3. Open the screenshots with the Read tool and review them as images. Check:
+2. Run `npm run playtest:matrix`. It walks 70 deterministic scenarios (428 checks) and
+   writes `docs/screenshots/matrix/` with a labelled `contact-sheet.png` and
+   `report.json`. Read the report, then open the contact sheet and any relevant
+   full-size frames. The matrix catches movement, vertical, aim, surface, actor, UI, and
+   route states the happy-path run does not.
+3. Read both `report.json` files. List every failed check with its measured detail.
+4. Open the screenshots with the Read tool and review them as images. Check:
    - Floor grid stays anchored to the world while moving and turning (no sliding or
      smearing along with the camera).
    - Walls are vertical, textured, and meet the floor without gaps; wall faces remain
@@ -39,11 +43,14 @@ captured screenshots.
    - Landing on a wall shows `PERCH · WALL 1.4 m` and a stable overhead view; stepping
      off returns to floor height.
    - No black frames, sky-colored holes in the floor, or sprite rectangles.
-4. `window.__raycast.debug()` exposes render statistics (`wallColumns`, `wallPixels`,
-   per-sprite `contentW/contentH/pixels`); use it when a check disagrees with what you see.
-4. Compare against the previous run when screenshots already exist, and call out any
+5. `window.__raycast.debug()` exposes render statistics (`wallColumns`, `wallPixels`,
+   per-sprite `contentW/contentH/pixels`) and resolved yaw/pitch/frame per actor; use it
+   when a check disagrees with what you see.
+6. Compare against the previous run when screenshots already exist, and call out any
    visual change that looks like a regression even if all programmatic checks pass.
-5. Report concisely: verdict, table of checks with pass/fail and measured values,
+   Matrix goldens are replaced after a mismatch is reported, so review the first run
+   after a visual change before it is committed.
+7. Report concisely: verdict, table of checks with pass/fail and measured values,
    screenshot findings, and any suspected root cause with file references. Do not edit
    game code, docs, or assets, and do not commit. If the harness itself is broken
    (server boot, CDP, missing atlases), diagnose it and say exactly what is missing;
@@ -52,7 +59,8 @@ captured screenshots.
 ## Commands
 
 ```bash
-npm run playtest     # full browser verification against the local dev server
+npm run playtest     # happy-path browser verification against the local dev server
+npm run playtest:matrix  # 70 deterministic state/route scenarios
 PLAYTEST_OUT=/tmp/rc-prod-check npm run playtest -- --url https://raycast-rosy.vercel.app/
 npm test             # unit tests (not a substitute for the playtest)
 npm run typecheck

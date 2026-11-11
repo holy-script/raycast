@@ -12,6 +12,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "playtest": "tsx tools/playtest/run.ts",
+    "playtest:matrix": "tsx tools/playtest/matrix.ts",
     "mcp:studio": "tsx tools/mcp/studio.ts",
     "assets:textures": "tsx tools/assets/make-textures.ts",
     "assets:blender": "bash tools/blender/render-all.sh",

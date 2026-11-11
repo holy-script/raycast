@@ -26,6 +26,7 @@ npm run typecheck   # passes
 npm test            # 6 files, 43 tests pass
 npm run build       # tsc + vite build
 npm run playtest    # 29/29 browser checks pass
+npm run playtest:matrix  # 70 scenarios, 428/428 checks, 0 console errors
 npm run assets:verify  # 384 frames/character; IoU 1.000, mean drift 5.4–6.2
 ```
 
@@ -81,7 +82,36 @@ Browser verification (2026-11-11, headless Chrome over CDP, `http://127.0.0.1:51
   https://raycast-rosy.vercel.app/ with all three 16×4 atlases served; Vercel deployment
   `raycast-knbwjpvue` reached Ready in 11 s.
 
+State-matrix verification (2026-11-11, `npm run playtest:matrix`):
+
+- 70 deterministic scenarios / 428 checks / 70 captures pass in ~5 s, twice in a row
+  with zero golden-pixel diffs and zero console errors.
+- Coverage: movement axes and diagonals, wall block/slide, jump/jet/ceil/empty/fall/
+  refuel/freefly, ground and air pitch clamps, mouse look, 8 sprite sectors, 4 pitch
+  bands, stairs/platform/crate/wall landings, all five actor behaviors, occlusion,
+  overhead/edge actors, minimap/HUD/pause/resume, and five combined routes.
+- Audit fixed one engine state bug (`resetActors()` left hover actors on the floor until
+  the next tick) and five scenario-expectation bugs (wall clipping the diagonal start,
+  strict float fuel equality, two pitch cases selecting a nearer actor, and an rAF
+  liveness failure in headless Chrome). Details in
+  [PLAYTEST-MATRIX.md](PLAYTEST-MATRIX.md#first-pass-audit-2026-11-11).
+- Artifacts: `docs/screenshots/matrix/contact-sheet.png`, per-scenario PNGs, and
+  `report.json`.
+
 ## Session log
+
+### 2026-11-11 — Deterministic state-matrix playtesting
+
+- Added automation hooks for pause, fixed-step simulation, actor reset, fuel pinning, and
+  a rAF frame counter; extracted sprite selection so `debug()` can report resolved yaw /
+  pitch / frame per actor.
+- Built `tools/playtest/matrix.ts` (`npm run playtest:matrix`): 70 scenarios across
+  movement, vertical, aim, surfaces, actors, UI, and routes; universal state/HUD/sprite
+  checks; golden frame comparison; Node-side labelled contact sheet.
+- Fixed `Game.resetActors()` to spawn hover actors at cruise height, and `Browser.launch`
+  to foreground the headless target so rAF keeps running; matrix re-fronts before resume.
+- First-pass audit found no renderer regressions in the 70 captured frames; all failures
+  were test-expectation defects except the hover reset.
 
 ### 2026-11-11 — Full AI sprite pass with ComfyUI
 
@@ -230,8 +260,13 @@ Browser verification (2026-11-11, headless Chrome over CDP, `http://127.0.0.1:51
 - Actor shadows fade out above 2.5 m, so high hover actors have no visible shadow.
 - Pointer lock must be entered by clicking; automated screenshots use `?screenshot`.
 - The intro overlay can require a reload on a cold Vite dev start if assets race HMR.
-- The playtest verifies mechanics, render statistics, and atlas wiring, not art quality;
+- The playtests verify mechanics, render statistics, and atlas wiring, not art quality;
   the playtester agent reviews the screenshots for visual regressions.
+- Headless Chrome only emits rAF for a foregrounded target; both harnesses front the page,
+  and the matrix does so again before resume. Without it, real-time checks freeze while
+  `isPaused()` still returns false.
+- Matrix golden PNGs are replaced after a mismatch is reported, so the first run after a
+  visual change flags every affected scenario. Review that run before committing.
 - The ComfyUI path is implemented and covered against a mock server, but no real
   checkpoint/ControlNet generation has run in this repo; start ComfyUI and supply
   `--checkpoint`/`--controlnet` to validate art quality. AutoSprite/Gamelabs is not
@@ -241,9 +276,10 @@ Browser verification (2026-11-11, headless Chrome over CDP, `http://127.0.0.1:51
 
 ## Immediate next steps
 
-1. Playtest the current M6 build and collect bug/feel feedback (owner).
-2. Add attack/hurt/death states and a simple interaction or combat loop (`M7`).
-3. Add a second map exercising the vertical layouts (M7).
-4. Run a real ComfyUI pass once a server and models are available, then tune
+1. Add attack/hurt/death states and a simple interaction or combat loop (`M7`), with new
+   matrix scenarios for damage, hit feedback, and removal.
+2. Add doors, pickups, and a level transition; extend the matrix with `i`/`d` groups.
+3. Add a second map exercising the vertical layouts (M7) and a route scenario for it.
+4. Run a real ComfyUI pass when regenerating sprites for the new states, then tune
    `--max-drift` from `artifacts/style-report.json`.
 5. Optional: AutoSprite/Gamelabs adapter behind the same CLI/workflow boundary.

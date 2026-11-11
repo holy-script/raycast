@@ -8,6 +8,7 @@ import {
   shortestAngleDelta,
   spriteYawIndex,
   wrapAngle,
+  type PitchIndex,
 } from "./engine/math";
 import {
   Renderer,
@@ -113,7 +114,18 @@ export interface RenderDebug {
     support: number;
     onGround: boolean;
   };
-  actors: Array<{ name: string; x: number; y: number; z: number }>;
+  actors: Array<{
+    name: string;
+    x: number;
+    y: number;
+    z: number;
+    facing: number;
+    state: string;
+    sprite: string;
+    yawIndex: number;
+    pitchIndex: number;
+    frameIndex: number;
+  }>;
   stats: RenderStats;
 }
 
@@ -428,6 +440,37 @@ export class Game {
     return this.assets.atlases[spec.sprite] ?? this.assets.atlases.guardian;
   }
 
+  private spriteSelection(actor: Actor, camera: CameraState): {
+    yawIndex: number;
+    pitchIndex: PitchIndex;
+    frameIndex: number;
+    worldSize: number;
+  } {
+    const manifest = this.atlasFor(actor.spec).manifest;
+    const dx = camera.x - actor.x;
+    const dy = camera.y - actor.y;
+    const distance = Math.hypot(dx, dy);
+    const yawIndex = spriteYawIndex(
+      Math.atan2(dy, dx),
+      actor.facing,
+      manifest.directions,
+    );
+    const worldSize = manifest.frameWorldSize * (actor.spec.scale ?? 1);
+    const centerZ =
+      actor.z +
+      (manifest.frameAnchorZ ?? 0) +
+      (manifest.frameWorldSize * (actor.spec.scale ?? 1)) / 2;
+    const pitchIndex = quantizePitch(
+      elevationAngle(camera.eyeZ, centerZ, distance),
+      manifest.pitches,
+    );
+    const stateDef = manifest.states[actor.state] ?? manifest.states.idle;
+    const frameIndex = stateDef
+      ? Math.floor(actor.animTime * stateDef.fps) % stateDef.frames
+      : 0;
+    return { yawIndex, pitchIndex, frameIndex, worldSize };
+  }
+
   private buildSprites(camera: CameraState): SpriteDraw[] {
     const draws: SpriteDraw[] = [];
 
@@ -439,24 +482,10 @@ export class Game {
       const distance = Math.hypot(dx, dy);
       if (distance < 0.001) continue;
 
-      const yawIndex = spriteYawIndex(
-        Math.atan2(dy, dx),
-        actor.facing,
-        manifest.directions,
+      const { yawIndex, pitchIndex, frameIndex, worldSize } = this.spriteSelection(
+        actor,
+        camera,
       );
-      const worldSize = manifest.frameWorldSize * (actor.spec.scale ?? 1);
-      const centerZ =
-        actor.z +
-        (manifest.frameAnchorZ ?? 0) +
-        (manifest.frameWorldSize * (actor.spec.scale ?? 1)) / 2;
-      const pitchIndex = quantizePitch(
-        elevationAngle(camera.eyeZ, centerZ, distance),
-        manifest.pitches,
-      );
-      const stateDef = manifest.states[actor.state] ?? manifest.states.idle;
-      const frameIndex = stateDef
-        ? Math.floor(actor.animTime * stateDef.fps) % stateDef.frames
-        : 0;
       const frame = atlas.getFrame(actor.state, pitchIndex, yawIndex, frameIndex);
       if (!frame) continue;
 
@@ -558,12 +587,21 @@ export class Game {
         support,
         onGround: this.player.onGround,
       },
-      actors: this.actors.map((actor) => ({
-        name: actor.spec.name,
-        x: actor.x,
-        y: actor.y,
-        z: actor.z,
-      })),
+      actors: this.actors.map((actor) => {
+        const selection = this.spriteSelection(actor, camera);
+        return {
+          name: actor.spec.name,
+          x: actor.x,
+          y: actor.y,
+          z: actor.z,
+          facing: actor.facing,
+          state: actor.state,
+          sprite: actor.spec.sprite,
+          yawIndex: selection.yawIndex,
+          pitchIndex: selection.pitchIndex,
+          frameIndex: selection.frameIndex,
+        };
+      }),
       stats: this.renderer.stats,
     };
   }
@@ -661,6 +699,25 @@ export class Game {
 
   setFlying(value: boolean): void {
     this.flying = value;
+  }
+
+  setFuel(value: number): void {
+    this.player.fuel = clamp(value, 0, 1);
+  }
+
+  /** Restores actors to their authored spawns and a shared animation clock. */
+  resetActors(): void {
+    this.actors.forEach((actor, index) => {
+      const spec = DEMO_ACTORS[index];
+      actor.x = spec.x;
+      actor.y = spec.y;
+      // Hover actors spawn at their cruising height; the bob term is zero at t=0.
+      actor.z = spec.hover?.height ?? 0;
+      actor.facing = spec.facing;
+      actor.state = spec.behavior === "patrol" ? "walk" : "idle";
+      actor.animTime = 0;
+      actor.patrolT = 0;
+    });
   }
 
   isThrusting(): boolean {

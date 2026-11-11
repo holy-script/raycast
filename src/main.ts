@@ -93,44 +93,54 @@ async function boot(): Promise<void> {
   let last = performance.now();
   let smoothedFps = 60;
   let hudClock = 0;
+  let paused = false;
+  let frameCount = 0;
+
+  const syncFrame = (): void => {
+    game.render();
+    game.drawMinimap(mapCtx, MINIMAP_SIZE);
+    thrust.classList.toggle("active", game.isThrusting());
+  };
+
+  const syncHud = (): void => {
+    const state = game.getHudState();
+    hudFps.textContent = String(Math.round(smoothedFps));
+    hudPos.textContent = `${state.x.toFixed(1)} ${state.y.toFixed(1)}`;
+    hudAlt.textContent = `${state.z.toFixed(2)} m · vz ${state.vz.toFixed(1)}`;
+    hudLook.textContent = `yaw ${state.yawDeg} · pitch ${state.pitchDeg}`;
+    hudMode.textContent = state.flying
+      ? "FREEFLY · DEBUG"
+      : state.thrusting
+        ? "JETPACK · BURN"
+        : state.support > 0.01 && state.onGround
+          ? `PERCH · ${state.support.toFixed(1)} m`
+          : state.airborne
+            ? "AIRBORNE · FALL"
+            : `WALK · ${started ? "LIVE" : "ATTRACT"}`;
+    hudFuel.textContent = `${Math.round(state.fuel * 100)}%`;
+    hudFuelFill.style.width = `${state.fuel * 100}%`;
+    hudSprite.textContent =
+      state.nearestYaw < 0
+        ? "none"
+        : `${state.nearestName} · ${state.nearestSprite} · yaw ${state.nearestYaw} · ${game.getPitchLabel(state.nearestPitch)}`;
+    hud.classList.toggle("minimal", !game.hudDetailVisible);
+  };
 
   const frame = (now: number): void => {
+    frameCount += 1;
     const elapsed = (now - last) / 1000;
     last = now;
     const dt = Math.min(0.05, elapsed);
 
-    game.update(dt);
-    game.render();
-    game.drawMinimap(mapCtx, MINIMAP_SIZE);
-    thrust.classList.toggle("active", game.isThrusting());
+    if (!paused) game.update(dt);
+    syncFrame();
 
     if (elapsed > 0) smoothedFps = smoothedFps * 0.9 + (1 / elapsed) * 0.1;
 
     hudClock += elapsed;
     if (hudClock > 0.1) {
       hudClock = 0;
-      const state = game.getHudState();
-      hudFps.textContent = String(Math.round(smoothedFps));
-      hudPos.textContent =
-        `${state.x.toFixed(1)} ${state.y.toFixed(1)}`;
-      hudAlt.textContent = `${state.z.toFixed(2)} m · vz ${state.vz.toFixed(1)}`;
-      hudLook.textContent = `yaw ${state.yawDeg} · pitch ${state.pitchDeg}`;
-      hudMode.textContent = state.flying
-        ? "FREEFLY · DEBUG"
-        : state.thrusting
-          ? "JETPACK · BURN"
-          : state.support > 0.01 && state.onGround
-            ? `PERCH · ${state.support.toFixed(1)} m`
-            : state.airborne
-              ? "AIRBORNE · FALL"
-              : `WALK · ${started ? "LIVE" : "ATTRACT"}`;
-      hudFuel.textContent = `${Math.round(state.fuel * 100)}%`;
-      hudFuelFill.style.width = `${state.fuel * 100}%`;
-      hudSprite.textContent =
-        state.nearestYaw < 0
-          ? "none"
-          : `${state.nearestName} · ${state.nearestSprite} · yaw ${state.nearestYaw} · ${game.getPitchLabel(state.nearestPitch)}`;
-      hud.classList.toggle("minimal", !game.hudDetailVisible);
+      syncHud();
     }
 
     requestAnimationFrame(frame);
@@ -158,6 +168,40 @@ async function boot(): Promise<void> {
       release: (code) => game.input.setKey(code, false),
       look: (dx, dy) => game.input.addLook(dx, dy),
       state: () => game.getHudState(),
+      pause: () => {
+        paused = true;
+      },
+      resume: () => {
+        paused = false;
+        last = performance.now();
+      },
+      isPaused: () => paused,
+      frameCount: () => frameCount,
+      /**
+       * Advances the simulation with a fixed timestep while paused, then renders
+       * and refreshes the HUD so captures are deterministic.
+       */
+      step: (seconds, dt = 1 / 60) => {
+        const timestep = Math.max(1 / 240, Math.min(0.05, dt));
+        const steps = Math.max(0, Math.round(seconds / timestep));
+        for (let index = 0; index < steps; index += 1) game.update(timestep);
+        syncFrame();
+        syncHud();
+      },
+      reset: () => {
+        game.respawn();
+        game.resetActors();
+        game.setFlying(false);
+        game.setFuel(1);
+        game.input.clearKeys();
+        game.input.consumeLook();
+        syncFrame();
+        syncHud();
+      },
+      setFuel: (value) => {
+        game.setFuel(value);
+        syncHud();
+      },
     },
   };
 }
@@ -177,6 +221,13 @@ declare global {
         release: (code: string) => void;
         look: (dx: number, dy: number) => void;
         state: () => HudState;
+        pause: () => void;
+        resume: () => void;
+        isPaused: () => boolean;
+        frameCount: () => number;
+        step: (seconds: number, dt?: number) => void;
+        reset: () => void;
+        setFuel: (value: number) => void;
       };
     };
   }

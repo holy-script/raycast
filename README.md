@@ -38,6 +38,7 @@ npm test           # unit tests
 npm run typecheck
 npm run build      # static build in dist/
 npm run playtest   # headless Chrome: input, physics, atlas + screenshot checks
+npm run playtest:matrix  # 70 deterministic state/route scenarios, 428 checks
 ```
 
 ## Controls
@@ -102,7 +103,7 @@ tools/comfy/      API-format workflow + placeholder validation + HTTP client
 tools/verify/     silhouette IoU and palette-drift metrics/report
 tools/atlas/      atlas packer + manifest generator
 tools/mcp/        stdio MCP server for atlas generation and single-view repair
-tools/playtest/   CDP browser harness, screenshots, and JSON report
+tools/playtest/   CDP harness: happy-path run + deterministic state matrix
 .qoder/agents/    playtester subagent definition
 tests/            Vitest coverage for DDA, math, world, atlas, Comfy workflow, style metrics
 docs/             spec, roadmap, progress, architecture, pipeline, handoff, ADRs
@@ -114,6 +115,7 @@ docs/             spec, roadmap, progress, architecture, pipeline, handoff, ADRs
 - [Progress](docs/PROGRESS.md) — current status, verification evidence, session log
 - [Architecture](docs/ARCHITECTURE.md) — rendering math and module map
 - [Pipeline](docs/PIPELINE.md) — asset generation and atlas schema
+- [Playtest matrix](docs/PLAYTEST-MATRIX.md) — scenario catalog, determinism, audit
 - [Handoff](docs/HANDOFF.md) — commands, debug API, invariants, next steps
 - [Decisions](docs/DECISIONS.md) — architecture decision records
 - [Original spec](docs/spec/AI-Sprites-In-Raycasting-Games.pdf)

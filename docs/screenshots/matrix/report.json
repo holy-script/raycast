@@ -1,0 +1,3497 @@
+{
+  "generatedAt": "2026-11-11T11:28:05.881Z",
+  "url": "http://127.0.0.1:5201/?screenshot",
+  "durationMs": 5088,
+  "scenarios": [
+    "g01-spawn-idle",
+    "g02-walk-forward",
+    "g03-walk-backward",
+    "g04-strafe-right",
+    "g05-strafe-left",
+    "g06-sprint-forward",
+    "g07-diagonal-walk",
+    "g08-wall-block",
+    "g09-north-wall-slide",
+    "g10-respawn-key",
+    "v01-jump-burst",
+    "v02-jet-burn",
+    "v03-jet-ceiling",
+    "v04-jet-empty-fuel",
+    "v05-fall-land",
+    "v06-ground-refuel",
+    "v07-freefly-up",
+    "v08-freefly-descend-crate",
+    "v09-freefly-off-fall",
+    "a01-ground-pitch-clamp-down",
+    "a02-ground-pitch-clamp-up",
+    "a03-air-pitch-top",
+    "a04-mouse-yaw",
+    "a05-mouse-pitch",
+    "a06-sector-front",
+    "a07-sector-back",
+    "a08-sector-south",
+    "a09-sector-north",
+    "a10-sector-ne",
+    "a11-sector-sw",
+    "a12-sector-se",
+    "a13-sector-nw",
+    "a14-pitch-band-low",
+    "a15-pitch-band-level",
+    "a16-pitch-band-high",
+    "a17-pitch-band-top",
+    "s01-stairs-approach",
+    "s02-stairs-climb",
+    "s03-stairs-descend",
+    "s04-platform-stand",
+    "s05-crate-block",
+    "s06-crate-perch",
+    "s07-wall-land",
+    "s08-wall-stepoff",
+    "s09-wall-perch-down",
+    "s10-near-wall",
+    "s11-near-wall-lookdown",
+    "c01-watcher-tracks",
+    "c02-patrol-advance",
+    "c03-patrol-reverse",
+    "c04-chase-approach",
+    "c05-hover-bob",
+    "c06-idle-animation",
+    "c07-occlusion-crate",
+    "c08-occlusion-wall",
+    "c09-overhead-guard",
+    "c10-overhead-edge-actor",
+    "c11-multi-actor-aerial",
+    "u01-minimap-visible",
+    "u02-minimap-hidden",
+    "u03-hud-minimal",
+    "u04-pause-freeze",
+    "u05-pause-resume",
+    "u06-hud-values",
+    "u07-fuel-readout",
+    "r01-jet-over-wall",
+    "r02-jet-forward-climb",
+    "r03-aerial-lookdown",
+    "r04-respawn-midair",
+    "r05-sprint-route"
+  ],
+  "passed": 428,
+  "failed": 0,
+  "checks": [
+    {
+      "scenario": "g01-spawn-idle",
+      "group": "ground",
+      "name": "spawn is on the courtyard floor",
+      "ok": true,
+      "detail": "3.50, 1.50 · support 0"
+    },
+    {
+      "scenario": "g01-spawn-idle",
+      "group": "ground",
+      "name": "grounded HUD shows walk mode",
+      "ok": true,
+      "detail": "WALK · ATTRACT"
+    },
+    {
+      "scenario": "g01-spawn-idle",
+      "group": "ground",
+      "name": "g01-spawn-idle matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "g01-spawn-idle",
+      "group": "ground",
+      "name": "g01-spawn-idle renders content",
+      "ok": true,
+      "detail": "288 colors, mean luma 49.5"
+    },
+    {
+      "scenario": "g01-spawn-idle",
+      "group": "ground",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 66996.00, 0.00"
+    },
+    {
+      "scenario": "g01-spawn-idle",
+      "group": "ground",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "11 rects"
+    },
+    {
+      "scenario": "g01-spawn-idle",
+      "group": "ground",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "g02-walk-forward",
+      "group": "ground",
+      "name": "forward moves along +x at walk speed",
+      "ok": true,
+      "detail": "x=5.00, y=1.50"
+    },
+    {
+      "scenario": "g02-walk-forward",
+      "group": "ground",
+      "name": "g02-walk-forward matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "g02-walk-forward",
+      "group": "ground",
+      "name": "g02-walk-forward renders content",
+      "ok": true,
+      "detail": "368 colors, mean luma 53.0"
+    },
+    {
+      "scenario": "g02-walk-forward",
+      "group": "ground",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.00, 1.50, 0.00, 1.00, 384.00, 64977.00, 0.00"
+    },
+    {
+      "scenario": "g02-walk-forward",
+      "group": "ground",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "10 rects"
+    },
+    {
+      "scenario": "g02-walk-forward",
+      "group": "ground",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "g03-walk-backward",
+      "group": "ground",
+      "name": "backward moves along -x",
+      "ok": true,
+      "detail": "x=2.00, y=1.50"
+    },
+    {
+      "scenario": "g03-walk-backward",
+      "group": "ground",
+      "name": "g03-walk-backward matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "g03-walk-backward",
+      "group": "ground",
+      "name": "g03-walk-backward renders content",
+      "ok": true,
+      "detail": "224 colors, mean luma 51.9"
+    },
+    {
+      "scenario": "g03-walk-backward",
+      "group": "ground",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "2.00, 1.50, 0.00, 1.00, 384.00, 70209.00, 0.00"
+    },
+    {
+      "scenario": "g03-walk-backward",
+      "group": "ground",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "12 rects"
+    },
+    {
+      "scenario": "g03-walk-backward",
+      "group": "ground",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "g04-strafe-right",
+      "group": "ground",
+      "name": "strafe right moves along +y",
+      "ok": true,
+      "detail": "x=5.50, y=6.00"
+    },
+    {
+      "scenario": "g04-strafe-right",
+      "group": "ground",
+      "name": "g04-strafe-right matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "g04-strafe-right",
+      "group": "ground",
+      "name": "g04-strafe-right renders content",
+      "ok": true,
+      "detail": "33 colors, mean luma 65.1"
+    },
+    {
+      "scenario": "g04-strafe-right",
+      "group": "ground",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 6.00, 0.00, 1.00, 384.00, 92160.00, 0.00"
+    },
+    {
+      "scenario": "g04-strafe-right",
+      "group": "ground",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "10 rects"
+    },
+    {
+      "scenario": "g04-strafe-right",
+      "group": "ground",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "g05-strafe-left",
+      "group": "ground",
+      "name": "strafe left moves along -y",
+      "ok": true,
+      "detail": "x=5.50, y=3.00"
+    },
+    {
+      "scenario": "g05-strafe-left",
+      "group": "ground",
+      "name": "g05-strafe-left matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "g05-strafe-left",
+      "group": "ground",
+      "name": "g05-strafe-left renders content",
+      "ok": true,
+      "detail": "151 colors, mean luma 63.1"
+    },
+    {
+      "scenario": "g05-strafe-left",
+      "group": "ground",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 3.00, 0.00, 1.00, 384.00, 82417.00, 0.00"
+    },
+    {
+      "scenario": "g05-strafe-left",
+      "group": "ground",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "10 rects"
+    },
+    {
+      "scenario": "g05-strafe-left",
+      "group": "ground",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "g06-sprint-forward",
+      "group": "ground",
+      "name": "sprint covers more ground than walking",
+      "ok": true,
+      "detail": "dx=2.30 (walk was 1.50)"
+    },
+    {
+      "scenario": "g06-sprint-forward",
+      "group": "ground",
+      "name": "g06-sprint-forward matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "g06-sprint-forward",
+      "group": "ground",
+      "name": "g06-sprint-forward renders content",
+      "ok": true,
+      "detail": "123 colors, mean luma 47.5"
+    },
+    {
+      "scenario": "g06-sprint-forward",
+      "group": "ground",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "7.80, 4.50, 0.00, 1.00, 384.00, 57956.00, 0.00"
+    },
+    {
+      "scenario": "g06-sprint-forward",
+      "group": "ground",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "8 rects"
+    },
+    {
+      "scenario": "g06-sprint-forward",
+      "group": "ground",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "g07-diagonal-walk",
+      "group": "ground",
+      "name": "diagonal input is normalized",
+      "ok": true,
+      "detail": "dx=1.06, dy=1.06"
+    },
+    {
+      "scenario": "g07-diagonal-walk",
+      "group": "ground",
+      "name": "g07-diagonal-walk matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "g07-diagonal-walk",
+      "group": "ground",
+      "name": "g07-diagonal-walk renders content",
+      "ok": true,
+      "detail": "117 colors, mean luma 49.8"
+    },
+    {
+      "scenario": "g07-diagonal-walk",
+      "group": "ground",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "6.56, 4.56, 0.00, 1.00, 384.00, 67627.00, 0.00"
+    },
+    {
+      "scenario": "g07-diagonal-walk",
+      "group": "ground",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "9 rects"
+    },
+    {
+      "scenario": "g07-diagonal-walk",
+      "group": "ground",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "g08-wall-block",
+      "group": "ground",
+      "name": "walking into a wall stops at the radius",
+      "ok": true,
+      "detail": "stopped at x=1.20"
+    },
+    {
+      "scenario": "g08-wall-block",
+      "group": "ground",
+      "name": "wall contact keeps the camera opaque",
+      "ok": true,
+      "detail": "384 wall columns"
+    },
+    {
+      "scenario": "g08-wall-block",
+      "group": "ground",
+      "name": "g08-wall-block matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "g08-wall-block",
+      "group": "ground",
+      "name": "g08-wall-block renders content",
+      "ok": true,
+      "detail": "25 colors, mean luma 73.0"
+    },
+    {
+      "scenario": "g08-wall-block",
+      "group": "ground",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "1.20, 1.50, 0.00, 1.00, 384.00, 92160.00, 0.00"
+    },
+    {
+      "scenario": "g08-wall-block",
+      "group": "ground",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "0 rects"
+    },
+    {
+      "scenario": "g08-wall-block",
+      "group": "ground",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "g09-north-wall-slide",
+      "group": "ground",
+      "name": "north wall blocks without leaving the map",
+      "ok": true,
+      "detail": "x=5.50, y=1.20"
+    },
+    {
+      "scenario": "g09-north-wall-slide",
+      "group": "ground",
+      "name": "g09-north-wall-slide matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "g09-north-wall-slide",
+      "group": "ground",
+      "name": "g09-north-wall-slide renders content",
+      "ok": true,
+      "detail": "20 colors, mean luma 60.4"
+    },
+    {
+      "scenario": "g09-north-wall-slide",
+      "group": "ground",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 1.20, 0.00, 1.00, 384.00, 92160.00, 0.00"
+    },
+    {
+      "scenario": "g09-north-wall-slide",
+      "group": "ground",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "0 rects"
+    },
+    {
+      "scenario": "g09-north-wall-slide",
+      "group": "ground",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "g10-respawn-key",
+      "group": "ground",
+      "name": "R respawns at the spawn pad",
+      "ok": true,
+      "detail": "3.50, 1.50 · fuel 1"
+    },
+    {
+      "scenario": "g10-respawn-key",
+      "group": "ground",
+      "name": "g10-respawn-key matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "g10-respawn-key",
+      "group": "ground",
+      "name": "g10-respawn-key renders content",
+      "ok": true,
+      "detail": "300 colors, mean luma 49.4"
+    },
+    {
+      "scenario": "g10-respawn-key",
+      "group": "ground",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 67109.00, 0.00"
+    },
+    {
+      "scenario": "g10-respawn-key",
+      "group": "ground",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "11 rects"
+    },
+    {
+      "scenario": "g10-respawn-key",
+      "group": "ground",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "v01-jump-burst",
+      "group": "vertical",
+      "name": "a short hop leaves the ground",
+      "ok": true,
+      "detail": "alt 0.81 m, vz 3.37"
+    },
+    {
+      "scenario": "v01-jump-burst",
+      "group": "vertical",
+      "name": "airborne HUD switches mode",
+      "ok": true,
+      "detail": "AIRBORNE · FALL"
+    },
+    {
+      "scenario": "v01-jump-burst",
+      "group": "vertical",
+      "name": "v01-jump-burst matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "v01-jump-burst",
+      "group": "vertical",
+      "name": "v01-jump-burst renders content",
+      "ok": true,
+      "detail": "113 colors, mean luma 37.8"
+    },
+    {
+      "scenario": "v01-jump-burst",
+      "group": "vertical",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 4.50, 0.81, 0.98, 384.00, 42524.00, 0.00"
+    },
+    {
+      "scenario": "v01-jump-burst",
+      "group": "vertical",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "10 rects"
+    },
+    {
+      "scenario": "v01-jump-burst",
+      "group": "vertical",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "AIRBORNE · FALL · fuel 98%"
+    },
+    {
+      "scenario": "v02-jet-burn",
+      "group": "vertical",
+      "name": "jetpack burns fuel and climbs",
+      "ok": true,
+      "detail": "alt 5.41 m, fuel 0.80"
+    },
+    {
+      "scenario": "v02-jet-burn",
+      "group": "vertical",
+      "name": "jet HUD and exhaust glow are active",
+      "ok": true,
+      "detail": "JETPACK · BURN · glow true"
+    },
+    {
+      "scenario": "v02-jet-burn",
+      "group": "vertical",
+      "name": "v02-jet-burn matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "v02-jet-burn",
+      "group": "vertical",
+      "name": "v02-jet-burn renders content",
+      "ok": true,
+      "detail": "159 colors, mean luma 31.1"
+    },
+    {
+      "scenario": "v02-jet-burn",
+      "group": "vertical",
+      "name": "exhaust glow clears after release",
+      "ok": true,
+      "detail": "glow false"
+    },
+    {
+      "scenario": "v02-jet-burn",
+      "group": "vertical",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 4.50, 6.14, 0.80, 293.00, 7206.00, 5014.00"
+    },
+    {
+      "scenario": "v02-jet-burn",
+      "group": "vertical",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "10 rects"
+    },
+    {
+      "scenario": "v02-jet-burn",
+      "group": "vertical",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "AIRBORNE · FALL · fuel 80%"
+    },
+    {
+      "scenario": "v03-jet-ceiling",
+      "group": "vertical",
+      "name": "altitude ceiling holds at 18 m",
+      "ok": true,
+      "detail": "alt 18.00 m"
+    },
+    {
+      "scenario": "v03-jet-ceiling",
+      "group": "vertical",
+      "name": "v03-jet-ceiling matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "v03-jet-ceiling",
+      "group": "vertical",
+      "name": "v03-jet-ceiling renders content",
+      "ok": true,
+      "detail": "24 colors, mean luma 28.6"
+    },
+    {
+      "scenario": "v03-jet-ceiling",
+      "group": "vertical",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 4.50, 18.00, 0.80, 0.00, 0.00, 0.00"
+    },
+    {
+      "scenario": "v03-jet-ceiling",
+      "group": "vertical",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "10 rects"
+    },
+    {
+      "scenario": "v03-jet-ceiling",
+      "group": "vertical",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "JETPACK · BURN · fuel 80%"
+    },
+    {
+      "scenario": "v04-jet-empty-fuel",
+      "group": "vertical",
+      "name": "empty tank stops thrust",
+      "ok": true,
+      "detail": "fuel 8.67e-19, thrust false"
+    },
+    {
+      "scenario": "v04-jet-empty-fuel",
+      "group": "vertical",
+      "name": "empty tank HUD reads 0%",
+      "ok": true,
+      "detail": "0%"
+    },
+    {
+      "scenario": "v04-jet-empty-fuel",
+      "group": "vertical",
+      "name": "v04-jet-empty-fuel matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "v04-jet-empty-fuel",
+      "group": "vertical",
+      "name": "v04-jet-empty-fuel renders content",
+      "ok": true,
+      "detail": "122 colors, mean luma 48.5"
+    },
+    {
+      "scenario": "v04-jet-empty-fuel",
+      "group": "vertical",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 4.50, 0.35, 0.00, 384.00, 66167.00, 0.00"
+    },
+    {
+      "scenario": "v04-jet-empty-fuel",
+      "group": "vertical",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "10 rects"
+    },
+    {
+      "scenario": "v04-jet-empty-fuel",
+      "group": "vertical",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "AIRBORNE · FALL · fuel 0%"
+    },
+    {
+      "scenario": "v05-fall-land",
+      "group": "vertical",
+      "name": "free fall lands back on the floor",
+      "ok": true,
+      "detail": "alt 0.00 m, grounded true"
+    },
+    {
+      "scenario": "v05-fall-land",
+      "group": "vertical",
+      "name": "v05-fall-land matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "v05-fall-land",
+      "group": "vertical",
+      "name": "v05-fall-land renders content",
+      "ok": true,
+      "detail": "98 colors, mean luma 55.8"
+    },
+    {
+      "scenario": "v05-fall-land",
+      "group": "vertical",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 4.50, 0.00, 1.00, 314.00, 25823.00, 0.00"
+    },
+    {
+      "scenario": "v05-fall-land",
+      "group": "vertical",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "10 rects"
+    },
+    {
+      "scenario": "v05-fall-land",
+      "group": "vertical",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "v06-ground-refuel",
+      "group": "vertical",
+      "name": "ground contact refuels over time",
+      "ok": true,
+      "detail": "fuel 0.70 after 1 s"
+    },
+    {
+      "scenario": "v06-ground-refuel",
+      "group": "vertical",
+      "name": "v06-ground-refuel matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "v06-ground-refuel",
+      "group": "vertical",
+      "name": "v06-ground-refuel renders content",
+      "ok": true,
+      "detail": "123 colors, mean luma 52.9"
+    },
+    {
+      "scenario": "v06-ground-refuel",
+      "group": "vertical",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 4.50, 0.00, 0.70, 384.00, 67900.00, 0.00"
+    },
+    {
+      "scenario": "v06-ground-refuel",
+      "group": "vertical",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "10 rects"
+    },
+    {
+      "scenario": "v06-ground-refuel",
+      "group": "vertical",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 70%"
+    },
+    {
+      "scenario": "v07-freefly-up",
+      "group": "vertical",
+      "name": "freefly ascends without fuel",
+      "ok": true,
+      "detail": "alt 4.00 m, fuel 1"
+    },
+    {
+      "scenario": "v07-freefly-up",
+      "group": "vertical",
+      "name": "freefly HUD switches mode",
+      "ok": true,
+      "detail": "FREEFLY · DEBUG"
+    },
+    {
+      "scenario": "v07-freefly-up",
+      "group": "vertical",
+      "name": "v07-freefly-up matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "v07-freefly-up",
+      "group": "vertical",
+      "name": "v07-freefly-up renders content",
+      "ok": true,
+      "detail": "164 colors, mean luma 31.6"
+    },
+    {
+      "scenario": "v07-freefly-up",
+      "group": "vertical",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 4.50, 4.00, 1.00, 361.00, 15148.00, 6035.00"
+    },
+    {
+      "scenario": "v07-freefly-up",
+      "group": "vertical",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "10 rects"
+    },
+    {
+      "scenario": "v07-freefly-up",
+      "group": "vertical",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "FREEFLY · DEBUG · fuel 100%"
+    },
+    {
+      "scenario": "v08-freefly-descend-crate",
+      "group": "vertical",
+      "name": "freefly descent stops on the crate",
+      "ok": true,
+      "detail": "alt 0.60 m, support 0.60"
+    },
+    {
+      "scenario": "v08-freefly-descend-crate",
+      "group": "vertical",
+      "name": "v08-freefly-descend-crate matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "v08-freefly-descend-crate",
+      "group": "vertical",
+      "name": "v08-freefly-descend-crate renders content",
+      "ok": true,
+      "detail": "242 colors, mean luma 36.8"
+    },
+    {
+      "scenario": "v08-freefly-descend-crate",
+      "group": "vertical",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "4.50, 13.50, 0.60, 1.00, 384.00, 33798.00, 0.00"
+    },
+    {
+      "scenario": "v08-freefly-descend-crate",
+      "group": "vertical",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "10 rects"
+    },
+    {
+      "scenario": "v08-freefly-descend-crate",
+      "group": "vertical",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "FREEFLY · DEBUG · fuel 100%"
+    },
+    {
+      "scenario": "v09-freefly-off-fall",
+      "group": "vertical",
+      "name": "leaving freefly resumes gravity",
+      "ok": true,
+      "detail": "vz -5.40, airborne true"
+    },
+    {
+      "scenario": "v09-freefly-off-fall",
+      "group": "vertical",
+      "name": "v09-freefly-off-fall matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "v09-freefly-off-fall",
+      "group": "vertical",
+      "name": "v09-freefly-off-fall renders content",
+      "ok": true,
+      "detail": "153 colors, mean luma 31.3"
+    },
+    {
+      "scenario": "v09-freefly-off-fall",
+      "group": "vertical",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 4.50, 5.15, 1.00, 316.00, 9275.00, 6572.00"
+    },
+    {
+      "scenario": "v09-freefly-off-fall",
+      "group": "vertical",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "10 rects"
+    },
+    {
+      "scenario": "v09-freefly-off-fall",
+      "group": "vertical",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "a01-ground-pitch-clamp-down",
+      "group": "aim",
+      "name": "ground look-down clamps at 63 degrees",
+      "ok": true,
+      "detail": "pitch -63 deg"
+    },
+    {
+      "scenario": "a01-ground-pitch-clamp-down",
+      "group": "aim",
+      "name": "a01-ground-pitch-clamp-down matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a01-ground-pitch-clamp-down",
+      "group": "aim",
+      "name": "a01-ground-pitch-clamp-down renders content",
+      "ok": true,
+      "detail": "29 colors, mean luma 58.4"
+    },
+    {
+      "scenario": "a01-ground-pitch-clamp-down",
+      "group": "aim",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 4.50, 0.00, 1.00, 0.00, 0.00, 0.00"
+    },
+    {
+      "scenario": "a01-ground-pitch-clamp-down",
+      "group": "aim",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "10 rects"
+    },
+    {
+      "scenario": "a01-ground-pitch-clamp-down",
+      "group": "aim",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "a02-ground-pitch-clamp-up",
+      "group": "aim",
+      "name": "ground look-up clamps at 63 degrees",
+      "ok": true,
+      "detail": "pitch 63 deg"
+    },
+    {
+      "scenario": "a02-ground-pitch-clamp-up",
+      "group": "aim",
+      "name": "a02-ground-pitch-clamp-up matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a02-ground-pitch-clamp-up",
+      "group": "aim",
+      "name": "a02-ground-pitch-clamp-up renders content",
+      "ok": true,
+      "detail": "39 colors, mean luma 29.2"
+    },
+    {
+      "scenario": "a02-ground-pitch-clamp-up",
+      "group": "aim",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 4.50, 0.00, 1.00, 58.00, 1758.00, 0.00"
+    },
+    {
+      "scenario": "a02-ground-pitch-clamp-up",
+      "group": "aim",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "10 rects"
+    },
+    {
+      "scenario": "a02-ground-pitch-clamp-up",
+      "group": "aim",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "a03-air-pitch-top",
+      "group": "aim",
+      "name": "airborne pitch reaches the top band",
+      "ok": true,
+      "detail": "pitch -83 deg, sprite pitch 3"
+    },
+    {
+      "scenario": "a03-air-pitch-top",
+      "group": "aim",
+      "name": "a03-air-pitch-top matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a03-air-pitch-top",
+      "group": "aim",
+      "name": "a03-air-pitch-top renders content",
+      "ok": true,
+      "detail": "256 colors, mean luma 40.9"
+    },
+    {
+      "scenario": "a03-air-pitch-top",
+      "group": "aim",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "7.50, 1.58, 14.00, 1.00, 372.00, 3009.00, 9764.00"
+    },
+    {
+      "scenario": "a03-air-pitch-top",
+      "group": "aim",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "13 rects"
+    },
+    {
+      "scenario": "a03-air-pitch-top",
+      "group": "aim",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "a04-mouse-yaw",
+      "group": "aim",
+      "name": "mouse-right turns 90 degrees",
+      "ok": true,
+      "detail": "yaw 90 deg"
+    },
+    {
+      "scenario": "a04-mouse-yaw",
+      "group": "aim",
+      "name": "a04-mouse-yaw matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a04-mouse-yaw",
+      "group": "aim",
+      "name": "a04-mouse-yaw renders content",
+      "ok": true,
+      "detail": "146 colors, mean luma 47.7"
+    },
+    {
+      "scenario": "a04-mouse-yaw",
+      "group": "aim",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 4.50, 0.00, 1.00, 384.00, 46349.00, 0.00"
+    },
+    {
+      "scenario": "a04-mouse-yaw",
+      "group": "aim",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "10 rects"
+    },
+    {
+      "scenario": "a04-mouse-yaw",
+      "group": "aim",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "a05-mouse-pitch",
+      "group": "aim",
+      "name": "mouse-up tilts the camera up",
+      "ok": true,
+      "detail": "pitch 38 deg"
+    },
+    {
+      "scenario": "a05-mouse-pitch",
+      "group": "aim",
+      "name": "a05-mouse-pitch matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a05-mouse-pitch",
+      "group": "aim",
+      "name": "a05-mouse-pitch renders content",
+      "ok": true,
+      "detail": "74 colors, mean luma 35.2"
+    },
+    {
+      "scenario": "a05-mouse-pitch",
+      "group": "aim",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 4.50, 0.00, 1.00, 301.00, 25721.00, 0.00"
+    },
+    {
+      "scenario": "a05-mouse-pitch",
+      "group": "aim",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "10 rects"
+    },
+    {
+      "scenario": "a05-mouse-pitch",
+      "group": "aim",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "a06-sector-front",
+      "group": "aim",
+      "name": "camera selects tinker yaw 0",
+      "ok": true,
+      "detail": "brute yaw 0 pitch 1"
+    },
+    {
+      "scenario": "a06-sector-front",
+      "group": "aim",
+      "name": "a06-sector-front matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a06-sector-front",
+      "group": "aim",
+      "name": "a06-sector-front renders content",
+      "ok": true,
+      "detail": "232 colors, mean luma 51.9"
+    },
+    {
+      "scenario": "a06-sector-front",
+      "group": "aim",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "16.50, 4.50, 0.00, 1.00, 384.00, 62900.00, 0.00"
+    },
+    {
+      "scenario": "a06-sector-front",
+      "group": "aim",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "5 rects"
+    },
+    {
+      "scenario": "a06-sector-front",
+      "group": "aim",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "a07-sector-back",
+      "group": "aim",
+      "name": "camera selects tinker yaw 8",
+      "ok": true,
+      "detail": "brute yaw 8 pitch 1"
+    },
+    {
+      "scenario": "a07-sector-back",
+      "group": "aim",
+      "name": "a07-sector-back matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a07-sector-back",
+      "group": "aim",
+      "name": "a07-sector-back renders content",
+      "ok": true,
+      "detail": "265 colors, mean luma 47.2"
+    },
+    {
+      "scenario": "a07-sector-back",
+      "group": "aim",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "22.50, 4.50, 0.00, 1.00, 384.00, 40017.00, 0.00"
+    },
+    {
+      "scenario": "a07-sector-back",
+      "group": "aim",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "13 rects"
+    },
+    {
+      "scenario": "a07-sector-back",
+      "group": "aim",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "a08-sector-south",
+      "group": "aim",
+      "name": "camera selects tinker yaw 4",
+      "ok": true,
+      "detail": "brute yaw 4 pitch 1"
+    },
+    {
+      "scenario": "a08-sector-south",
+      "group": "aim",
+      "name": "a08-sector-south matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a08-sector-south",
+      "group": "aim",
+      "name": "a08-sector-south renders content",
+      "ok": true,
+      "detail": "248 colors, mean luma 42.6"
+    },
+    {
+      "scenario": "a08-sector-south",
+      "group": "aim",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "21.50, 7.50, 0.00, 1.00, 384.00, 35176.00, 0.00"
+    },
+    {
+      "scenario": "a08-sector-south",
+      "group": "aim",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "3 rects"
+    },
+    {
+      "scenario": "a08-sector-south",
+      "group": "aim",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "a09-sector-north",
+      "group": "aim",
+      "name": "camera selects tinker yaw 12",
+      "ok": true,
+      "detail": "brute yaw 12 pitch 1"
+    },
+    {
+      "scenario": "a09-sector-north",
+      "group": "aim",
+      "name": "a09-sector-north matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a09-sector-north",
+      "group": "aim",
+      "name": "a09-sector-north renders content",
+      "ok": true,
+      "detail": "433 colors, mean luma 41.2"
+    },
+    {
+      "scenario": "a09-sector-north",
+      "group": "aim",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "21.50, 2.50, 0.00, 1.00, 384.00, 26170.00, 0.00"
+    },
+    {
+      "scenario": "a09-sector-north",
+      "group": "aim",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "12 rects"
+    },
+    {
+      "scenario": "a09-sector-north",
+      "group": "aim",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "a10-sector-ne",
+      "group": "aim",
+      "name": "camera selects tinker yaw 15",
+      "ok": true,
+      "detail": "brute yaw 15 pitch 1"
+    },
+    {
+      "scenario": "a10-sector-ne",
+      "group": "aim",
+      "name": "a10-sector-ne matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a10-sector-ne",
+      "group": "aim",
+      "name": "a10-sector-ne renders content",
+      "ok": true,
+      "detail": "43 colors, mean luma 65.3"
+    },
+    {
+      "scenario": "a10-sector-ne",
+      "group": "aim",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "17.50, 2.50, 0.00, 1.00, 384.00, 92160.00, 0.00"
+    },
+    {
+      "scenario": "a10-sector-ne",
+      "group": "aim",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "6 rects"
+    },
+    {
+      "scenario": "a10-sector-ne",
+      "group": "aim",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "a11-sector-sw",
+      "group": "aim",
+      "name": "camera selects tinker yaw 1",
+      "ok": true,
+      "detail": "brute yaw 1 pitch 2"
+    },
+    {
+      "scenario": "a11-sector-sw",
+      "group": "aim",
+      "name": "a11-sector-sw matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a11-sector-sw",
+      "group": "aim",
+      "name": "a11-sector-sw renders content",
+      "ok": true,
+      "detail": "391 colors, mean luma 34.6"
+    },
+    {
+      "scenario": "a11-sector-sw",
+      "group": "aim",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "17.50, 6.50, 1.40, 1.00, 384.00, 27028.00, 2726.00"
+    },
+    {
+      "scenario": "a11-sector-sw",
+      "group": "aim",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "1 rects"
+    },
+    {
+      "scenario": "a11-sector-sw",
+      "group": "aim",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "PERCH · 1.4 m · fuel 100%"
+    },
+    {
+      "scenario": "a12-sector-se",
+      "group": "aim",
+      "name": "camera selects tinker yaw 5",
+      "ok": true,
+      "detail": "brute yaw 5 pitch 1"
+    },
+    {
+      "scenario": "a12-sector-se",
+      "group": "aim",
+      "name": "a12-sector-se matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a12-sector-se",
+      "group": "aim",
+      "name": "a12-sector-se renders content",
+      "ok": true,
+      "detail": "259 colors, mean luma 41.0"
+    },
+    {
+      "scenario": "a12-sector-se",
+      "group": "aim",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "22.50, 6.50, 0.00, 1.00, 384.00, 32832.00, 0.00"
+    },
+    {
+      "scenario": "a12-sector-se",
+      "group": "aim",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "6 rects"
+    },
+    {
+      "scenario": "a12-sector-se",
+      "group": "aim",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "a13-sector-nw",
+      "group": "aim",
+      "name": "camera selects tinker yaw 11",
+      "ok": true,
+      "detail": "brute yaw 11 pitch 1"
+    },
+    {
+      "scenario": "a13-sector-nw",
+      "group": "aim",
+      "name": "a13-sector-nw matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a13-sector-nw",
+      "group": "aim",
+      "name": "a13-sector-nw renders content",
+      "ok": true,
+      "detail": "396 colors, mean luma 39.2"
+    },
+    {
+      "scenario": "a13-sector-nw",
+      "group": "aim",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "22.50, 2.50, 0.00, 1.00, 384.00, 21784.00, 0.00"
+    },
+    {
+      "scenario": "a13-sector-nw",
+      "group": "aim",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "13 rects"
+    },
+    {
+      "scenario": "a13-sector-nw",
+      "group": "aim",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "a14-pitch-band-low",
+      "group": "aim",
+      "name": "a hovering actor selects the low pitch band",
+      "ok": true,
+      "detail": "drone pitch 0"
+    },
+    {
+      "scenario": "a14-pitch-band-low",
+      "group": "aim",
+      "name": "a14-pitch-band-low matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a14-pitch-band-low",
+      "group": "aim",
+      "name": "a14-pitch-band-low renders content",
+      "ok": true,
+      "detail": "131 colors, mean luma 47.5"
+    },
+    {
+      "scenario": "a14-pitch-band-low",
+      "group": "aim",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "11.50, 7.50, 0.00, 1.00, 384.00, 58752.00, 0.00"
+    },
+    {
+      "scenario": "a14-pitch-band-low",
+      "group": "aim",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "10 rects"
+    },
+    {
+      "scenario": "a14-pitch-band-low",
+      "group": "aim",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "a15-pitch-band-level",
+      "group": "aim",
+      "name": "a level actor selects the level pitch band",
+      "ok": true,
+      "detail": "guard pitch 1"
+    },
+    {
+      "scenario": "a15-pitch-band-level",
+      "group": "aim",
+      "name": "a15-pitch-band-level matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a15-pitch-band-level",
+      "group": "aim",
+      "name": "a15-pitch-band-level renders content",
+      "ok": true,
+      "detail": "362 colors, mean luma 52.6"
+    },
+    {
+      "scenario": "a15-pitch-band-level",
+      "group": "aim",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 1.50, 0.00, 1.00, 384.00, 68210.00, 0.00"
+    },
+    {
+      "scenario": "a15-pitch-band-level",
+      "group": "aim",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "10 rects"
+    },
+    {
+      "scenario": "a15-pitch-band-level",
+      "group": "aim",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "a16-pitch-band-high",
+      "group": "aim",
+      "name": "viewing from 3 m selects the high pitch band",
+      "ok": true,
+      "detail": "guard pitch 2"
+    },
+    {
+      "scenario": "a16-pitch-band-high",
+      "group": "aim",
+      "name": "a16-pitch-band-high matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a16-pitch-band-high",
+      "group": "aim",
+      "name": "a16-pitch-band-high renders content",
+      "ok": true,
+      "detail": "124 colors, mean luma 31.0"
+    },
+    {
+      "scenario": "a16-pitch-band-high",
+      "group": "aim",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "4.50, 1.50, 3.00, 1.00, 275.00, 11076.00, 5027.00"
+    },
+    {
+      "scenario": "a16-pitch-band-high",
+      "group": "aim",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "10 rects"
+    },
+    {
+      "scenario": "a16-pitch-band-high",
+      "group": "aim",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "a17-pitch-band-top",
+      "group": "aim",
+      "name": "viewing from 12 m selects the top pitch band",
+      "ok": true,
+      "detail": "guard pitch 3"
+    },
+    {
+      "scenario": "a17-pitch-band-top",
+      "group": "aim",
+      "name": "a17-pitch-band-top matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a17-pitch-band-top",
+      "group": "aim",
+      "name": "a17-pitch-band-top renders content",
+      "ok": true,
+      "detail": "281 colors, mean luma 38.3"
+    },
+    {
+      "scenario": "a17-pitch-band-top",
+      "group": "aim",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "4.50, 1.50, 12.00, 1.00, 384.00, 7258.00, 14054.00"
+    },
+    {
+      "scenario": "a17-pitch-band-top",
+      "group": "aim",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "13 rects"
+    },
+    {
+      "scenario": "a17-pitch-band-top",
+      "group": "aim",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "s01-stairs-approach",
+      "group": "surfaces",
+      "name": "stairs approach sits on the floor",
+      "ok": true,
+      "detail": "support 0, y=22.50"
+    },
+    {
+      "scenario": "s01-stairs-approach",
+      "group": "surfaces",
+      "name": "s01-stairs-approach matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s01-stairs-approach",
+      "group": "surfaces",
+      "name": "s01-stairs-approach renders content",
+      "ok": true,
+      "detail": "230 colors, mean luma 40.8"
+    },
+    {
+      "scenario": "s01-stairs-approach",
+      "group": "surfaces",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "11.50, 22.50, 0.00, 1.00, 384.00, 33606.00, 26459.00"
+    },
+    {
+      "scenario": "s01-stairs-approach",
+      "group": "surfaces",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "11 rects"
+    },
+    {
+      "scenario": "s01-stairs-approach",
+      "group": "surfaces",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "s02-stairs-climb",
+      "group": "surfaces",
+      "name": "walking up the treads reaches the platform",
+      "ok": true,
+      "detail": "alt 0.40 m, support 0.4000000059604645, y=19.35"
+    },
+    {
+      "scenario": "s02-stairs-climb",
+      "group": "surfaces",
+      "name": "platform HUD shows a perch",
+      "ok": true,
+      "detail": "PERCH · 0.4 m"
+    },
+    {
+      "scenario": "s02-stairs-climb",
+      "group": "surfaces",
+      "name": "s02-stairs-climb matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s02-stairs-climb",
+      "group": "surfaces",
+      "name": "s02-stairs-climb renders content",
+      "ok": true,
+      "detail": "413 colors, mean luma 35.1"
+    },
+    {
+      "scenario": "s02-stairs-climb",
+      "group": "surfaces",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "11.50, 19.35, 0.40, 1.00, 384.00, 26444.00, 0.00"
+    },
+    {
+      "scenario": "s02-stairs-climb",
+      "group": "surfaces",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "10 rects"
+    },
+    {
+      "scenario": "s02-stairs-climb",
+      "group": "surfaces",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "PERCH · 0.4 m · fuel 100%"
+    },
+    {
+      "scenario": "s03-stairs-descend",
+      "group": "surfaces",
+      "name": "walking down the treads returns to the floor",
+      "ok": true,
+      "detail": "alt 0.00 m, y=22.65"
+    },
+    {
+      "scenario": "s03-stairs-descend",
+      "group": "surfaces",
+      "name": "s03-stairs-descend matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s03-stairs-descend",
+      "group": "surfaces",
+      "name": "s03-stairs-descend renders content",
+      "ok": true,
+      "detail": "25 colors, mean luma 56.0"
+    },
+    {
+      "scenario": "s03-stairs-descend",
+      "group": "surfaces",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "11.50, 22.65, 0.00, 1.00, 384.00, 92160.00, 0.00"
+    },
+    {
+      "scenario": "s03-stairs-descend",
+      "group": "surfaces",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "0 rects"
+    },
+    {
+      "scenario": "s03-stairs-descend",
+      "group": "surfaces",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "s04-platform-stand",
+      "group": "surfaces",
+      "name": "the platform supports a standing player",
+      "ok": true,
+      "detail": "alt 0.40 m, support 0.4000000059604645"
+    },
+    {
+      "scenario": "s04-platform-stand",
+      "group": "surfaces",
+      "name": "s04-platform-stand matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s04-platform-stand",
+      "group": "surfaces",
+      "name": "s04-platform-stand renders content",
+      "ok": true,
+      "detail": "128 colors, mean luma 42.8"
+    },
+    {
+      "scenario": "s04-platform-stand",
+      "group": "surfaces",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "11.50, 19.50, 0.40, 1.00, 384.00, 37516.00, 19500.00"
+    },
+    {
+      "scenario": "s04-platform-stand",
+      "group": "surfaces",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "6 rects"
+    },
+    {
+      "scenario": "s04-platform-stand",
+      "group": "surfaces",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "PERCH · 0.4 m · fuel 100%"
+    },
+    {
+      "scenario": "s05-crate-block",
+      "group": "surfaces",
+      "name": "a 0.6 crate blocks walking",
+      "ok": true,
+      "detail": "stopped at y=14.20, support 0"
+    },
+    {
+      "scenario": "s05-crate-block",
+      "group": "surfaces",
+      "name": "s05-crate-block matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s05-crate-block",
+      "group": "surfaces",
+      "name": "s05-crate-block renders content",
+      "ok": true,
+      "detail": "33 colors, mean luma 52.5"
+    },
+    {
+      "scenario": "s05-crate-block",
+      "group": "surfaces",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "4.50, 14.20, 0.00, 1.00, 384.00, 81789.00, 0.00"
+    },
+    {
+      "scenario": "s05-crate-block",
+      "group": "surfaces",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "6 rects"
+    },
+    {
+      "scenario": "s05-crate-block",
+      "group": "surfaces",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "s06-crate-perch",
+      "group": "surfaces",
+      "name": "falling onto the crate stops at 0.6 m",
+      "ok": true,
+      "detail": "alt 0.60 m, support 0.6000000238418579"
+    },
+    {
+      "scenario": "s06-crate-perch",
+      "group": "surfaces",
+      "name": "s06-crate-perch matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s06-crate-perch",
+      "group": "surfaces",
+      "name": "s06-crate-perch renders content",
+      "ok": true,
+      "detail": "46 colors, mean luma 57.9"
+    },
+    {
+      "scenario": "s06-crate-perch",
+      "group": "surfaces",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "4.50, 13.50, 0.60, 1.00, 384.00, 0.00, 79104.00"
+    },
+    {
+      "scenario": "s06-crate-perch",
+      "group": "surfaces",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "11 rects"
+    },
+    {
+      "scenario": "s06-crate-perch",
+      "group": "surfaces",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "PERCH · 0.6 m · fuel 100%"
+    },
+    {
+      "scenario": "s07-wall-land",
+      "group": "surfaces",
+      "name": "falling onto a wall stops at 1.4 m",
+      "ok": true,
+      "detail": "alt 1.40 m, support 1.399999976158142"
+    },
+    {
+      "scenario": "s07-wall-land",
+      "group": "surfaces",
+      "name": "wall perch HUD reports 1.4 m",
+      "ok": true,
+      "detail": "PERCH · 1.4 m"
+    },
+    {
+      "scenario": "s07-wall-land",
+      "group": "surfaces",
+      "name": "s07-wall-land matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s07-wall-land",
+      "group": "surfaces",
+      "name": "s07-wall-land renders content",
+      "ok": true,
+      "detail": "294 colors, mean luma 54.5"
+    },
+    {
+      "scenario": "s07-wall-land",
+      "group": "surfaces",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "3.50, 2.50, 1.40, 1.00, 384.00, 30545.00, 51379.00"
+    },
+    {
+      "scenario": "s07-wall-land",
+      "group": "surfaces",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "11 rects"
+    },
+    {
+      "scenario": "s07-wall-land",
+      "group": "surfaces",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "PERCH · 1.4 m · fuel 100%"
+    },
+    {
+      "scenario": "s08-wall-stepoff",
+      "group": "surfaces",
+      "name": "stepping off a wall falls to the floor",
+      "ok": true,
+      "detail": "x=6.80, alt 0.00 m"
+    },
+    {
+      "scenario": "s08-wall-stepoff",
+      "group": "surfaces",
+      "name": "s08-wall-stepoff matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s08-wall-stepoff",
+      "group": "surfaces",
+      "name": "s08-wall-stepoff renders content",
+      "ok": true,
+      "detail": "24 colors, mean luma 72.1"
+    },
+    {
+      "scenario": "s08-wall-stepoff",
+      "group": "surfaces",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "6.80, 2.50, 0.00, 1.00, 384.00, 92160.00, 0.00"
+    },
+    {
+      "scenario": "s08-wall-stepoff",
+      "group": "surfaces",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "9 rects"
+    },
+    {
+      "scenario": "s08-wall-stepoff",
+      "group": "surfaces",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "s09-wall-perch-down",
+      "group": "surfaces",
+      "name": "perched overhead view renders tops",
+      "ok": true,
+      "detail": "56832 top px, 384 columns"
+    },
+    {
+      "scenario": "s09-wall-perch-down",
+      "group": "surfaces",
+      "name": "s09-wall-perch-down matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s09-wall-perch-down",
+      "group": "surfaces",
+      "name": "s09-wall-perch-down renders content",
+      "ok": true,
+      "detail": "64 colors, mean luma 50.7"
+    },
+    {
+      "scenario": "s09-wall-perch-down",
+      "group": "surfaces",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "3.50, 2.50, 1.40, 1.00, 384.00, 0.00, 56832.00"
+    },
+    {
+      "scenario": "s09-wall-perch-down",
+      "group": "surfaces",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "12 rects"
+    },
+    {
+      "scenario": "s09-wall-perch-down",
+      "group": "surfaces",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "PERCH · 1.4 m · fuel 100%"
+    },
+    {
+      "scenario": "s10-near-wall",
+      "group": "surfaces",
+      "name": "a near wall fills the frame without vanishing",
+      "ok": true,
+      "detail": "384 cols, 92160 wall px"
+    },
+    {
+      "scenario": "s10-near-wall",
+      "group": "surfaces",
+      "name": "s10-near-wall matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s10-near-wall",
+      "group": "surfaces",
+      "name": "s10-near-wall renders content",
+      "ok": true,
+      "detail": "24 colors, mean luma 72.9"
+    },
+    {
+      "scenario": "s10-near-wall",
+      "group": "surfaces",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "1.22, 1.50, 0.00, 1.00, 384.00, 92160.00, 0.00"
+    },
+    {
+      "scenario": "s10-near-wall",
+      "group": "surfaces",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "0 rects"
+    },
+    {
+      "scenario": "s10-near-wall",
+      "group": "surfaces",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "s11-near-wall-lookdown",
+      "group": "surfaces",
+      "name": "a near wall survives a steep look-down",
+      "ok": true,
+      "detail": "384 cols, 55296 wall px"
+    },
+    {
+      "scenario": "s11-near-wall-lookdown",
+      "group": "surfaces",
+      "name": "s11-near-wall-lookdown matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s11-near-wall-lookdown",
+      "group": "surfaces",
+      "name": "s11-near-wall-lookdown renders content",
+      "ok": true,
+      "detail": "55 colors, mean luma 67.1"
+    },
+    {
+      "scenario": "s11-near-wall-lookdown",
+      "group": "surfaces",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "1.22, 1.50, 0.00, 1.00, 384.00, 55296.00, 0.00"
+    },
+    {
+      "scenario": "s11-near-wall-lookdown",
+      "group": "surfaces",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "0 rects"
+    },
+    {
+      "scenario": "s11-near-wall-lookdown",
+      "group": "surfaces",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "c01-watcher-tracks",
+      "group": "actors",
+      "name": "watcher turns toward the player from the east",
+      "ok": true,
+      "detail": "facing 0.02, yaw 0"
+    },
+    {
+      "scenario": "c01-watcher-tracks",
+      "group": "actors",
+      "name": "watcher reverses when the player crosses it",
+      "ok": true,
+      "detail": "facing 3.12"
+    },
+    {
+      "scenario": "c01-watcher-tracks",
+      "group": "actors",
+      "name": "c01-watcher-tracks matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "c01-watcher-tracks",
+      "group": "actors",
+      "name": "c01-watcher-tracks renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 46.0"
+    },
+    {
+      "scenario": "c01-watcher-tracks",
+      "group": "actors",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "14.50, 9.50, 0.00, 1.00, 384.00, 48741.00, 0.00"
+    },
+    {
+      "scenario": "c01-watcher-tracks",
+      "group": "actors",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "6 rects"
+    },
+    {
+      "scenario": "c01-watcher-tracks",
+      "group": "actors",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "c02-patrol-advance",
+      "group": "actors",
+      "name": "patrol actor walks along its line",
+      "ok": true,
+      "detail": "x 10.50 -> 12.70 · walk"
+    },
+    {
+      "scenario": "c02-patrol-advance",
+      "group": "actors",
+      "name": "c02-patrol-advance matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "c02-patrol-advance",
+      "group": "actors",
+      "name": "c02-patrol-advance renders content",
+      "ok": true,
+      "detail": "80 colors, mean luma 53.9"
+    },
+    {
+      "scenario": "c02-patrol-advance",
+      "group": "actors",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "11.50, 12.50, 0.00, 1.00, 384.00, 69173.00, 0.00"
+    },
+    {
+      "scenario": "c02-patrol-advance",
+      "group": "actors",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "7 rects"
+    },
+    {
+      "scenario": "c02-patrol-advance",
+      "group": "actors",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "c03-patrol-reverse",
+      "group": "actors",
+      "name": "patrol reverses at the end of the line",
+      "ok": true,
+      "detail": "facing -3.14, x=15.90"
+    },
+    {
+      "scenario": "c03-patrol-reverse",
+      "group": "actors",
+      "name": "c03-patrol-reverse matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "c03-patrol-reverse",
+      "group": "actors",
+      "name": "c03-patrol-reverse renders content",
+      "ok": true,
+      "detail": "80 colors, mean luma 53.9"
+    },
+    {
+      "scenario": "c03-patrol-reverse",
+      "group": "actors",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "11.50, 12.50, 0.00, 1.00, 384.00, 69173.00, 0.00"
+    },
+    {
+      "scenario": "c03-patrol-reverse",
+      "group": "actors",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "7 rects"
+    },
+    {
+      "scenario": "c03-patrol-reverse",
+      "group": "actors",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "c04-chase-approach",
+      "group": "actors",
+      "name": "chase actor closes distance and walks",
+      "ok": true,
+      "detail": "distance 2.83 -> 1.93 · walk"
+    },
+    {
+      "scenario": "c04-chase-approach",
+      "group": "actors",
+      "name": "c04-chase-approach matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "c04-chase-approach",
+      "group": "actors",
+      "name": "c04-chase-approach renders content",
+      "ok": true,
+      "detail": "86 colors, mean luma 44.9"
+    },
+    {
+      "scenario": "c04-chase-approach",
+      "group": "actors",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "16.50, 12.50, 0.00, 1.00, 384.00, 36832.00, 0.00"
+    },
+    {
+      "scenario": "c04-chase-approach",
+      "group": "actors",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "5 rects"
+    },
+    {
+      "scenario": "c04-chase-approach",
+      "group": "actors",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "c05-hover-bob",
+      "group": "actors",
+      "name": "hover actor bobs vertically",
+      "ok": true,
+      "detail": "z 1.10 -> 1.38"
+    },
+    {
+      "scenario": "c05-hover-bob",
+      "group": "actors",
+      "name": "c05-hover-bob matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "c05-hover-bob",
+      "group": "actors",
+      "name": "c05-hover-bob renders content",
+      "ok": true,
+      "detail": "30 colors, mean luma 53.3"
+    },
+    {
+      "scenario": "c05-hover-bob",
+      "group": "actors",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "11.50, 12.50, 0.00, 1.00, 384.00, 92160.00, 0.00"
+    },
+    {
+      "scenario": "c05-hover-bob",
+      "group": "actors",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "7 rects"
+    },
+    {
+      "scenario": "c05-hover-bob",
+      "group": "actors",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "c06-idle-animation",
+      "group": "actors",
+      "name": "idle actor animates between two frames",
+      "ok": true,
+      "detail": "5.04% of pixels changed"
+    },
+    {
+      "scenario": "c06-idle-animation",
+      "group": "actors",
+      "name": "c06-idle-animation matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "c06-idle-animation",
+      "group": "actors",
+      "name": "c06-idle-animation renders content",
+      "ok": true,
+      "detail": "380 colors, mean luma 52.5"
+    },
+    {
+      "scenario": "c06-idle-animation",
+      "group": "actors",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 1.50, 0.00, 1.00, 384.00, 68210.00, 0.00"
+    },
+    {
+      "scenario": "c06-idle-animation",
+      "group": "actors",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "10 rects"
+    },
+    {
+      "scenario": "c06-idle-animation",
+      "group": "actors",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "c07-occlusion-crate",
+      "group": "actors",
+      "name": "the crate occludes the scholar behind it",
+      "ok": true,
+      "detail": "252 drawn, 1722 occluded px"
+    },
+    {
+      "scenario": "c07-occlusion-crate",
+      "group": "actors",
+      "name": "c07-occlusion-crate matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "c07-occlusion-crate",
+      "group": "actors",
+      "name": "c07-occlusion-crate renders content",
+      "ok": true,
+      "detail": "141 colors, mean luma 39.4"
+    },
+    {
+      "scenario": "c07-occlusion-crate",
+      "group": "actors",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "4.50, 15.50, 0.00, 1.00, 384.00, 42044.00, 0.00"
+    },
+    {
+      "scenario": "c07-occlusion-crate",
+      "group": "actors",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "9 rects"
+    },
+    {
+      "scenario": "c07-occlusion-crate",
+      "group": "actors",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "c08-occlusion-wall",
+      "group": "actors",
+      "name": "a full wall hides the actor behind it",
+      "ok": true,
+      "detail": "0 drawn, 218 occluded px, w=39.4"
+    },
+    {
+      "scenario": "c08-occlusion-wall",
+      "group": "actors",
+      "name": "c08-occlusion-wall matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "c08-occlusion-wall",
+      "group": "actors",
+      "name": "c08-occlusion-wall renders content",
+      "ok": true,
+      "detail": "30 colors, mean luma 53.3"
+    },
+    {
+      "scenario": "c08-occlusion-wall",
+      "group": "actors",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "7.50, 9.50, 0.00, 1.00, 384.00, 92160.00, 0.00"
+    },
+    {
+      "scenario": "c08-occlusion-wall",
+      "group": "actors",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "3 rects"
+    },
+    {
+      "scenario": "c08-occlusion-wall",
+      "group": "actors",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "c09-overhead-guard",
+      "group": "actors",
+      "name": "overhead actor keeps a readable silhouette",
+      "ok": true,
+      "detail": "6x6 px, 25 opaque px, x=191.1"
+    },
+    {
+      "scenario": "c09-overhead-guard",
+      "group": "actors",
+      "name": "c09-overhead-guard matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "c09-overhead-guard",
+      "group": "actors",
+      "name": "c09-overhead-guard renders content",
+      "ok": true,
+      "detail": "256 colors, mean luma 40.9"
+    },
+    {
+      "scenario": "c09-overhead-guard",
+      "group": "actors",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "7.50, 1.58, 14.00, 1.00, 372.00, 3009.00, 9764.00"
+    },
+    {
+      "scenario": "c09-overhead-guard",
+      "group": "actors",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "13 rects"
+    },
+    {
+      "scenario": "c09-overhead-guard",
+      "group": "actors",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "c10-overhead-edge-actor",
+      "group": "actors",
+      "name": "an overhead actor near the map edge stays in view",
+      "ok": true,
+      "detail": "x=191.1, visible=true"
+    },
+    {
+      "scenario": "c10-overhead-edge-actor",
+      "group": "actors",
+      "name": "c10-overhead-edge-actor matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "c10-overhead-edge-actor",
+      "group": "actors",
+      "name": "c10-overhead-edge-actor renders content",
+      "ok": true,
+      "detail": "167 colors, mean luma 34.3"
+    },
+    {
+      "scenario": "c10-overhead-edge-actor",
+      "group": "actors",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "21.50, 4.58, 14.00, 1.00, 384.00, 414.00, 4113.00"
+    },
+    {
+      "scenario": "c10-overhead-edge-actor",
+      "group": "actors",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "13 rects"
+    },
+    {
+      "scenario": "c10-overhead-edge-actor",
+      "group": "actors",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "c11-multi-actor-aerial",
+      "group": "actors",
+      "name": "aerial view projects several actors",
+      "ok": true,
+      "detail": "11 visible: tinker, watcher, marauder, sentinel, stalker, warden, patrol, guard, prowler, scholar, drone"
+    },
+    {
+      "scenario": "c11-multi-actor-aerial",
+      "group": "actors",
+      "name": "c11-multi-actor-aerial matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "c11-multi-actor-aerial",
+      "group": "actors",
+      "name": "c11-multi-actor-aerial renders content",
+      "ok": true,
+      "detail": "330 colors, mean luma 46.8"
+    },
+    {
+      "scenario": "c11-multi-actor-aerial",
+      "group": "actors",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "11.50, 12.50, 14.00, 1.00, 384.00, 7849.00, 14807.00"
+    },
+    {
+      "scenario": "c11-multi-actor-aerial",
+      "group": "actors",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "13 rects"
+    },
+    {
+      "scenario": "c11-multi-actor-aerial",
+      "group": "actors",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "u01-minimap-visible",
+      "group": "ui",
+      "name": "minimap starts visible",
+      "ok": true,
+      "detail": "minimapVisible=true"
+    },
+    {
+      "scenario": "u01-minimap-visible",
+      "group": "ui",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 66996.00, 0.00"
+    },
+    {
+      "scenario": "u01-minimap-visible",
+      "group": "ui",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "11 rects"
+    },
+    {
+      "scenario": "u01-minimap-visible",
+      "group": "ui",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "u02-minimap-hidden",
+      "group": "ui",
+      "name": "M hides the minimap",
+      "ok": true,
+      "detail": "minimapVisible=false"
+    },
+    {
+      "scenario": "u02-minimap-hidden",
+      "group": "ui",
+      "name": "M restores the minimap",
+      "ok": true,
+      "detail": "minimapVisible=true"
+    },
+    {
+      "scenario": "u02-minimap-hidden",
+      "group": "ui",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 66996.00, 0.00"
+    },
+    {
+      "scenario": "u02-minimap-hidden",
+      "group": "ui",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "11 rects"
+    },
+    {
+      "scenario": "u02-minimap-hidden",
+      "group": "ui",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "u03-hud-minimal",
+      "group": "ui",
+      "name": "F3 collapses the HUD detail",
+      "ok": true,
+      "detail": "minimal=true"
+    },
+    {
+      "scenario": "u03-hud-minimal",
+      "group": "ui",
+      "name": "F3 restores HUD detail",
+      "ok": true,
+      "detail": "minimal=false"
+    },
+    {
+      "scenario": "u03-hud-minimal",
+      "group": "ui",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 66996.00, 0.00"
+    },
+    {
+      "scenario": "u03-hud-minimal",
+      "group": "ui",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "11 rects"
+    },
+    {
+      "scenario": "u03-hud-minimal",
+      "group": "ui",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "u04-pause-freeze",
+      "group": "ui",
+      "name": "pause freezes the world",
+      "ok": true,
+      "detail": "0.00% pixels differ while paused"
+    },
+    {
+      "scenario": "u04-pause-freeze",
+      "group": "ui",
+      "name": "paused state is stable",
+      "ok": true,
+      "detail": "pos 5.5,4.5 · fuel 1"
+    },
+    {
+      "scenario": "u04-pause-freeze",
+      "group": "ui",
+      "name": "u04-pause-freeze matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "u04-pause-freeze",
+      "group": "ui",
+      "name": "u04-pause-freeze renders content",
+      "ok": true,
+      "detail": "123 colors, mean luma 52.9"
+    },
+    {
+      "scenario": "u04-pause-freeze",
+      "group": "ui",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 4.50, 0.00, 1.00, 384.00, 67900.00, 0.00"
+    },
+    {
+      "scenario": "u04-pause-freeze",
+      "group": "ui",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "10 rects"
+    },
+    {
+      "scenario": "u04-pause-freeze",
+      "group": "ui",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "u05-pause-resume",
+      "group": "ui",
+      "name": "resuming advances the simulation",
+      "ok": true,
+      "detail": "patrol dx 0.38, 22 frames, paused=false, 3.33% pixels changed"
+    },
+    {
+      "scenario": "u05-pause-resume",
+      "group": "ui",
+      "name": "u05-pause-resume renders content",
+      "ok": true,
+      "detail": "441 colors, mean luma 51.3"
+    },
+    {
+      "scenario": "u05-pause-resume",
+      "group": "ui",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "7.50, 14.50, 0.00, 1.00, 384.00, 61760.00, 0.00"
+    },
+    {
+      "scenario": "u05-pause-resume",
+      "group": "ui",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "8 rects"
+    },
+    {
+      "scenario": "u05-pause-resume",
+      "group": "ui",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "u06-hud-values",
+      "group": "ui",
+      "name": "HUD position and altitude follow the player",
+      "ok": true,
+      "detail": "pos \"11.5 12.5\" · alt \"8.00 m · vz 0.0\""
+    },
+    {
+      "scenario": "u06-hud-values",
+      "group": "ui",
+      "name": "HUD look angles reflect pitch",
+      "ok": true,
+      "detail": "look \"yaw 0 · pitch -29\""
+    },
+    {
+      "scenario": "u06-hud-values",
+      "group": "ui",
+      "name": "u06-hud-values matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "u06-hud-values",
+      "group": "ui",
+      "name": "u06-hud-values renders content",
+      "ok": true,
+      "detail": "295 colors, mean luma 33.4"
+    },
+    {
+      "scenario": "u06-hud-values",
+      "group": "ui",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "11.50, 12.50, 8.00, 1.00, 384.00, 11488.00, 10836.00"
+    },
+    {
+      "scenario": "u06-hud-values",
+      "group": "ui",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "9 rects"
+    },
+    {
+      "scenario": "u06-hud-values",
+      "group": "ui",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "u07-fuel-readout",
+      "group": "ui",
+      "name": "fuel readout formats the tank",
+      "ok": true,
+      "detail": "37%"
+    },
+    {
+      "scenario": "u07-fuel-readout",
+      "group": "ui",
+      "name": "u07-fuel-readout matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "u07-fuel-readout",
+      "group": "ui",
+      "name": "u07-fuel-readout renders content",
+      "ok": true,
+      "detail": "288 colors, mean luma 49.5"
+    },
+    {
+      "scenario": "u07-fuel-readout",
+      "group": "ui",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "3.50, 1.50, 0.00, 0.37, 384.00, 66996.00, 0.00"
+    },
+    {
+      "scenario": "u07-fuel-readout",
+      "group": "ui",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "11 rects"
+    },
+    {
+      "scenario": "u07-fuel-readout",
+      "group": "ui",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 37%"
+    },
+    {
+      "scenario": "r01-jet-over-wall",
+      "group": "routes",
+      "name": "jetpack clears a wall and lands on top",
+      "ok": true,
+      "detail": "x=3.55, alt 1.40 m, support 1.399999976158142"
+    },
+    {
+      "scenario": "r01-jet-over-wall",
+      "group": "routes",
+      "name": "r01-jet-over-wall matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "r01-jet-over-wall",
+      "group": "routes",
+      "name": "r01-jet-over-wall renders content",
+      "ok": true,
+      "detail": "371 colors, mean luma 35.3"
+    },
+    {
+      "scenario": "r01-jet-over-wall",
+      "group": "routes",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "3.55, 2.50, 1.40, 1.00, 384.00, 28640.00, 10387.00"
+    },
+    {
+      "scenario": "r01-jet-over-wall",
+      "group": "routes",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "11 rects"
+    },
+    {
+      "scenario": "r01-jet-over-wall",
+      "group": "routes",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "PERCH · 1.4 m · fuel 100%"
+    },
+    {
+      "scenario": "r02-jet-forward-climb",
+      "group": "routes",
+      "name": "jetpack plus forward crosses the courtyard airborne",
+      "ok": true,
+      "detail": "x=14.50, alt 5.41 m"
+    },
+    {
+      "scenario": "r02-jet-forward-climb",
+      "group": "routes",
+      "name": "r02-jet-forward-climb matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "r02-jet-forward-climb",
+      "group": "routes",
+      "name": "r02-jet-forward-climb renders content",
+      "ok": true,
+      "detail": "69 colors, mean luma 29.9"
+    },
+    {
+      "scenario": "r02-jet-forward-climb",
+      "group": "routes",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "14.50, 12.50, 5.41, 0.80, 384.00, 1536.00, 4512.00"
+    },
+    {
+      "scenario": "r02-jet-forward-climb",
+      "group": "routes",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "5 rects"
+    },
+    {
+      "scenario": "r02-jet-forward-climb",
+      "group": "routes",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "JETPACK · BURN · fuel 80%"
+    },
+    {
+      "scenario": "r03-aerial-lookdown",
+      "group": "routes",
+      "name": "aerial look-down selects the top sprite band",
+      "ok": true,
+      "detail": "pitch -83 deg, sprite pitch 3"
+    },
+    {
+      "scenario": "r03-aerial-lookdown",
+      "group": "routes",
+      "name": "r03-aerial-lookdown matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "r03-aerial-lookdown",
+      "group": "routes",
+      "name": "r03-aerial-lookdown renders content",
+      "ok": true,
+      "detail": "310 colors, mean luma 44.1"
+    },
+    {
+      "scenario": "r03-aerial-lookdown",
+      "group": "routes",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "11.50, 12.50, 16.00, 1.00, 384.00, 5991.00, 13655.00"
+    },
+    {
+      "scenario": "r03-aerial-lookdown",
+      "group": "routes",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "13 rects"
+    },
+    {
+      "scenario": "r03-aerial-lookdown",
+      "group": "routes",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "FREEFLY · DEBUG · fuel 100%"
+    },
+    {
+      "scenario": "r04-respawn-midair",
+      "group": "routes",
+      "name": "respawning from altitude resets the pose",
+      "ok": true,
+      "detail": "alt 0.00 m, yaw 0, fuel 1"
+    },
+    {
+      "scenario": "r04-respawn-midair",
+      "group": "routes",
+      "name": "r04-respawn-midair matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "r04-respawn-midair",
+      "group": "routes",
+      "name": "r04-respawn-midair renders content",
+      "ok": true,
+      "detail": "288 colors, mean luma 49.5"
+    },
+    {
+      "scenario": "r04-respawn-midair",
+      "group": "routes",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 66996.00, 0.00"
+    },
+    {
+      "scenario": "r04-respawn-midair",
+      "group": "routes",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "11 rects"
+    },
+    {
+      "scenario": "r04-respawn-midair",
+      "group": "routes",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "r05-sprint-route",
+      "group": "routes",
+      "name": "sprint route traverses the corridor",
+      "ok": true,
+      "detail": "dx=4.60 in 1 s"
+    },
+    {
+      "scenario": "r05-sprint-route",
+      "group": "routes",
+      "name": "r05-sprint-route matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "r05-sprint-route",
+      "group": "routes",
+      "name": "r05-sprint-route renders content",
+      "ok": true,
+      "detail": "79 colors, mean luma 46.1"
+    },
+    {
+      "scenario": "r05-sprint-route",
+      "group": "routes",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "8.10, 1.50, 0.00, 1.00, 384.00, 53528.00, 0.00"
+    },
+    {
+      "scenario": "r05-sprint-route",
+      "group": "routes",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "8 rects"
+    },
+    {
+      "scenario": "r05-sprint-route",
+      "group": "routes",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "r05-sprint-route",
+      "group": "routes",
+      "name": "no page errors",
+      "ok": true,
+      "detail": "0 errors"
+    }
+  ],
+  "captures": [
+    {
+      "name": "g01-spawn-idle",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "g02-walk-forward",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "g03-walk-backward",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "g04-strafe-right",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "g05-strafe-left",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "g06-sprint-forward",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "g07-diagonal-walk",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "g08-wall-block",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "g09-north-wall-slide",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "g10-respawn-key",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "v01-jump-burst",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "v02-jet-burn",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "v03-jet-ceiling",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "v04-jet-empty-fuel",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "v05-fall-land",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "v06-ground-refuel",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "v07-freefly-up",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "v08-freefly-descend-crate",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "v09-freefly-off-fall",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "a01-ground-pitch-clamp-down",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "a02-ground-pitch-clamp-up",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "a03-air-pitch-top",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "a04-mouse-yaw",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "a05-mouse-pitch",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "a06-sector-front",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "a07-sector-back",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "a08-sector-south",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "a09-sector-north",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "a10-sector-ne",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "a11-sector-sw",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "a12-sector-se",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "a13-sector-nw",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "a14-pitch-band-low",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "a15-pitch-band-level",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "a16-pitch-band-high",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "a17-pitch-band-top",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "s01-stairs-approach",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "s02-stairs-climb",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "s03-stairs-descend",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "s04-platform-stand",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "s05-crate-block",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "s06-crate-perch",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "s07-wall-land",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "s08-wall-stepoff",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "s09-wall-perch-down",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "s10-near-wall",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "s11-near-wall-lookdown",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "c01-watcher-tracks",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "c02-patrol-advance",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "c03-patrol-reverse",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "c04-chase-approach",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "c05-hover-bob",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "c06-idle-animation",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "c07-occlusion-crate",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "c08-occlusion-wall",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "c09-overhead-guard",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "c10-overhead-edge-actor",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "c11-multi-actor-aerial",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "u01-minimap-visible",
+      "kind": "page",
+      "baseline": "skipped"
+    },
+    {
+      "name": "u02-minimap-hidden",
+      "kind": "page",
+      "baseline": "skipped"
+    },
+    {
+      "name": "u03-hud-minimal",
+      "kind": "page",
+      "baseline": "skipped"
+    },
+    {
+      "name": "u04-pause-freeze",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "u05-pause-resume",
+      "kind": "canvas",
+      "baseline": "skipped"
+    },
+    {
+      "name": "u06-hud-values",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "u07-fuel-readout",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "r01-jet-over-wall",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "r02-jet-forward-climb",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "r03-aerial-lookdown",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "r04-respawn-midair",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "r05-sprint-route",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    }
+  ],
+  "consoleErrors": [],
+  "sheet": "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/matrix/contact-sheet.png"
+}
