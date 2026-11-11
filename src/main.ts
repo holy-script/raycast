@@ -120,7 +120,7 @@ async function boot(): Promise<void> {
         : state.thrusting
           ? "JETPACK · BURN"
           : state.support > 0.01 && state.onGround
-            ? `PERCH · WALL ${state.support.toFixed(1)} m`
+            ? `PERCH · ${state.support.toFixed(1)} m`
             : state.airborne
               ? "AIRBORNE · FALL"
               : `WALK · ${started ? "LIVE" : "ATTRACT"}`;

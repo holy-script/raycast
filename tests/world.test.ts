@@ -3,6 +3,7 @@ import {
   canOccupy,
   createWorld,
   isSolidAt,
+  STEP_UP,
   supportHeight,
   tileAt,
   tileHeightAt,
@@ -40,10 +41,10 @@ describe("world grid", () => {
 
   it("treats wall tops as surfaces above the block", () => {
     expect(tileHeightAt(world, 1.5, 1.5)).toBe(0);
-    expect(tileHeightAt(world, 2.5, 2.5)).toBe(WALL_HEIGHT);
+    expect(tileHeightAt(world, 2.5, 2.5)).toBeCloseTo(WALL_HEIGHT);
     expect(tileHeightAt(world, -1, 2)).toBe(WALL_HEIGHT);
     expect(supportHeight(world, 1.5, 1.5)).toBe(0);
-    expect(supportHeight(world, 2.5, 2.5)).toBe(WALL_HEIGHT);
+    expect(supportHeight(world, 2.5, 2.5)).toBeCloseTo(WALL_HEIGHT);
   });
 
   it("does not lift a player standing next to a wall", () => {
@@ -67,5 +68,34 @@ describe("world grid", () => {
 
   it("rejects maps with inconsistent row widths", () => {
     expect(() => createWorld(["####", "###"])).toThrow(/width/);
+  });
+});
+
+describe("sector heights", () => {
+  const world = createWorld([
+    "######",
+    "#.12.#",
+    "#.3..#",
+    "######",
+  ]);
+
+  it("parses digit cells as solid 0.2-unit steps", () => {
+    expect(tileAt(world, 2.5, 1.5)).toBe(2);
+    expect(tileHeightAt(world, 2.5, 1.5)).toBeCloseTo(0.2);
+    expect(tileHeightAt(world, 3.5, 1.5)).toBeCloseTo(0.4);
+    expect(tileHeightAt(world, 2.5, 2.5)).toBeCloseTo(0.6);
+  });
+
+  it("only steps up when the rise is within the limit", () => {
+    expect(canOccupy(world, 2.5, 1.5, 0.19, 0)).toBe(false);
+    expect(canOccupy(world, 2.5, 1.5, 0.19, 0, STEP_UP)).toBe(true);
+    expect(canOccupy(world, 2.5, 2.5, 0.19, 0, STEP_UP)).toBe(false);
+    expect(canOccupy(world, 2.5, 2.5, 0.19, 0.4, STEP_UP)).toBe(true);
+  });
+
+  it("supports the player at the cell height", () => {
+    expect(supportHeight(world, 2.5, 1.5)).toBeCloseTo(0.2);
+    expect(supportHeight(world, 2.5, 2.5)).toBeCloseTo(0.6);
+    expect(supportHeight(world, 1.5, 1.5)).toBe(0);
   });
 });

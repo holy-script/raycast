@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { castRay } from "../src/engine/dda";
+import { castRay, castRayHits } from "../src/engine/dda";
 import { createWorld } from "../src/engine/world";
 
 const MAP = [
@@ -53,5 +53,33 @@ describe("DDA raycasting", () => {
   it("returns null when a ray escapes an open map", () => {
     const open = createWorld([".....", ".....", "....."]);
     expect(castRay(open, 1.5, 1.5, 0, -1)).toBeNull();
+  });
+
+  it("collects every hit at its own height and exit distance", () => {
+    const steps = createWorld([
+      "######",
+      "#.12.#",
+      "#.3..#",
+      "######",
+    ]);
+    const hits = castRayHits(steps, 1.5, 1.5, 1, 0);
+    expect(hits).toHaveLength(3);
+    expect(hits[0].height).toBeCloseTo(0.2);
+    expect(hits[1].height).toBeCloseTo(0.4);
+    expect(hits[2].height).toBeCloseTo(1.4);
+    expect(hits.map((hit) => hit.distance)).toEqual([0.5, 1.5, 3.5]);
+    expect(hits[0].exitDistance).toBeCloseTo(1.5);
+    expect(hits[1].exitDistance).toBeCloseTo(2.5);
+  });
+
+  it("includes the solid cell under the camera at distance zero", () => {
+    const crate = createWorld(["######", "#.2..#", "#....#", "######"]);
+    const hits = castRayHits(crate, 2.5, 1.5, 1, 0);
+    expect(hits).toHaveLength(2);
+    expect(hits[0].distance).toBe(0);
+    expect(hits[0].mapX).toBe(2);
+    expect(hits[0].height).toBeCloseTo(0.4);
+    expect(hits[0].exitDistance).toBeCloseTo(0.5);
+    expect(hits[1].mapX).toBe(5);
   });
 });

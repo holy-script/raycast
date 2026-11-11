@@ -19,6 +19,7 @@ import {
 import {
   canOccupy,
   createWorld,
+  STEP_UP,
   supportHeight,
   type World,
 } from "./engine/world";
@@ -205,13 +206,27 @@ export class Game {
     if (moveX !== 0 || moveY !== 0) {
       const nextX = this.player.x + moveX * stepDistance;
       if (
-        canOccupy(this.world, nextX, this.player.y, PLAYER_RADIUS, this.player.z)
+        canOccupy(
+          this.world,
+          nextX,
+          this.player.y,
+          PLAYER_RADIUS,
+          this.player.z,
+          STEP_UP,
+        )
       ) {
         this.player.x = nextX;
       }
       const nextY = this.player.y + moveY * stepDistance;
       if (
-        canOccupy(this.world, this.player.x, nextY, PLAYER_RADIUS, this.player.z)
+        canOccupy(
+          this.world,
+          this.player.x,
+          nextY,
+          PLAYER_RADIUS,
+          this.player.z,
+          STEP_UP,
+        )
       ) {
         this.player.y = nextY;
       }
@@ -266,6 +281,15 @@ export class Game {
       }
 
       if (this.player.z <= support) {
+        this.player.z = support;
+        this.player.vz = 0;
+        this.player.onGround = true;
+      } else if (
+        this.player.onGround &&
+        this.player.vz <= 0 &&
+        this.player.z - support <= STEP_UP + 0.001
+      ) {
+        // Walking down a stair snaps to the next tread instead of free-falling.
         this.player.z = support;
         this.player.vz = 0;
         this.player.onGround = true;
