@@ -5,8 +5,22 @@ import { Browser, sleep } from "./cdp";
 import type { HudState } from "../../src/game";
 
 const root = resolve(import.meta.dirname, "../..");
-const outDir = join(root, "docs/screenshots/playtest");
+const outDir = process.env.PLAYTEST_OUT
+  ? resolve(process.env.PLAYTEST_OUT)
+  : join(root, "docs/screenshots/playtest");
 const port = 5199;
+
+function argValue(name: string): string | undefined {
+  const index = process.argv.indexOf(name);
+  return index >= 0 ? process.argv[index + 1] : undefined;
+}
+
+const remoteUrl = argValue("--url");
+const pageUrl = remoteUrl
+  ? remoteUrl.includes("?")
+    ? remoteUrl
+    : `${remoteUrl}?screenshot`
+  : `http://127.0.0.1:${port}/?screenshot`;
 
 interface Check {
   name: string;
@@ -74,12 +88,11 @@ async function waitForGame(browser: Browser): Promise<void> {
 async function main(): Promise<void> {
   mkdirSync(outDir, { recursive: true });
 
-  const devServer = startDevServer();
+  const devServer = remoteUrl ? undefined : startDevServer();
   let browser: Browser | undefined;
   try {
-    const url = `http://127.0.0.1:${port}/?screenshot`;
-    await waitForHttp(url);
-    browser = await Browser.launch(9400 + Math.floor(Math.random() * 400), url);
+    await waitForHttp(pageUrl);
+    browser = await Browser.launch(9400 + Math.floor(Math.random() * 400), pageUrl);
     await browser.send("Page.enable");
     await browser.send("Runtime.enable");
     await browser.send("Emulation.setDeviceMetricsOverride", {
@@ -318,13 +331,13 @@ async function main(): Promise<void> {
     check("no page errors", consoleErrors.length === 0, `${consoleErrors.length} errors`);
   } finally {
     if (browser) await browser.close();
-    devServer.kill("SIGTERM");
+    devServer?.kill("SIGTERM");
   }
 
   const failed = checks.filter((entry) => !entry.ok);
   const report = {
     generatedAt: new Date().toISOString(),
-    url: `http://127.0.0.1:${port}/?screenshot`,
+    url: pageUrl,
     passed: checks.length - failed.length,
     failed: failed.length,
     checks,

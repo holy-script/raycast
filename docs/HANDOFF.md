@@ -39,9 +39,16 @@ verified.
 
 `?screenshot` hides the intro overlay for headless captures. Prefer the harness:
 `npm run playtest` starts Vite, drives Chrome over CDP, writes screenshots plus
-`report.json`, and exits non-zero on failure. If you need a one-off capture, drive Chrome
-through CDP and wait for the HUD; `--virtual-time-budget` alone can leave HUD values at
-`--`.
+`report.json`, and exits non-zero on failure. To verify a deployed build instead of the
+local server:
+
+```bash
+PLAYTEST_OUT=/tmp/rc-prod-check npm run playtest -- --url https://raycast-rosy.vercel.app/
+```
+
+`PLAYTEST_OUT` keeps the production screenshots out of the repo. If you need a one-off
+capture, drive Chrome through CDP and wait for the HUD; `--virtual-time-budget` alone can
+leave HUD values at `--`.
 
 ## Invariants to preserve
 

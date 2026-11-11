@@ -43,11 +43,16 @@ captured screenshots.
 ## Commands
 
 ```bash
-npm run playtest     # full browser verification
+npm run playtest     # full browser verification against the local dev server
+PLAYTEST_OUT=/tmp/rc-prod-check npm run playtest -- --url https://raycast-rosy.vercel.app/
 npm test             # unit tests (not a substitute for the playtest)
 npm run typecheck
 npm run assets       # regenerate textures + 3 characters + atlases (slow, needs Blender)
 ```
+
+Use `--url` after a deployment and compare the result with the local run. `PLAYTEST_OUT`
+redirects screenshots/report to a throwaway directory so production captures do not dirty
+the repo.
 
 ## Environment notes
 
