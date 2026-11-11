@@ -11,7 +11,7 @@ Last updated: **2026-11-11**
 | Jetpack, rotational pitch, roof plane, depth | M2 | ✅ Complete |
 | 16-way × 4-pitch billboard sprites | M3 | ✅ Complete |
 | Blender → stylize → atlas, 3 chassis | M4 | ✅ Complete |
-| Variable-height sectors and stairs | M5 | 🚧 Next (wall-top support landed early) |
+| Heightmap blocks: stairs, platforms, crates | M5 | ✅ Complete |
 | ComfyUI / MCP AI stylization | M6 | ⬜ Planned |
 | 16-way and multi-character content | M7 | 🚧 Chassis, directions, behaviors done; combat pending |
 | Audio, menus, deployment | M8 | 🚧 Live + auto-deploy; audio/menus pending |
@@ -23,9 +23,9 @@ Run from a clean checkout:
 ```bash
 npm ci
 npm run typecheck   # passes
-npm test            # 4 files, 27 tests pass
+npm test            # 4 files, 32 tests pass
 npm run build       # tsc + vite build
-npm run playtest    # 24/24 browser checks pass
+npm run playtest    # 29/29 browser checks pass
 ```
 
 Browser verification (2026-11-11, headless Chrome over CDP, `http://127.0.0.1:5199/?screenshot`):
@@ -45,7 +45,11 @@ Browser verification (2026-11-11, headless Chrome over CDP, `http://127.0.0.1:51
   actor near the map edge remains in view.
 - The player lands on a wall top at 1.40 m (`support 1.40`, grounded) and drops to 0 when
   stepping off.
-- Screenshots: `docs/screenshots/playtest/01-…19-…`; machine-readable results in
+- Walking north from the courtyard floor climbs the two 0.2 steps onto the 0.4 platform
+  (`support 0.40`, grounded); a 0.6 crate blocks walking but can be landed on.
+- Per-cell tops render from the ground and from altitude, and the crate occludes 1,706
+  opaque scholar pixels behind it while leaving the upper body visible.
+- Screenshots: `docs/screenshots/playtest/01-…26-…`; machine-readable results in
   `docs/screenshots/playtest/report.json`.
 - No console errors during the checked session.
 - Production deployment: https://raycast-rosy.vercel.app — HTML, atlas JSON/PNG, and
@@ -56,6 +60,26 @@ Browser verification (2026-11-11, headless Chrome over CDP, `http://127.0.0.1:51
   with all three 16-way / 4-pitch / 384-frame atlases served.
 
 ## Session log
+
+### 2026-11-11 — M5 heightmap blocks, stairs, and crate occlusion
+
+- Added `World.heights`: every solid cell stores its own surface height. Map digits `1`–`9`
+  are panel platforms at `0.2 × digit`; `#`/`X` remain `WALL_HEIGHT = 1.4`.
+- `supportHeight` returns the centre cell's height and `canOccupy` takes a `maxStep`, so
+  the player climbs 0.2/0.4 stairs (`STEP_UP = 0.3`), is blocked by a 0.6 crate, lands on
+  any surface from above, and snaps down a tread while grounded.
+- `castRayHits` now returns every solid cell with its height and exit distance, and emits
+  the cell under the camera at distance 0 so steep rays still hit its top.
+- Replaced the single roof plane with per-cell tops: each hit scans the screen rows between
+  its near/far projections and inverts the pitch projection to sample `z = height`. Every
+  face renders at its own height, so low steps no longer hide walls behind them.
+- Sprite stats gained an `occluded` count; the harness asserts the crate hides 1,706
+  opaque scholar pixels while the upper body stays visible.
+- Demo map gains a 0.4 platform with 0.2 step treads (x=10–13, y=18–21) and a 0.6 crate at
+  (4.5, 13.5).
+- Tests: 32 unit tests (sector heights, step limits, all-hit traversal, origin cell) and
+  29 browser checks (stairs, top pixels, crate block/occlusion/landing); new screenshots
+  20–26.
 
 ### 2026-11-11 — Wall landing, overhead sprites, and visual regression suite
 
@@ -128,13 +152,12 @@ Browser verification (2026-11-11, headless Chrome over CDP, `http://127.0.0.1:51
 
 ## Known issues / limitations
 
-- The world floor is a single height at 0; walls are walkable 1.4-unit blocks. Per-cell
-  floor/ceiling heights, stairs, and ledges are M5.
+- Heights are blocks grown from `z = 0`; there are no sunken floors/pits, overhangs, or
+  ceilings. A full floor/ceiling sector model is deferred (not needed for this game).
 - No ceiling geometry: sky is visible above the outer walls from ground level.
-- Wall tops are a constant-height plane; variable wall heights arrive with M5.
 - Actors have no collision with the player or each other and no combat loop; chase actors
   pursue but cannot damage or be damaged.
-- Hover actors have no shadow unless they descend below 0.25.
+- Actor shadows fade out above 2.5 m, so high hover actors have no visible shadow.
 - Pointer lock must be entered by clicking; automated screenshots use `?screenshot`.
 - The intro overlay can require a reload on a cold Vite dev start if assets race HMR.
 - The playtest verifies mechanics, render statistics, and atlas wiring, not art quality;
@@ -142,13 +165,10 @@ Browser verification (2026-11-11, headless Chrome over CDP, `http://127.0.0.1:51
 
 ## Immediate next steps
 
-1. Design the sector height map format (`M5`): per-cell floor height and tile kind, with
-   defaults that keep the current ASCII map valid.
-2. Feed sector floor height into `supportHeight` and step-up/step-down collision; keep the
-   existing wall-top support behavior as the step-up case.
-3. Render wall spans and risers relative to per-cell floor/ceiling heights; extend the roof
-   pass to per-cell tops.
-4. Add a raised platform, stairs, and a waist-high crate to the demo map; assert sprite
-   occlusion and shadow height.
-5. Build the depth/normal export for the AI stylization stage (`M6`).
-6. Add attack/hurt/death states and a simple interaction or combat loop (`M7`).
+1. Export depth/normal control images alongside each raw Blender render (`M6`).
+2. Add the ComfyUI img2img + ControlNet workflow and a CLI wrapper that preserves the
+   atlas contract (fixed seed/style preset, 384 frames per character).
+3. Add style-consistency checks (silhouette IoU, palette drift) and an optional MCP
+   server exposing `generate_character_atlas` / `regenerate_view`.
+4. Add attack/hurt/death states and a simple interaction or combat loop (`M7`).
+5. Add a second map exercising the vertical layouts (M7).

@@ -155,3 +155,21 @@ per-cell heights in M5.
 format. Collision now depends on the player's feet height, so a wall blocks at ground
 level but not from above. Constant height means all walls are equal; M5 replaces
 `tileHeightAt` with a sector lookup and adds risers/stairs.
+
+## ADR-012 — Heightmap blocks instead of Doom-style sectors
+
+**Context:** M5 needs stairs, a raised platform, and a waist-high crate with correct
+collision and rendering. A full sector model (per-cell floor and ceiling heights, BSP,
+portals) is the textbook raycaster answer but is much larger than this demo requires.
+
+**Decision:** Store one surface height per solid cell in `World.heights` and grow every
+block from `z = 0`. Map digits `1`–`9` are solid panel platforms at `0.2 × digit`; `#`/`X`
+stay at `WALL_HEIGHT = 1.4`; the walkable floor remains the zero plane. `castRayHits`
+returns all solid cells with height/exit distance, and the renderer draws each face and
+per-cell top independently. Step-up is limited by `STEP_UP = 0.3`.
+
+**Consequences:** Stairs, platforms, crates, and walls share one representation and one
+collision path, and low geometry never hides taller geometry behind it. Pits, overhangs,
+doors, and ceilings are not representable; adding them would require the sector model.
+Because `Float32Array` stores heights imprecisely (0.2 becomes 0.20000000298),
+height assertions in tests use `toBeCloseTo`.

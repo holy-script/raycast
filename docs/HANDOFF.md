@@ -10,14 +10,15 @@ npm ci
 npm run typecheck
 npm test
 npm run build
-npm run playtest   # headless Chrome, 24 checks + screenshots
+npm run playtest   # headless Chrome, 29 checks + screenshots
 npm run dev        # http://localhost:5173
 ```
 
-Expected: typecheck clean, 27 tests passing across 4 files, Vite build succeeds, playtest
-24/24. Click the canvas, move with WASD, hold Space to jetpack up to 18 m, and look down
-to see the top-pitch sprite rows and the wall-top diorama. Land on a wall to perch; walk
-off to fall back.
+Expected: typecheck clean, 32 tests passing across 4 files, Vite build succeeds, playtest
+29/29. Click the canvas, move with WASD, hold Space to jetpack up to 18 m, and look down
+to see the top-pitch sprite rows and the diorama. Walk up the panel stairs (x=10–13,
+y=18–21) onto the 0.4 platform, jump the 0.6 crate at (4.5, 13.5), or land on a wall to
+perch; walk off to fall back.
 
 ## Debug API
 
@@ -37,8 +38,9 @@ window.__raycast.debug();                     // camera, player, actor rects, re
 
 Useful for deterministic captures and tests. `game.getHudState()` returns the nearest
 actor's resolved yaw, pitch index, and sprite id, which is how directional selection was
-verified. `debug()` exposes `renderer.stats.wallColumns`, `wallPixels`, and per-sprite
-`contentW/contentH/pixels` so the harness can assert on what was actually drawn.
+verified. `debug()` exposes `renderer.stats.wallColumns`, `wallPixels`, `topPixels`, and
+per-sprite `contentW/contentH/pixels/occluded` so the harness can assert on what was
+actually drawn.
 
 `?screenshot` hides the intro overlay for headless captures. Prefer the harness:
 `npm run playtest` starts Vite, drives Chrome over CDP, writes screenshots plus
@@ -65,12 +67,18 @@ leave HUD values at `--`.
 - **Near plane:** walls are clipped with `zCam > 0.01`; never divide by it. A face crossing
   the plane must still paint, and wall texture V must come from the per-pixel inverse
   projection, not the clipped span.
-- **Depth metric:** walls, floor, wall tops, and sprites all compare horizontal forward
+- **Depth metric:** walls, floor, cell tops, and sprites all compare horizontal forward
   distance. Sprite size and screen position use `zCam` instead, but the occlusion value
   stays forward. Any new geometry must use the same depth metric or occlusion breaks.
-- **No altitude skip for walls:** wall faces render at every eye height. The floor pass
-  draws wall tops when `eyeZ > WALL_HEIGHT`; keep the `roofT < floorT` ordering and the
-  solid-cell fill.
+- **No altitude skip for walls:** wall faces render at every eye height. Tops are drawn per
+  `castRayHits` hit, not from a global roof plane; keep them tied to each cell's height
+  and exit distance.
+- **Origin cell:** when the camera stands on a solid cell, `castRayHits` emits it at
+  distance 0. The renderer skips its face but must draw its top, or steep rays show sky
+  beneath the player.
+- **Support heights:** surfaces are blocks grown from `z = 0`. `supportHeight` samples the
+  centre cell only; collision passes `STEP_UP = 0.3` to `canOccupy`, while actors use the
+  default 0.02 so they stay on the floor.
 - **Sprite billboards:** screen-aligned, sized by `zCam`, never feet/head projected. This
   is what keeps overhead actors readable; changing it reintroduces the 1D collapse.
 - **Sprite anchor:** frame bottoms sit at `actor.z + frameAnchorZ`; shadows use `actor.z`,
@@ -117,34 +125,29 @@ leave HUD values at `--`.
 
 ## Known constraints
 
-- The floor is flat at `z = 0`; walls are solid, walkable 1.4-unit blocks. Per-cell floor
-  and ceiling heights, stairs, and ledges are still M5.
+- Heights are blocks grown from `z = 0`; there are no sunken floors/pits, overhangs, or
+  ceilings. The walkable floor is one plane at 0.
 - No ceiling geometry; sky is visible above the outer walls from ground level.
-- Wall tops are a constant-height plane; variable wall heights arrive with M5.
 - Actors have no collision with the player or each other and no combat loop. Chase actors
   pursue but do not damage; hover actors bob and spin.
 - Intro overlay can stick on a cold Vite start if HMR interrupts boot; reload fixes it.
 - No license file yet.
 
-## Next task: M5 variable-height sectors
+## Next task: M6 AI stylization pipeline
 
-Wall-top support already exists (`supportHeight`, z-aware `canOccupy`, grounded landing),
-so M5 generalizes that path to per-cell heights.
+M5 is complete. The runtime pipeline is still the deterministic Blender render plus palette
+stylizer; there is no ComfyUI dependency yet.
 
 Recommended order:
 
-1. Add `floorHeight(tile)` and `ceilingHeight(tile)` (start with a `heights` array or map
-   string annotations). Keep the existing ASCII map valid with default height 0.
-2. Feed that into `supportHeight` and allow step-up ≤ 0.3 with grounded snapping; gravity
-   still applies when stepping off a ledge.
-3. Render walls with per-cell base/top through `projectYClipped(cam, d, height − eyeZ)`,
-   clamped to the framebuffer. Add riser faces between adjacent sectors and extend the
-   roof pass to per-cell floor/ceiling heights.
-4. Use the actor's sector floor for sprite `z`, shadow height, and selection distance.
-5. Add stairs and a raised platform to `src/content/demo-map.ts`, plus a waist-high crate
-   to test partial sprite occlusion.
-6. Add tests for height lookup, step limits, and grounded snapping.
-7. Update PROGRESS/ROADMAP, screenshot, commit, push.
+1. Export depth and normal control images alongside each raw render in the Blender pass.
+2. Build a ComfyUI img2img + ControlNet workflow, driven by a fixed seed/style preset, and
+   a CLI wrapper that consumes raw RGBA + control images and emits stylized RGBA.
+3. Keep the atlas contract unchanged (384 frames per character, same filenames/manifest) so
+   the renderer needs no changes.
+4. Add consistency checks (silhouette IoU against the raw render, palette drift) and an
+   optional MCP server exposing `generate_character_atlas` / `regenerate_view`.
+5. Then resume M7: attack/hurt/death states, a simple combat loop, and a second map.
 
 If a design choice could go either way, record it in [DECISIONS.md](DECISIONS.md) with the
 tradeoff, then proceed.

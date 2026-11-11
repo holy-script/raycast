@@ -4,9 +4,10 @@ Milestones are ordered. A milestone is complete only when every acceptance crite
 is checked and the verification command passes. Update this file and
 [PROGRESS.md](PROGRESS.md) whenever a milestone starts or finishes.
 
-Current position: **M4 complete — M5 next.** Jetpack flight, aerial camera, wall landing,
-the browser playtest harness, 16-way sprites, and three character chassis landed early
-from M7. Wall-top support (constant height) is in; variable sector heights are M5.
+Current position: **M5 complete — M6 next.** Jetpack flight, aerial camera, the browser
+playtest harness, 16-way sprites, and three character chassis landed early from M7. The
+world now has per-cell surface heights: walkable stairs, a 0.4 platform, and a 0.6 crate
+with correct occlusion.
 
 ## M0 — Foundation
 
@@ -45,7 +46,7 @@ from M7. Wall-top support (constant height) is in; variable sector heights are M
 
 **Acceptance:** jump and jetpack lift/land/refuel work; mouse pitch reaches ~63° without
 perspective warping; sprites remain grounded at every altitude. Verified 2026-11-11 by
-`npm run playtest` (suite has since grown to 24 checks).
+`npm run playtest` (suite has since grown to 29 checks).
 
 ## M3 — Directional sprites ✅
 
@@ -77,25 +78,29 @@ with a readable silhouette. Verified 2026-11-11.
 **Acceptance:** `npm run assets` regenerates three 1536×2304 atlases; the game loads them
 without console errors and assigns chassis per actor. Verified 2026-11-11.
 
-## M5 — Variable-height world 🚧
+## M5 — Variable-height world ✅
 
-Goal: replace the flat floor with sectors so stairs, ledges, pits and crates have real
+Goal: replace the flat floor with sectors so stairs, ledges and crates have real
 collision and render heights.
 
-Landed early (2026-11-11): walls are walkable `WALL_HEIGHT` blocks with support-height
-landing, z-aware collision, `PERCH` HUD, and step-off falling. That is the constant-height
-half of this milestone; per-cell heights remain.
+Implemented as **heightmap blocks** rather than Doom-style floor/ceiling sectors: every
+solid cell has its own surface height, grown from `z = 0`, and the walkable floor stays at
+0. This covers stairs, platforms, crates and walls without ceilings or pits.
 
-- [ ] Sector data model (floor height, ceiling height, tile kind)
-- [ ] Step-up/step-down collision and grounded height from sector
-- [ ] Render wall spans relative to sector floor/ceiling
-- [ ] Variable-height risers and connected stairs
+- [x] Height-map data model: `World.heights`, `tileHeightAt`, map digits `1`–`9`
+- [x] Step-up/step-down collision (`STEP_UP = 0.3`) and grounded descent snapping
+- [x] Render every hit's face at its own height with near-plane clipping
+- [x] Per-cell top surfaces; origin cell emitted so steep rays under the camera stay solid
 - [x] Sprites and shadows use the actor's ground height
-- [ ] Demo map with a raised platform, stairs, and a waist-high ledge
-- [x] Tests for height lookup and step limits (constant-height baseline)
+- [x] Demo map with a 0.4 platform, 0.2 steps, and a 0.6 crate
+- [x] Tests for height lookup, step limits, all-hit traversal, and origin cells
 
 **Acceptance:** walk up and down stairs smoothly; stand on a 0.4-unit ledge; a sprite
-behind a waist-high crate is correctly partially occluded; no regression in FPS.
+behind a waist-high crate is correctly partially occluded; no regression in FPS. Verified
+2026-11-11 by 32 unit tests and 29/29 browser checks.
+
+Deferred: full floor/ceiling sectors (pits, overhangs, ceilings) remain out of scope; the
+heightmap-block model is sufficient for this game and the second-map work in M7.
 
 ## M6 — AI stylization and MCP integration 🚧
 

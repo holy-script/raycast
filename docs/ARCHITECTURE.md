@@ -70,13 +70,24 @@ pointing downward.
 
 ## Walls
 
-For each screen column, a DDA ray is cast and the perpendicular distance `d` is used:
+Every solid cell is a block from `z = 0` to its own surface height: `WALL_HEIGHT = 1.4`
+for `#`/`X`, and `0.2 × digit` for map digits `1`–`9` (stairs, ledges, crates). For each
+screen column `castRayHits` traverses the grid and returns *every* solid cell the ray
+enters, near to far, each with its `height` and `exitDistance`. Drawing all hits means a
+low step never hides a taller wall behind it.
 
 ```ts
-yTop    = projectYClipped(cam, d, WALL_HEIGHT - eyeZ);  // WALL_HEIGHT = 1.4
-yBottom = projectYClipped(cam, d, -eyeZ);
-texX    = floor(wallU * texture.width);
+for (const hit of hits) {
+  yTop    = projectYClipped(cam, hit.distance, hit.height - eyeZ);
+  yBottom = projectYClipped(cam, hit.distance, -eyeZ);
+  texX    = floor(hit.wallU * texture.width);
+}
 ```
+
+When the camera stands on a solid cell, `castRayHits` also emits that cell at distance 0
+with its exit distance. The renderer skips its face (there is none facing the camera) but
+draws its top, so steep downward rays have a surface instead of leaving sky holes below
+the player.
 
 `projectYClipped` rotates the point into camera space and handles the near plane:
 `zCam = d·cosP + dz·sinP`. When `zCam` is at or behind `NEAR_PLANE = 0.01` it returns a
@@ -92,28 +103,31 @@ face crosses the near plane. Instead each scanline inverts the projection exactl
 ```ts
 s  = (centerY - (y + 0.5)) / focal;            // camera-space up/forward slope
 dz = d * (sinP + s·cosP) / (cosP - s·sinP);    // height relative to the eye
-t  = (dz + eyeZ) / WALL_HEIGHT;                // 0 at the floor, 1 at the top
+t  = (dz + eyeZ) / hit.height;                 // 0 at the floor, 1 at the top
 ```
 
 Shade falls off with distance (`1 / (1 + d·0.085)`), with vertical faces at 76%, and is
 blended toward the fog color `(16, 18, 30)`.
 
-## Floor and wall tops
+## Floor and cell tops
 
-Every pixel below the horizon casts an exact 3D ray. Two plane intersections are
-computed:
+The walkable floor is one plane at `z = 0`. Every pixel below the horizon casts an exact
+3D ray and intersects it (`floorT = -eyeZ / rayZ`); the sample is textured only when it
+lands in an in-bounds walkable cell (`tile === 0`). Out-of-bounds and solid-cell hits
+stay sky here, because solid cells get their own tops.
+
+Tops are drawn per DDA hit, not from a single global roof plane. For a cell of height
+`h`, the screen rows between the projections of its near and far boundaries are scanned,
+and each row inverts the pitch projection to find where the view ray crosses `z = h`:
 
 ```ts
-roofT  = (WALL_HEIGHT - eyeZ) / rayZ;   // only while the eye is above the walls
-floorT = -eyeZ / rayZ;
+s        = (centerY - (y + 0.5)) / focal;
+distance = dz·(cosP - s·sinP) / (s·cosP + sinP);   // dz = h - eyeZ
 ```
 
-`roofT` is nearer than `floorT`. If the roof sample lands in a solid cell, the wall-top
-texture is drawn with a bright edge highlight (`×1.32`) and a darker interior (`×0.82`).
-Otherwise the floor sample is drawn if it lands in a walkable, in-bounds cell. If the
-floor sample lands in a solid cell while the roof sample did not, the ray grazed over a
-wall top and hit the block's far body; the block texture is filled at `floorT` so the
-aerial view has no sky holes. Out-of-bounds floor hits stay sky.
+The sample is kept only when it falls inside `[mapX, mapX+1) × [mapY, mapY+1)`, so each
+stair tread, platform, crate and wall gets its own top at its own height. Tops use a
+bright edge highlight (`×1.32`) and a darker interior (`×0.82`).
 
 Only pixels nearer than `depth[idx]` are drawn, so floor and wall tops are rejected
 behind walls. Depth stores horizontal forward distance, matching wall and sprite depth.
@@ -160,8 +174,8 @@ compares horizontal `forward`, matching walls and floor, which store horizontal 
 distance.
 
 Per pixel: sample the atlas rect, multiply RGB by the actor tint and distance shade,
-blend by alpha, and update depth for opaque pixels. A soft elliptical shadow is drawn at
-the actor's ground position when `z < 0.25`.
+blend by alpha, and update depth for opaque pixels. A soft elliptical shadow fades out at
+the actor's ground position when `z < 2.5`.
 
 ### Directional frame selection
 
@@ -204,17 +218,20 @@ new renders.
 | Pitch limit | 1.1 rad ground, 1.45 rad airborne |
 
 Horizontal movement is resolved per axis so sliding along walls works. Collision samples
-nine points on the player circle; `canOccupy(..., z)` rejects a destination whose tile
-height is above the player's feet, so walls block at ground level but become walkable once
-the player is above them. The map edge stays blocked at every altitude.
-`supportHeight` samples the cell under the player's centre (a footprint sample would lift
-the player onto any wall they stand next to) and returns `WALL_HEIGHT` when solid.
+nine points on the player circle; `canOccupy(..., z, maxStep)` rejects a destination whose
+tile height is above `z + maxStep`, so a wall blocks at ground level, a 0.2/0.4 stair
+tread is walkable (`STEP_UP = 0.3`), and a 0.6 crate needs a jump. Destinations above a
+surface are allowed, so the player can also fly onto it. The map edge stays blocked at
+every altitude. `supportHeight` samples the cell under the player's centre (a footprint
+sample would lift the player onto any wall they stand next to) and returns that cell's
+surface height.
 
 Gravity integrates `vz`; the player lands on the support height rather than always `z = 0`.
-Jetpack thrust, refuelling, and the grounded flag all key off that support, so the player
-can fly onto a wall top, stand there (`PERCH · WALL 1.4 m` in the HUD), look down at the
-courtyard, and step off to fall back to the floor. Freefly clamps `z` to
-`[support, MAX_ALTITUDE]`.
+While grounded, a step down within `STEP_UP` snaps to the lower tread instead of
+free-falling. Jetpack thrust, refuelling, and the grounded flag all key off that support,
+so the player can climb the demo stairs onto a 0.4 platform, fly onto a wall top, perch
+there (`PERCH · 1.4 m` in the HUD), look down at the courtyard, and step off to fall back
+to the floor. Freefly clamps `z` to `[support, MAX_ALTITUDE]`.
 
 Holding `Space` burns fuel and thrusts upward from the ground or midair. At `MAX_ALTITUDE`
 the clamp zeroes upward velocity while thrusting, so the player can hover and look down
@@ -238,7 +255,7 @@ lock). It also reads `window.__raycast.debug()`, which returns the camera, playe
 screen rects, and renderer stats (`wallColumns`, `wallPixels`, per-sprite opaque `pixels`
 and width/height of the visible silhouette).
 
-The 24 checks cover movement, collision, jetpack lift/landing/refuel, altitude ceiling,
+The 29 checks cover movement, collision, jetpack lift/landing/refuel, altitude ceiling,
 pitch clamps, front/back frame indices for all three chassis, atlas dimensions, and page
 errors, plus these regressions:
 
@@ -252,6 +269,11 @@ errors, plus these regressions:
 | Overhead edge actor stays in view | actor near the map edge still visible and centred |
 | Player lands on a wall top | `z ≈ 1.4`, `support ≈ 1.4`, `onGround` |
 | Stepping off drops to the floor | `z ≤ 0.001`, `support ≤ 0.001` |
+| Walking up steps reaches the 0.4 platform | `support ≈ 0.4`, `z ≈ 0.4`, `onGround` |
+| Stepped blocks render top surfaces | `topPixels > 500` from the stair approach |
+| A 0.6 crate blocks walking | stopped at `y > 14.1`, support 0 |
+| The crate occludes the scholar | visible sprite with `occluded > 100` pixels |
+| Landing on the crate stops at 0.6 | `z ≈ 0.6`, `support ≈ 0.6`, `onGround` |
 
 Screenshots and a JSON report land in `docs/screenshots/playtest/`.
 

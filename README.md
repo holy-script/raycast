@@ -9,18 +9,18 @@ reproducible pipeline for multi-angle character sprites, based on
 ![Courtyard demo](docs/screenshots/courtyard.png)
 
 The engine renders a 384×240 framebuffer to Canvas 2D: DDA grid traversal, textured
-walls and floors, a true rotational pitch camera, wall-top/roof planes, per-pixel depth,
-and jetpack flight up to 18 m. Walls are solid 1.4-unit blocks you can land on and survey
-the courtyard from. Three Blender chassis (guardian, scout, brute) are each rendered from
+walls, floors and per-cell tops, a true rotational pitch camera, per-pixel depth, and
+jetpack flight up to 18 m. Walls are solid 1.4-unit blocks you can land on; map digits
+build walkable 0.2/0.4 stairs and a 0.6 crate. Three Blender chassis (guardian, scout, brute) are each rendered from
 16 yaw angles × 4 pitch angles × 6 animation poses (384 frames), stylized to 96×96 pixel
 art, and packed into one atlas per character. Height and pitch drive frame selection,
 including a dedicated near-overhead row, so looking down from altitude picks the correct
 view for every actor.
 
-**Status:** playable M4+ build with a browser playtest harness. Core renderer, jetpack
-physics, aerial camera, wall landing, 16-way/4-pitch sprites, five actor behaviors, and
-the full Blender → stylizer → atlas pipeline work end-to-end. Variable-height sectors and
-the AI stylization stage are the next milestones — see the
+**Status:** playable M5 build with a browser playtest harness. Core renderer, jetpack
+physics, aerial camera, heightmap stairs/platforms, 16-way/4-pitch sprites, five actor
+behaviors, and the full Blender → stylizer → atlas pipeline work end-to-end. The AI
+stylization stage is the next milestone — see the
 [roadmap](docs/ROADMAP.md) and [progress log](docs/PROGRESS.md).
 
 ## Quick start
