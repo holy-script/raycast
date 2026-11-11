@@ -79,6 +79,7 @@ captured screenshots.
 ```bash
 npm run playtest     # happy-path browser verification against the local dev server
 npm run playtest:matrix  # 90 deterministic state/interaction/combat/level scenarios
+npm run playtest:states  # paused sprite-state gallery (98 checks, 43 captures)
 PLAYTEST_OUT=/tmp/rc-prod-check npm run playtest -- --url https://raycast-rosy.vercel.app/
 npm test             # unit tests (not a substitute for the playtest)
 npm run typecheck

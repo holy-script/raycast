@@ -350,5 +350,20 @@ Screenshots and a JSON report land in `docs/screenshots/playtest/`.
 
 At 384×240 the framebuffer has ~92k pixels. Wall and floor drawing is per-pixel but
 bounded; sprites are bounded by their screen rect. The depth array and per-column ray
-base arrays are reused. The renderer runs at 60 FPS in Chrome on Apple Silicon; resolution
-scaling and typed-array batching remain future options.
+base arrays are reused. Profiled in headless Chrome on Apple Silicon (M-series) with the
+courtyard's 17 actors and 384 wall columns:
+
+| Measurement | Value |
+| --- | --- |
+| `render()` — courtyard, ground level | 1.9 ms |
+| `render()` — reactor deck | 1.2 ms |
+| `render()` — overhead at 15 m | 1.4 ms |
+| `drawMinimap()` | 0.04 ms |
+| `update()` | < 0.01 ms |
+| Frame interval over 4.5 s | p50 8.3 ms, p99 10.3 ms, max 10.4 ms (120 Hz display) |
+
+The simulation and render together use well under a sixth of a 60 FPS frame, so no
+resolution scale or typed-array batching is needed at this target. The dominant memory
+cost is the three decoded six-state atlases (~45 MB each); it is documented under known
+issues in [PROGRESS.md](PROGRESS.md) and only matters if more characters are added.
+

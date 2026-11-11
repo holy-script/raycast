@@ -12,7 +12,11 @@ reproducible pipeline for multi-angle character sprites, based on
 > brute still use the idle/walk atlas and fall back to idle for the new states until
 > their AI passes finish.
 
-![Courtyard demo](docs/screenshots/courtyard.png)
+![Courtyard gameplay](docs/screenshots/gameplay.png)
+
+*A guardian at close range with a scout down the corridor. The same courtyard from jetpack
+altitude, where wall tops and the full actor set are visible, is in
+[docs/screenshots/courtyard.png](docs/screenshots/courtyard.png).*
 
 The engine renders a 384×240 framebuffer to Canvas 2D: DDA grid traversal, textured
 walls, floors and per-cell tops, a true rotational pitch camera, per-pixel depth, and

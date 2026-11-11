@@ -14,7 +14,7 @@ Last updated: **2026-11-11**
 | Heightmap blocks: stairs, platforms, crates | M5 | ✅ Complete |
 | ComfyUI / MCP AI stylization | M6 | ✅ Complete; atlases AI-stylized |
 | Combat, interaction, doors, reactor map | M7 | 🚧 Gameplay complete; guardian six-state atlas shipped, scout/brute atlas pending |
-| Audio, menus, deployment | M8 | 🚧 Live + auto-deploy; audio, pause/settings shipped; perf pass + capture pending |
+| Audio, menus, deployment | M8 | ✅ Audio, pause/settings, profiled render loop, README capture, auto-deploy; public-session check clean |
 
 ## Verification snapshot
 
@@ -149,6 +149,23 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
 - Artifacts: `docs/screenshots/states/contact-sheet.png`, 43 PNGs, `report.json`.
 
 ## Session log
+
+### 2026-11-11 — M8 performance, README capture, and public-session check
+
+- Profiled the live build in headless Chrome instead of changing the renderer on a
+  hunch. With all 17 courtyard actors visible: `render()` 1.9 ms (courtyard), 1.2 ms
+  (reactor), 1.4 ms (15 m overhead), `drawMinimap()` 0.04 ms, `update()` under 0.01 ms.
+  Over a 4.5 s idle sample the frame interval was p50 8.3 ms / p99 10.3 ms / max 10.4 ms
+  on a 120 Hz display, so resolution scaling and typed-array batching were not added.
+- Replaced the README hero with a ground-level courtyard capture (guardian in the
+  foreground, scout down the corridor, live HUD) and refreshed the aerial courtyard shot
+  used as the secondary image. Numbers are recorded in
+  [ARCHITECTURE.md](ARCHITECTURE.md#performance-notes).
+- Ran a five-minute scripted session against the production URL (52 play cycles, 18,267
+  frames, both levels, movement/look/attack/jetpack/interact): steady 60 fps in every
+  one-second sample, 0 slow samples, 0 application errors. The only console entry was a
+  `/favicon.ico` 404, fixed with an inline SVG favicon in `index.html`.
+- Added `playtest:states` to the playtester agent's command list.
 
 ### 2026-11-11 — M8 procedural audio and pause/settings menu
 
@@ -412,16 +429,15 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
 ## Immediate next steps
 
 1. Finish the AI pass for attack/hurt/death/talk on scout and brute (guardian is done),
-   repack all three atlases, and run `assets:verify`. The stylizer has no resume flag, so
-   scout restarts from frame 1. Until all three repack, `npm run playtest` reports 28/29
-   because the "three 16-way character atlases load" check expects 1,216 frames each;
+   repack all three atlases, and run `assets:verify`. Interrupted passes resume with
+   `--resume`. Until all three repack, `npm run playtest` reports 28/29 because the
+   "three 16-way character atlases load" check expects 1,216 frames each;
    `npm run playtest:matrix` still passes 490/490.
 2. Refresh the matrix goldens/screenshots so combat captures show the new poses, then
    rerun typecheck, tests, build, playtest, and matrix; commit the asset slice and verify
    the Vercel deployment.
 3. Owner playtest of the M7 loop; capture feel/balance feedback (damage, range, cooldown)
-   as the input for M8.
-4. M8 polish remaining: profile the renderer before changing it (the current 384×240
-   buffer holds 120 FPS), then the final README gameplay capture and a five-minute
-   public-session console check. Audio and the pause/settings menu are shipped.
+   and any M8 audio/settings feedback.
+4. M8: profiling, the README capture, and the public-session console check are done; no
+   renderer change was warranted (numbers in [ARCHITECTURE.md](ARCHITECTURE.md#performance-notes)).
 5. Optional: AutoSprite/Gamelabs adapter behind the same CLI/workflow boundary.

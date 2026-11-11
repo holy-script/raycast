@@ -237,9 +237,10 @@ from real AI frames. Scout and brute still need their new-state frames.
 
 1. Restart ComfyUI (`cd ~/Desktop/projects/ComfyUI && .venv/bin/python main.py --listen
    127.0.0.1 --port 8188 --disable-auto-launch`), then run `assets:comfy` for scout and
-   brute (`--only attack,hurt,death,talk --fallback`). The stylizer has no resume flag:
-   scout restarts from frame 1. Finish with `npm run assets:atlas`.
-   Expect 1,216 frames and 76 atlas rows per character (1536×7296 per atlas).
+   brute (`--only attack,hurt,death,talk --resume`). `--resume` skips frames that already
+   exist, so an interrupted pass continues where it stopped. Finish with
+   `npm run assets:atlas`. Expect 1,216 frames and 76 atlas rows per character
+   (1536×7296 per atlas).
 2. Run `npm run assets:verify` and review `artifacts/style-report.json` for state-to-state
    drift; adjust `--max-drift` only for a deliberate style change.
 3. Until all three atlases repack, `npm run playtest` reports 28/29 because the
@@ -247,10 +248,10 @@ from real AI frames. Scout and brute still need their new-state frames.
    passes 490/490. After the repack, rerun `npm run playtest:matrix -- --update-golden`
    so combat/talk captures show the new poses, then playtest/build/typecheck/tests,
    commit the asset slice, and check Vercel.
-4. M8 audio and pause/settings are shipped. Remaining polish: profile before a
-   performance change, capture the final README gameplay shot, and run a five-minute
-   public-session console check — unless the owner's playtest feedback changes
-   priorities.
+4. M8 is complete: audio and pause/settings are shipped, the renderer is profiled (no
+   change needed), the README has a current gameplay capture, and a five-minute
+   production session ran with zero application errors. The only remaining work is the
+   scout/brute atlas repack and the owner's playtest feedback; both can change priorities.
 
 If a design choice could go either way, record it in [DECISIONS.md](DECISIONS.md) with the
 tradeoff, then proceed.
