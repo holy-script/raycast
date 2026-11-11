@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { spawn, type ChildProcess } from "node:child_process";
 import { Browser, sleep } from "./cdp";
-import type { HudState } from "../../src/game";
+import type { HudState, RenderDebug } from "../../src/game";
 
 const root = resolve(import.meta.dirname, "../..");
 const outDir = process.env.PLAYTEST_OUT
@@ -135,7 +135,7 @@ async function main(): Promise<void> {
       "three 16-way character atlases load",
       atlases.length === 3 &&
         atlases.every(
-          (atlas) => atlas.directions === 16 && atlas.pitches === 3 && atlas.frames === 288,
+          (atlas) => atlas.directions === 16 && atlas.pitches === 4 && atlas.frames === 384,
         ),
       atlases.map((atlas) => `${atlas.name}:${atlas.directions}x${atlas.pitches}/${atlas.frames}`).join(", "),
     );
@@ -145,6 +145,8 @@ async function main(): Promise<void> {
 
     const state = (): Promise<HudState> =>
       browser!.evaluate<HudState>("window.__raycast.automation.state()");
+    const debug = (): Promise<RenderDebug> =>
+      browser!.evaluate<RenderDebug>("window.__raycast.debug()");
     const pose = async (
       x: number,
       y: number,
@@ -315,7 +317,7 @@ async function main(): Promise<void> {
     current = await state();
     check(
       "midair altitude registers",
-      current.z > 6.8 && current.z <= 8 && current.nearestPitch === 2,
+      current.z > 6.8 && current.z <= 8 && current.nearestPitch === 3,
       `alt ${current.z.toFixed(2)} m, sprite pitch ${current.nearestPitch}`,
     );
 
@@ -327,6 +329,95 @@ async function main(): Promise<void> {
     await shot("09-overview");
     await pose(11.5, 12.5, 17.5, 0, -0.9);
     await shot("10-aerial-topdown");
+
+    // Regression: wall faces used to be skipped entirely once the eye rose above
+    // the wall height, leaving only tops and floor visible ("transparent" walls).
+    await pose(11.5, 6.5, 2, Math.PI / 2, -0.3);
+    let dbg = await debug();
+    await shot("13-airborne-walls");
+    check(
+      "wall faces stay opaque while airborne",
+      dbg.stats.wallColumns > 200 && dbg.stats.wallPixels > 8000,
+      `${dbg.stats.wallColumns} cols, ${dbg.stats.wallPixels} wall px`,
+    );
+
+    // Regression: a wall crossing the near plane returned NaN and the whole
+    // column was dropped, so walls vanished when standing against them.
+    await pose(1.22, 1.5, 0, Math.PI, 0);
+    dbg = await debug();
+    await shot("14-close-wall");
+    check(
+      "close wall fills the screen instead of vanishing",
+      dbg.stats.wallColumns === 384 && dbg.stats.wallPixels > 85_000,
+      `${dbg.stats.wallColumns} cols, ${dbg.stats.wallPixels} wall px`,
+    );
+
+    await pose(1.22, 1.5, 0, Math.PI, -1.1);
+    dbg = await debug();
+    await shot("15-close-wall-lookdown");
+    check(
+      "near wall survives a steep look-down",
+      dbg.stats.wallColumns === 384 && dbg.stats.wallPixels > 20_000,
+      `${dbg.stats.wallColumns} cols, ${dbg.stats.wallPixels} wall px`,
+    );
+
+    // Regression: vertical billboards collapsed to 1 px and their horizontal
+    // projection divided by a near-zero distance when looking straight down.
+    await pose(7.5, 1.58, 14, 0, -1.45);
+    dbg = await debug();
+    await shot("16-overhead-sprite");
+    const guardRect = dbg.stats.spriteRects.find((rect) => rect.id === "guard");
+    check(
+      "overhead sprite keeps a readable 2D silhouette",
+      Boolean(
+        guardRect &&
+          guardRect.visible &&
+          guardRect.contentW >= 4 &&
+          guardRect.contentH >= 6 &&
+          guardRect.pixels >= 24,
+      ),
+      guardRect
+        ? `silhouette ${guardRect.contentW}x${guardRect.contentH} px, ${guardRect.pixels} opaque px in a ${guardRect.w.toFixed(1)}px frame`
+        : "guard not projected",
+    );
+    check(
+      "overhead sprite stays centred instead of sliding off-screen",
+      Boolean(guardRect && Math.abs(guardRect.x - 192) < 48),
+      guardRect ? `x=${guardRect.x.toFixed(1)}` : "guard not projected",
+    );
+
+    await pose(21.5, 4.58, 14, 0, -1.45);
+    dbg = await debug();
+    const tinkerRect = dbg.stats.spriteRects.find((rect) => rect.id === "tinker");
+    await shot("17-overhead-edge-actor");
+    check(
+      "overhead actor near the map edge stays in view",
+      Boolean(tinkerRect && tinkerRect.visible && Math.abs(tinkerRect.x - 192) < 48),
+      tinkerRect ? `x=${tinkerRect.x.toFixed(1)}, visible=${tinkerRect.visible}` : "tinker not projected",
+    );
+
+    // Wall-top landing: solid cells support the player at WALL_HEIGHT.
+    await pose(3.5, 2.5, 3, 0, -0.4);
+    await sleep(900);
+    current = await state();
+    await shot("18-wall-landing");
+    check(
+      "player lands on a wall top",
+      near(current.z, 1.4, 0.03) && current.onGround && near(current.support, 1.4, 0.01),
+      `alt ${current.z.toFixed(2)} m, support ${current.support.toFixed(2)}, grounded ${current.onGround}`,
+    );
+
+    await press("KeyS");
+    await sleep(700);
+    await release("KeyS");
+    await sleep(800);
+    current = await state();
+    await shot("19-wall-stepoff");
+    check(
+      "stepping off a wall drops back to the floor",
+      current.z <= 0.001 && current.support <= 0.001,
+      `alt ${current.z.toFixed(2)} m, support ${current.support.toFixed(2)}`,
+    );
 
     check("no page errors", consoleErrors.length === 0, `${consoleErrors.length} errors`);
   } finally {

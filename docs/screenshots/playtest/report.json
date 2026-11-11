@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-11-11T04:54:51.427Z",
+  "generatedAt": "2026-11-11T05:37:31.298Z",
   "url": "http://127.0.0.1:5199/?screenshot",
-  "passed": 16,
+  "passed": 24,
   "failed": 0,
   "checks": [
     {
       "name": "three 16-way character atlases load",
       "ok": true,
-      "detail": "guardian:16x3/288, scout:16x3/288, brute:16x3/288"
+      "detail": "guardian:16x4/384, scout:16x4/384, brute:16x4/384"
     },
     {
       "name": "forward input follows camera yaw",
@@ -17,7 +17,7 @@
     {
       "name": "strafe right maps to screen-right",
       "ok": true,
-      "detail": "moved to 5.50, 5.75"
+      "detail": "moved to 5.50, 5.70"
     },
     {
       "name": "mouse-right turns camera clockwise",
@@ -52,7 +52,7 @@
     {
       "name": "airborne pitch unlocks",
       "ok": true,
-      "detail": "pitch -53 deg"
+      "detail": "pitch -57 deg"
     },
     {
       "name": "camera in front selects yaw frame 0",
@@ -77,7 +77,47 @@
     {
       "name": "midair altitude registers",
       "ok": true,
-      "detail": "alt 7.23 m, sprite pitch 2"
+      "detail": "alt 7.14 m, sprite pitch 3"
+    },
+    {
+      "name": "wall faces stay opaque while airborne",
+      "ok": true,
+      "detail": "384 cols, 35121 wall px"
+    },
+    {
+      "name": "close wall fills the screen instead of vanishing",
+      "ok": true,
+      "detail": "384 cols, 92160 wall px"
+    },
+    {
+      "name": "near wall survives a steep look-down",
+      "ok": true,
+      "detail": "384 cols, 55680 wall px"
+    },
+    {
+      "name": "overhead sprite keeps a readable 2D silhouette",
+      "ok": true,
+      "detail": "silhouette 6x6 px, 26 opaque px in a 13.6px frame"
+    },
+    {
+      "name": "overhead sprite stays centred instead of sliding off-screen",
+      "ok": true,
+      "detail": "x=191.1"
+    },
+    {
+      "name": "overhead actor near the map edge stays in view",
+      "ok": true,
+      "detail": "x=191.0, visible=true"
+    },
+    {
+      "name": "player lands on a wall top",
+      "ok": true,
+      "detail": "alt 1.40 m, support 1.40, grounded true"
+    },
+    {
+      "name": "stepping off a wall drops back to the floor",
+      "ok": true,
+      "detail": "alt 0.00 m, support 0.00"
     },
     {
       "name": "no page errors",
@@ -98,6 +138,13 @@
     "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/07-aerial-down.png",
     "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/08-aerial-level.png",
     "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/09-overview.png",
-    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/10-aerial-topdown.png"
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/10-aerial-topdown.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/13-airborne-walls.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/14-close-wall.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/15-close-wall-lookdown.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/16-overhead-sprite.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/17-overhead-edge-actor.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/18-wall-landing.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/19-wall-stepoff.png"
   ]
 }

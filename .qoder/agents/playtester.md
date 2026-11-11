@@ -23,15 +23,24 @@ captured screenshots.
 3. Open the screenshots with the Read tool and review them as images. Check:
    - Floor grid stays anchored to the world while moving and turning (no sliding or
      smearing along with the camera).
-   - Walls are vertical, textured, and meet the floor without gaps; roofs/wall tops
-     close cleanly when airborne.
+   - Walls are vertical, textured, and meet the floor without gaps; wall faces remain
+     solid at every altitude, and wall tops close cleanly when airborne.
+   - A wall pressed against the camera fills the view without fisheye stretching or
+     disappearing, including at a steep look-down.
+   - Overhead actors keep a readable silhouette (not a 1D sliver) and remain near their
+     projected screen position instead of sliding off the map; actors near map edges stay
+     visible.
    - Standing actors face the camera correctly at yaw 0 and yaw 8 (front/back), and
      moving actors point along their travel direction.
    - Guardian, scout, and brute silhouettes are visually distinct and grounded
      (shadows under feet, no floating or clipping).
    - Jetpack burn shows exhaust, altitude/fuel HUD changes, and the aerial top-down
      shot reveals the full courtyard with solid wall tops and visible actors.
+   - Landing on a wall shows `PERCH · WALL 1.4 m` and a stable overhead view; stepping
+     off returns to floor height.
    - No black frames, sky-colored holes in the floor, or sprite rectangles.
+4. `window.__raycast.debug()` exposes render statistics (`wallColumns`, `wallPixels`,
+   per-sprite `contentW/contentH/pixels`); use it when a check disagrees with what you see.
 4. Compare against the previous run when screenshots already exist, and call out any
    visual change that looks like a regression even if all programmatic checks pass.
 5. Report concisely: verdict, table of checks with pass/fail and measured values,
