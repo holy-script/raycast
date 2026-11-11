@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-11T05:37:31.298Z",
+  "generatedAt": "2026-11-11T05:48:50.443Z",
   "url": "http://127.0.0.1:5199/?screenshot",
-  "passed": 24,
+  "passed": 29,
   "failed": 0,
   "checks": [
     {
@@ -77,12 +77,12 @@
     {
       "name": "midair altitude registers",
       "ok": true,
-      "detail": "alt 7.14 m, sprite pitch 3"
+      "detail": "alt 7.05 m, sprite pitch 3"
     },
     {
       "name": "wall faces stay opaque while airborne",
       "ok": true,
-      "detail": "384 cols, 35121 wall px"
+      "detail": "384 cols, 46943 wall px"
     },
     {
       "name": "close wall fills the screen instead of vanishing",
@@ -120,6 +120,31 @@
       "detail": "alt 0.00 m, support 0.00"
     },
     {
+      "name": "walking up two steps lands on the 0.4 platform",
+      "ok": true,
+      "detail": "alt 0.40 m, support 0.40, y=19.30"
+    },
+    {
+      "name": "stepped blocks render their top surfaces",
+      "ok": true,
+      "detail": "46424 top px, 39568 wall px"
+    },
+    {
+      "name": "a 0.6 crate blocks walking without a jump",
+      "ok": true,
+      "detail": "stopped at y=14.20, support 0.00"
+    },
+    {
+      "name": "the crate occludes the scholar behind it",
+      "ok": true,
+      "detail": "238 drawn, 1706 occluded px"
+    },
+    {
+      "name": "landing on the crate stops at its 0.6 surface",
+      "ok": true,
+      "detail": "alt 0.60 m, support 0.60, grounded true"
+    },
+    {
       "name": "no page errors",
       "ok": true,
       "detail": "0 errors"
@@ -145,6 +170,13 @@
     "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/16-overhead-sprite.png",
     "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/17-overhead-edge-actor.png",
     "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/18-wall-landing.png",
-    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/19-wall-stepoff.png"
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/19-wall-stepoff.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/20-stairs-approach.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/21-stairs-climbed.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/22-stairs-from-ground.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/26-stairs-overhead.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/23-crate-block.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/24-crate-occlusion.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/25-crate-perch.png"
   ]
 }

@@ -419,6 +419,79 @@ async function main(): Promise<void> {
       `alt ${current.z.toFixed(2)} m, support ${current.support.toFixed(2)}`,
     );
 
+    // M5: per-cell heights. Digits 1-9 build steps and platforms the player can
+    // walk onto; the ground floor stays the zero plane.
+    await pose(11.5, 22.5, 0, -Math.PI / 2, 0);
+    await shot("20-stairs-approach");
+    await press("KeyW");
+    await sleep(1050);
+    await release("KeyW");
+    current = await state();
+    await shot("21-stairs-climbed");
+    check(
+      "walking up two steps lands on the 0.4 platform",
+      near(current.support, 0.4, 0.01) &&
+        near(current.z, 0.4, 0.01) &&
+        current.onGround &&
+        current.y < 20.6,
+      `alt ${current.z.toFixed(2)} m, support ${current.support.toFixed(2)}, y=${current.y.toFixed(2)}`,
+    );
+
+    await pose(11.5, 22.5, 0, -Math.PI / 2, -0.25);
+    dbg = await debug();
+    await shot("22-stairs-from-ground");
+    await pose(11.5, 22.5, 3.5, -Math.PI / 2, -0.65);
+    await shot("26-stairs-overhead");
+    check(
+      "stepped blocks render their top surfaces",
+      dbg.stats.topPixels > 500,
+      `${dbg.stats.topPixels} top px, ${dbg.stats.wallPixels} wall px`,
+    );
+
+    // A 0.6 crate is taller than STEP_UP but low enough to land on.
+    await pose(4.5, 15.5, 0, -Math.PI / 2, 0);
+    await press("KeyW");
+    await sleep(700);
+    await release("KeyW");
+    current = await state();
+    await shot("23-crate-block");
+    check(
+      "a 0.6 crate blocks walking without a jump",
+      current.y > 14.1 && near(current.support, 0, 0.01),
+      `stopped at y=${current.y.toFixed(2)}, support ${current.support.toFixed(2)}`,
+    );
+
+    await pose(4.5, 15.5, 0, -Math.PI / 2, 0);
+    dbg = await debug();
+    const blockedScholar = dbg.stats.spriteRects.find(
+      (rect) => rect.id === "scholar",
+    );
+    await shot("24-crate-occlusion");
+    check(
+      "the crate occludes the scholar behind it",
+      Boolean(
+        blockedScholar &&
+          blockedScholar.visible &&
+          blockedScholar.pixels > 0 &&
+          blockedScholar.occluded > 100,
+      ),
+      blockedScholar
+        ? `${blockedScholar.pixels} drawn, ${blockedScholar.occluded} occluded px`
+        : "scholar not projected",
+    );
+
+    await pose(4.5, 13.5, 3, 0, -1.2);
+    await sleep(900);
+    current = await state();
+    await shot("25-crate-perch");
+    check(
+      "landing on the crate stops at its 0.6 surface",
+      near(current.z, 0.6, 0.02) &&
+        near(current.support, 0.6, 0.01) &&
+        current.onGround,
+      `alt ${current.z.toFixed(2)} m, support ${current.support.toFixed(2)}, grounded ${current.onGround}`,
+    );
+
     check("no page errors", consoleErrors.length === 0, `${consoleErrors.length} errors`);
   } finally {
     if (browser) await browser.close();
