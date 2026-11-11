@@ -75,6 +75,9 @@ Browser verification (2026-11-11, headless Chrome over CDP, `http://127.0.0.1:51
 - Production harness run (2026-11-11, after the M5 heightmap deploy): passed 29/29 against
   the deployed build, including stairs, per-cell tops, crate block/occlusion, and landing
   on the crate.
+- Production harness run (2026-11-11, after the M6 deploy): passed 29/29 against
+  https://raycast-rosy.vercel.app/ with all three 16×4 atlases served; Vercel deployment
+  `raycast-knbwjpvue` reached Ready in 11 s.
 
 ## Session log
 
