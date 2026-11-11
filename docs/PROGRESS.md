@@ -186,6 +186,11 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
   posed landing, jetpack climb, sentry fire, hunt gate, and courtyard gate),
   `playtest:flight` 109/109, `playtest:states` 42/42, zero console errors.
   `npm run build` succeeds (57.4 kB JS, 19.3 kB gzip).
+- Shipped to https://raycast-rosy.vercel.app: the production bundle is
+  `assets/index-BBOtZrv_.js` (matches the local build), `facade.png` and `asphalt.png`
+  return 200, and `npm run playtest -- --url https://raycast-rosy.vercel.app` passed
+  40/40 with zero page errors. The playtest's refreshed volatile captures were reverted so
+  the committed gallery reflects the local deterministic run.
 - Known approximations: towers have no interiors, rooftop cover is sparse, and the crates
   are indestructible. Deferred to a later milestone.
 

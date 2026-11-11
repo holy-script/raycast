@@ -257,7 +257,9 @@ city-scale arena where height is part of the map.
 (40/40), `npm run playtest:matrix` (691/691 across 105 scenarios, 123 captures),
 `npm run playtest:flight` (109/109), and `npm run playtest:states` (42/42) pass with zero
 page errors; captures show the avenue canyon, a rooftop perch, a sentry firing down from a
-roof edge, and the locked extraction toast. Verified 2026-11-12.
+roof edge, and the locked extraction toast. Verified 2026-11-12. Deployed the same day to
+https://raycast-rosy.vercel.app (`index-BBOtZrv_.js`); the production playtest passes
+40/40 against the live build.
 
 Deferred: indoor tower floors, rooftop cover props, destructible crates, and a district
 boss. The district is an outdoor arena; tower interiors remain future work.
