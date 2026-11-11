@@ -50,9 +50,10 @@ Browser verification (2026-11-11, headless Chrome over CDP, `http://127.0.0.1:51
 - No console errors during the checked session.
 - Production deployment: https://raycast-rosy.vercel.app — HTML, atlas JSON/PNG, and
   textures all return 200; the scene renders with no console errors in headless Chrome.
-- Production harness run (2026-11-11): `PLAYTEST_OUT=/tmp/rc-prod-check npm run playtest
-  -- --url https://raycast-rosy.vercel.app/` passed 16/16 against the deployed build, with
-  all three 16-way atlases served. (Re-run after the 4-pitch deploy.)
+- Production harness run (2026-11-11, after the 4-pitch deploy):
+  `PLAYTEST_OUT=/tmp/rc-prod-check npm run playtest
+  -- --url https://raycast-rosy.vercel.app/` passed 24/24 against the deployed build,
+  with all three 16-way / 4-pitch / 384-frame atlases served.
 
 ## Session log
 
