@@ -14,7 +14,7 @@ Last updated: **2026-11-11**
 | Variable-height sectors and stairs | M5 | 🚧 Next |
 | ComfyUI / MCP AI stylization | M6 | ⬜ Planned |
 | 16-way, combat, more content | M7 | ⬜ Planned |
-| Audio, menus, deployment | M8 | ⬜ Planned |
+| Audio, menus, deployment | M8 | 🚧 Live on Vercel; audio/menus pending |
 
 ## Verification snapshot
 
@@ -37,8 +37,19 @@ Browser verification (2026-11-11, Chrome, `http://localhost:5173/?screenshot`):
   produced distinct renders. Low-pitch (index 0) requires the camera to be below the
   actor's center, which needs a raised sector — tracked in M5.
 - No console errors during the checked session.
+- Production deployment: https://raycast-rosy.vercel.app — HTML, atlas JSON/PNG, and
+  textures all return 200; the scene renders with no console errors in headless Chrome.
 
 ## Session log
+
+### 2026-11-11 — Vercel deployment
+
+- Deployed the production build with `vercel --prod` under the `holy-script` account.
+- Production alias: https://raycast-rosy.vercel.app
+- Vercel auto-detected Vite and ran `npm run build` successfully.
+- Verified the deployed page and all asset URLs; no browser console errors.
+- `.vercel/` is gitignored. The project is CLI-deployed, not yet connected to Git for
+  automatic deploys; redeploy with `vercel --prod`.
 
 ### 2026-11-11 — Initial build
 

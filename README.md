@@ -4,6 +4,8 @@ A from-scratch software raycaster in TypeScript with true vertical movement and 
 reproducible pipeline for multi-angle character sprites, based on
 [the project spec](docs/spec/AI-Sprites-In-Raycasting-Games.pdf).
 
+**Live demo:** https://raycast-rosy.vercel.app
+
 ![Courtyard demo](docs/screenshots/courtyard.png)
 
 The engine renders a 384×240 framebuffer to Canvas 2D: DDA grid traversal, textured

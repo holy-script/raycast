@@ -87,6 +87,16 @@ before `Page.captureScreenshot`; `--virtual-time-budget` alone can leave the HUD
   scope (classic PAT: `repo` + `workflow`; fine-grained PAT: repository **Workflows**
   read/write) and update the credential helper, then commit and push the file.
 
+## Deployment
+
+- Production URL: **https://raycast-rosy.vercel.app**
+- Vercel project: `raycast` under the `holy-script` account, linked in `.vercel/`
+  (gitignored; created by the CLI).
+- Vite is auto-detected; Vercel runs `npm run build` and serves `dist/`.
+- Redeploy from the repo root with `vercel --prod` (CLI authenticated as `holy-script`).
+- The project is CLI-deployed, not Git-connected, so pushes to `main` do not auto-deploy.
+  Connect the GitHub repository in the Vercel dashboard if automatic deploys are wanted.
+
 ## Known constraints
 
 - Floor and walls are single-height. Low-angle sprite frames exist in the atlas but cannot
