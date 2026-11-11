@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-11-11T11:50:43.472Z",
+  "generatedAt": "2026-11-11T14:58:40.066Z",
   "url": "http://127.0.0.1:5199/?screenshot",
-  "passed": 29,
-  "failed": 0,
+  "passed": 28,
+  "failed": 1,
   "checks": [
     {
       "name": "three 16-way character atlases load",
-      "ok": true,
-      "detail": "guardian:16x4/384, scout:16x4/384, brute:16x4/384"
+      "ok": false,
+      "detail": "guardian:16x4/1216, scout:16x4/384, brute:16x4/384"
     },
     {
       "name": "forward input follows camera yaw",
@@ -77,7 +77,7 @@
     {
       "name": "midair altitude registers",
       "ok": true,
-      "detail": "alt 7.14 m, sprite pitch 3"
+      "detail": "alt 7.05 m, sprite pitch 3"
     },
     {
       "name": "wall faces stay opaque while airborne",

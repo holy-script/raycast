@@ -6,6 +6,11 @@ reproducible pipeline for multi-angle character sprites, based on
 
 **Live demo:** https://raycast-rosy.vercel.app
 
+> **M7 status:** combat, interaction, doors, and transitions are live. Guardian's
+> six-state atlas (idle/walk/attack/hurt/death/talk) is shipped; scout and brute still
+> use the idle/walk atlas and fall back to idle for the new states until their AI
+> passes finish.
+
 ![Courtyard demo](docs/screenshots/courtyard.png)
 
 The engine renders a 384×240 framebuffer to Canvas 2D: DDA grid traversal, textured

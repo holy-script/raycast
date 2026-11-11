@@ -13,7 +13,7 @@ Last updated: **2026-11-11**
 | Blender → stylize → atlas, 3 chassis | M4 | ✅ Complete |
 | Heightmap blocks: stairs, platforms, crates | M5 | ✅ Complete |
 | ComfyUI / MCP AI stylization | M6 | ✅ Complete; atlases AI-stylized |
-| Combat, interaction, doors, reactor map | M7 | 🚧 Gameplay complete; sprite-state atlas repack pending |
+| Combat, interaction, doors, reactor map | M7 | 🚧 Gameplay complete; guardian six-state atlas shipped, scout/brute atlas pending |
 | Audio, menus, deployment | M8 | 🚧 Live + auto-deploy; audio/menus pending |
 
 ## Verification snapshot
@@ -128,10 +128,29 @@ M7 gameplay verification (2026-11-11):
   targets, door cells matching `D` + keycard availability, and pickups/actors on open
   floor. It caught `reactor-scout` spawning inside a terrace block at (4.5, 12.5); moved
   to the open lane at (2.5, 12.5).
-- Sprite states: the atlases still hold idle/walk until the AI pass finishes, so combat
-  screenshots show idle silhouettes; the engine's state fallback keeps the loop working.
+- Sprite states: guardian's atlas now holds all six states; scout and brute still hold
+  idle/walk until their AI passes finish, so their combat screenshots fall back to idle.
+  The engine's state fallback keeps the loop working either way.
 
 ## Session log
+
+### 2026-11-11 — Guardian six-state atlas, one-character verification
+
+- Completed guardian's 832 new-state frames (attack/hurt/death/talk) with 0 palette
+  fallbacks and packed the first 1,216-frame six-state atlas (1536×7296, 76 rows,
+  6.4 MB PNG). States: idle 2, walk 4, attack 4, hurt 2, death 4, talk 3.
+- In-browser checks: guardian talk NPC renders the talk cycle with dialogue; marauder
+  shows hurt recoil and the four-frame death collapse with the "MARAUDER DOWN" toast;
+  frame and pitch lookup resolve for all six states.
+- `playtest:matrix --update-golden`: 490/490 checks across 90 scenarios. Standard
+  playtest: 28/29 — the atlas-completeness check still expects 1,216 frames on scout
+  and brute, which are deferred until the guardian look is confirmed.
+- Owner asked to test one character before spending ~4 h on the remaining passes;
+  ComfyUI and the stylizer chain were stopped after guardian. Scout stopped at
+  529/1,216 and will restart from frame 1 (the stylizer has no resume flag); brute
+  remains at 384.
+- The machine rebooted mid-run; ComfyUI was restarted and the chain re-run until the
+  owner's stop request.
 
 ### 2026-11-11 — M7 combat, interaction, doors, and reactor map
 
@@ -325,8 +344,9 @@ M7 gameplay verification (2026-11-11):
 - Matrix golden PNGs are replaced after a mismatch is reported, so the first run after a
   visual change flags every affected scenario. Review that run before committing.
 - The committed atlases come from a real SD1.5 + depth-ControlNet pass (mock-tested CLI,
-  0 fallbacks). The attack/hurt/death/talk frames are mid-pass; until the repack lands the
-  engine falls back to idle for those states. AutoSprite/Gamelabs is not implemented.
+  0 fallbacks). Guardian's attack/hurt/death/talk frames are complete and packed; scout
+  and brute are still mid-pass, so those two fall back to idle for the new states.
+  AutoSprite/Gamelabs is not implemented.
 - Sprites are still masked to the Blender silhouette, so AI cannot invent limbs outside
   the render; a reference-image lock for costume details is also not implemented.
 - Each six-state atlas is 1536×7296 (~45 MB decoded), so the three characters cost
@@ -335,8 +355,11 @@ M7 gameplay verification (2026-11-11):
 
 ## Immediate next steps
 
-1. Finish the AI pass for attack/hurt/death/talk on guardian, scout, and brute; repack the
-   three atlases; run `assets:verify` and inspect the style report for state-to-state drift.
+1. Finish the AI pass for attack/hurt/death/talk on scout and brute (guardian is done),
+   repack all three atlases, and run `assets:verify`. The stylizer has no resume flag, so
+   scout restarts from frame 1. Until all three repack, `npm run playtest` reports 28/29
+   because the "three 16-way character atlases load" check expects 1,216 frames each;
+   `npm run playtest:matrix` still passes 490/490.
 2. Refresh the matrix goldens/screenshots so combat captures show the new poses, then
    rerun typecheck, tests, build, playtest, and matrix; commit the asset slice and verify
    the Vercel deployment.

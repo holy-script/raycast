@@ -44,8 +44,8 @@ npm run assets:comfy -- --dry-run # plan/missing-control check, writes nothing
 npm run assets:comfy -- guardian --palette --only idle:0:1:0 --out /tmp/frames
 ```
 
-The committed atlases are AI-stylized (SD1.5 + depth ControlNet, 0 fallbacks, ~55 min per
-character). `assets:blender` renders raw + depth + normal passes (`--no-controls` skips the
+The committed atlases are AI-stylized (SD1.5 + depth ControlNet, 0 fallbacks; ~55 min
+for a 384-frame pass, ~2–2.5 h for the 832 new-state frames per character). `assets:blender` renders raw + depth + normal passes (`--no-controls` skips the
 latter). Setup and timings are in
 [PIPELINE.md](PIPELINE.md#local-setup-apple-silicon-verified). `assets:comfy` falls back to
 the palette stylizer with `--fallback`; without a server use `--palette` or `--fallback`.
@@ -209,27 +209,33 @@ leave HUD values at `--`.
 - Levels reload from their definitions on every transition, which resets pickups, doors,
   and the keycard. The demo loop is therefore one-way per visit: after the courtyard
   beacon return you can re-collect the keycard and run it again.
-- The new attack/hurt/death/talk atlases are mid-generation; until the repack, those
-  states fall back to idle silhouettes (mechanics and timing are already correct).
+- Guardian's six-state atlas is shipped (1,216 frames, 1536×7296). Scout and brute still
+  hold the idle/walk atlas, so their attack/hurt/death/talk states fall back to idle
+  silhouettes (mechanics and timing are already correct).
 - Intro overlay can stick on a cold Vite start if HMR interrupts boot; reload fixes it.
 - No license file yet.
 
-## Next task: finish the M7 sprite-state atlas
+## Next task: finish scout and brute sprite-state atlases
 
 M7 gameplay is complete and deployed: combat, interaction, doors/pickups, transitions,
 and the reactor map are covered by the 90-scenario matrix. The owner should playtest the
 loop and report feel/balance issues.
 
-The one open M7 item is the art pass. Blender renders for the new states, the packer
-entries, and engine selection are already in place; only frames and atlases are missing.
+The art pass is one-third done: guardian is complete and packed, so its six states render
+from real AI frames. Scout and brute still need their new-state frames.
 
-1. Let `assets:comfy` finish for guardian, scout, and brute
-   (`--only attack,hurt,death,talk --fallback`), then run `npm run assets:atlas`.
+1. Restart ComfyUI (`cd ~/Desktop/projects/ComfyUI && .venv/bin/python main.py --listen
+   127.0.0.1 --port 8188 --disable-auto-launch`), then run `assets:comfy` for scout and
+   brute (`--only attack,hurt,death,talk --fallback`). The stylizer has no resume flag:
+   scout restarts from frame 1. Finish with `npm run assets:atlas`.
    Expect 1,216 frames and 76 atlas rows per character (1536×7296 per atlas).
 2. Run `npm run assets:verify` and review `artifacts/style-report.json` for state-to-state
    drift; adjust `--max-drift` only for a deliberate style change.
-3. Rerun `npm run playtest:matrix -- --update-golden` so combat/talk captures show the new
-   poses, then playtest/build/typecheck/tests, commit the asset slice, and check Vercel.
+3. Until all three atlases repack, `npm run playtest` reports 28/29 because the
+   atlas-completeness check expects 1,216 frames on every character; the matrix still
+   passes 490/490. After the repack, rerun `npm run playtest:matrix -- --update-golden`
+   so combat/talk captures show the new poses, then playtest/build/typecheck/tests,
+   commit the asset slice, and check Vercel.
 4. Then move to M8 polish (audio, pause/settings menu, performance) unless the owner's
    playtest feedback changes priorities.
 
