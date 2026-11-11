@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-11T18:58:06.380Z",
+  "generatedAt": "2026-11-11T19:30:27.274Z",
   "url": "http://127.0.0.1:5199/?screenshot",
   "passed": 40,
   "failed": 0,
@@ -32,7 +32,7 @@
     {
       "name": "viewmodel rests in an idle pose on the ground",
       "ok": true,
-      "detail": "idle0 at 1.2,0.9"
+      "detail": "idle0 at 1.1,0.9"
     },
     {
       "name": "attacking swings the viewmodel into the strike pose",
@@ -112,7 +112,7 @@
     {
       "name": "midair altitude registers",
       "ok": true,
-      "detail": "alt 7.14 m, sprite pitch 3"
+      "detail": "alt 7.23 m, sprite pitch 3"
     },
     {
       "name": "FOV stays fixed from the ground to the ceiling",
@@ -122,7 +122,7 @@
     {
       "name": "wall faces stay opaque while airborne",
       "ok": true,
-      "detail": "384 cols, 47800 wall px"
+      "detail": "384 cols, 47802 wall px"
     },
     {
       "name": "close wall fills the screen instead of vanishing",
@@ -172,7 +172,7 @@
     {
       "name": "walking away from the wall after landing is free",
       "ok": true,
-      "detail": "x=3.04"
+      "detail": "x=2.99"
     },
     {
       "name": "walking up two steps lands on the 0.4 platform",
@@ -182,7 +182,7 @@
     {
       "name": "stepped blocks render their top surfaces",
       "ok": true,
-      "detail": "47700 top px, 38648 wall px"
+      "detail": "47695 top px, 38654 wall px"
     },
     {
       "name": "a 0.6 crate blocks walking without a jump",

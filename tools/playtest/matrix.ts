@@ -1680,6 +1680,143 @@ async function main(): Promise<void> {
       );
     });
 
+    define("levels", "l06-district-arrival", async () => {
+      await loadLevel("district");
+      const current = await state();
+      const values = await hud();
+      const dbg = await debug();
+      check(
+        "the courtyard gate loads the rooftop district",
+        dbg.level === "district" && values.level === "ROOFTOP DISTRICT",
+        `${dbg.level} · ${values.level}`,
+      );
+      check(
+        "the district spawns on the south avenue",
+        near(current.x, 32.5, 0.01) &&
+          near(current.y, 58.5, 0.01) &&
+          current.support === 0,
+        `${current.x.toFixed(2)}, ${current.y.toFixed(2)} · support ${current.support}`,
+      );
+      check(
+        "the hunt objective starts empty",
+        current.objective.includes("0/7"),
+        current.objective,
+      );
+      const elevated = dbg.actors.filter((actor) => actor.z > 3);
+      check(
+        "four sentries stand on the rooftops",
+        elevated.length === 4 &&
+          elevated.every((actor) => actor.z === 8 || actor.z === 12),
+        elevated.map((actor) => `${actor.name}@${actor.z}`).join(", "),
+      );
+      await saveCanvas("l06-district-spawn", true);
+    });
+
+    define("levels", "l07-rooftop-landing", async () => {
+      await loadLevel("district");
+      await pose(6.5, 6.5, 6.4, -Math.PI / 2, -0.55);
+      await step(0.6);
+      const current = await state();
+      const values = await hud();
+      check(
+        "the player lands on the 4 m rooftop",
+        current.onGround &&
+          near(current.z, 4, 0.02) &&
+          near(current.support, 4, 0.01),
+        `alt ${current.z.toFixed(2)} m · support ${current.support}`,
+      );
+      check("the HUD reports a rooftop perch", values.mode.startsWith("PERCH"), values.mode);
+      await saveCanvas("l07-rooftop-perch", true);
+    });
+
+    define("levels", "l08-sentry-los", async () => {
+      await loadLevel("district");
+      await pose(6.5, 30.5, 0, -Math.PI / 2, 0.35);
+      await step(0.4);
+      const dbg = await debug();
+      const sentry = dbg.actors.find((actor) => actor.name === "spire-nw");
+      const incoming = dbg.bolts.filter(
+        (bolt) => !bolt.fromPlayer && bolt.z > 6.5,
+      );
+      check(
+        "the rooftop sentry fires down into the plaza",
+        incoming.length > 0 && sentry?.hostile === true,
+        `${incoming.length} high bolts · sentry ${sentry?.state ?? "missing"}`,
+      );
+      await saveCanvas("l08-sentry-fire", true);
+    });
+
+    define("levels", "l09-hunt-gate", async () => {
+      await loadLevel("district");
+      await pose(32.5, 32.5, 0, 0, 0);
+      await step(0.1);
+      let dbg = await debug();
+      let values = await hud();
+      check(
+        "the beacon refuses extraction before the hunt",
+        dbg.level === "district" && values.toast.includes("EXTRACTION LOCKED"),
+        `${dbg.level} · ${values.toast}`,
+      );
+      await evaluate(`(() => {
+        const game = window.__raycast.game;
+        for (const actor of game.actors) {
+          if (actor.spec.hostile) game.damageActor(actor, 999);
+        }
+      })()`);
+      await step(0);
+      dbg = await debug();
+      check(
+        "killing every hostile fills the hunt counter",
+        dbg.hunt.kills === 7 && dbg.hunt.targets === 7,
+        `${dbg.hunt.kills}/${dbg.hunt.targets}`,
+      );
+      await step(0.1);
+      dbg = await debug();
+      values = await hud();
+      check(
+        "the unlocked beacon extracts to the courtyard",
+        dbg.level === "courtyard" && values.level === "COURTYARD",
+        `${dbg.level} · ${values.level}`,
+      );
+    });
+
+    define("levels", "l10-jetpack-roof", async () => {
+      await loadLevel("district");
+      // Stand in the alley west of the 4 m NW tower and burn onto its roof.
+      await pose(11.5, 6.5, 0, Math.PI, 0);
+      await press("Space");
+      await step(0.8);
+      await press("KeyW");
+      await step(0.35);
+      await release("KeyW");
+      await release("Space");
+      await step(1.3);
+      const current = await state();
+      const values = await hud();
+      check(
+        "the jetpack climbs from the alley onto the 4 m roof",
+        current.onGround &&
+          near(current.z, 4, 0.05) &&
+          near(current.support, 4, 0.01) &&
+          current.x < 10.8,
+        `x=${current.x.toFixed(2)} · alt ${current.z.toFixed(2)} m`,
+      );
+      check("the climb ends in a perch", values.mode.startsWith("PERCH"), values.mode);
+      await saveCanvas("l10-jetpack-roof", true);
+    });
+
+    define("levels", "l11-district-gate-entry", async () => {
+      await pose(2.5, 22.5, 0, 0, 0);
+      await step(0.1);
+      const dbg = await debug();
+      const values = await hud();
+      check(
+        "the courtyard gate loads the rooftop district",
+        dbg.level === "district" && values.level === "ROOFTOP DISTRICT",
+        `${dbg.level} · ${values.level}`,
+      );
+    });
+
     // ------------------------------------------------------------------ run
     for (const scenario of scenarios) {
       currentScenario = scenario.id;

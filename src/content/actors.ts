@@ -1,4 +1,10 @@
-export type ActorBehavior = "idle" | "watcher" | "patrol" | "chase" | "hover";
+export type ActorBehavior =
+  | "idle"
+  | "watcher"
+  | "sentry"
+  | "patrol"
+  | "chase"
+  | "hover";
 export type SpriteId = "guardian";
 
 export interface ActorSpec {
@@ -6,6 +12,8 @@ export interface ActorSpec {
   sprite: SpriteId;
   x: number;
   y: number;
+  /** Base elevation for actors that stand on a tower roof. */
+  z?: number;
   facing: number;
   behavior: ActorBehavior;
   tint: [number, number, number];
@@ -181,6 +189,105 @@ export const COURTYARD_ACTORS: ActorSpec[] = [
     hp: 110,
     attack: { damage: 11, range: 1.5, cooldown: 1.35 },
     gun: { damage: 11, range: 9, cooldown: 1.7, speed: 9 },
+  },
+];
+
+export const ROOFTOP_ACTORS: ActorSpec[] = [
+  {
+    name: "spire-nw",
+    sprite: "guardian",
+    x: 6.5,
+    y: 21.5,
+    z: 8,
+    facing: SOUTH,
+    behavior: "sentry",
+    tint: [1.25, 0.85, 0.8],
+    scale: 1.02,
+    hostile: true,
+    hp: 80,
+    gun: { damage: 9, range: 18, cooldown: 1.9, speed: 10 },
+  },
+  {
+    name: "spire-ne",
+    sprite: "guardian",
+    x: 40.5,
+    y: 21.5,
+    z: 12,
+    facing: SOUTH,
+    behavior: "sentry",
+    tint: [1.3, 0.8, 0.75],
+    scale: 1.04,
+    hostile: true,
+    hp: 85,
+    gun: { damage: 10, range: 20, cooldown: 2.0, speed: 10 },
+  },
+  {
+    name: "spire-sw",
+    sprite: "guardian",
+    x: 10.5,
+    y: 52.5,
+    z: 12,
+    facing: NORTH,
+    behavior: "sentry",
+    tint: [1.22, 0.86, 0.9],
+    scale: 1.04,
+    hostile: true,
+    hp: 85,
+    gun: { damage: 10, range: 20, cooldown: 2.0, speed: 10 },
+  },
+  {
+    name: "spire-se",
+    sprite: "guardian",
+    x: 55.5,
+    y: 41.5,
+    z: 12,
+    facing: WEST,
+    behavior: "sentry",
+    tint: [1.28, 0.82, 0.85],
+    scale: 1.04,
+    hostile: true,
+    hp: 85,
+    gun: { damage: 10, range: 20, cooldown: 2.0, speed: 10 },
+  },
+  {
+    name: "gunner-north",
+    sprite: "guardian",
+    x: 32.5,
+    y: 19.5,
+    facing: SOUTH,
+    behavior: "sentry",
+    tint: [1.2, 0.9, 0.78],
+    scale: 0.98,
+    hostile: true,
+    hp: 80,
+    gun: { damage: 8, range: 13, cooldown: 1.7, speed: 9 },
+  },
+  {
+    name: "gunner-south",
+    sprite: "guardian",
+    x: 32.5,
+    y: 43.5,
+    facing: SOUTH,
+    behavior: "sentry",
+    tint: [1.2, 0.92, 0.8],
+    scale: 0.98,
+    hostile: true,
+    hp: 80,
+    gun: { damage: 8, range: 13, cooldown: 1.7, speed: 9 },
+  },
+  {
+    name: "bruiser",
+    sprite: "guardian",
+    x: 32.5,
+    y: 37.5,
+    facing: SOUTH,
+    behavior: "chase",
+    tint: [1.32, 0.72, 0.68],
+    scale: 1.16,
+    chase: { speed: 1.35, range: 12 },
+    hostile: true,
+    hp: 150,
+    attack: { damage: 16, range: 1.7, cooldown: 1.5 },
   },
 ];
 

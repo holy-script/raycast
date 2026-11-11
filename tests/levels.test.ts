@@ -4,23 +4,29 @@ import { createWorld, isSolidAt, supportHeight, tileAt } from "../src/engine/wor
 
 const SPRITES = new Set(["guardian"]);
 
+function worldOf(level: (typeof LEVELS)[number]) {
+  return createWorld(level.rows, level.spawn, { heights: level.heights });
+}
+
 describe("level definitions", () => {
   it("indexes levels by id and rejects unknown ids", () => {
     expect(levelIndexById("courtyard")).toBe(0);
     expect(levelIndexById("reactor")).toBe(1);
+    expect(levelIndexById("district")).toBe(2);
     expect(() => levelIndexById("vault")).toThrow(/Unknown level id/);
   });
 
   it("keeps every map square", () => {
     for (const level of LEVELS) {
-      expect(level.rows.length).toBe(24);
-      for (const row of level.rows) expect(row.length).toBe(24);
+      const size = level.rows.length;
+      expect(size, level.id).toBeGreaterThan(0);
+      for (const row of level.rows) expect(row.length, level.id).toBe(size);
     }
   });
 
   it("spawns the player on walkable floor", () => {
     for (const level of LEVELS) {
-      const world = createWorld(level.rows, level.spawn);
+      const world = worldOf(level);
       expect(isSolidAt(world, level.spawn.x, level.spawn.y), level.id).toBe(false);
       expect(supportHeight(world, level.spawn.x, level.spawn.y), level.id).toBe(0);
     }
@@ -37,7 +43,7 @@ describe("level definitions", () => {
 
   it("matches each door spec to a D cell and keycard availability", () => {
     for (const level of LEVELS) {
-      const world = createWorld(level.rows, level.spawn);
+      const world = worldOf(level);
       for (const door of level.doors) {
         expect(tileAt(world, door.x + 0.5, door.y + 0.5), `${level.id}:${door.id}`).toBe(3);
         if (door.requires === "keycard") {
@@ -47,32 +53,66 @@ describe("level definitions", () => {
     }
   });
 
-  it("places pickups and exits on walkable floor", () => {
+  it("places pickups and exits on the surface they sit on", () => {
     for (const level of LEVELS) {
-      const world = createWorld(level.rows, level.spawn);
+      const world = worldOf(level);
       for (const spot of [...level.pickups, ...level.exits]) {
-        expect(isSolidAt(world, spot.x, spot.y), `${level.id}:${spot.x},${spot.y}`).toBe(false);
-        expect(supportHeight(world, spot.x, spot.y), `${level.id}:${spot.x},${spot.y}`).toBe(0);
+        const label = `${level.id}:${spot.x},${spot.y}`;
+        const z = spot.z ?? 0;
+        if (z > 0) {
+          expect(isSolidAt(world, spot.x, spot.y), label).toBe(true);
+          expect(supportHeight(world, spot.x, spot.y), label).toBeCloseTo(z);
+        } else {
+          expect(isSolidAt(world, spot.x, spot.y), label).toBe(false);
+          expect(supportHeight(world, spot.x, spot.y), label).toBe(0);
+        }
       }
     }
   });
 
   it("places actors inside the map with known sprites", () => {
     for (const level of LEVELS) {
-      const world = createWorld(level.rows, level.spawn);
+      const world = worldOf(level);
       expect(level.actors.length).toBeGreaterThan(0);
       for (const actor of level.actors) {
         expect(SPRITES.has(actor.sprite), actor.name).toBe(true);
         expect(actor.x, actor.name).toBeGreaterThan(0);
-        expect(actor.x, actor.name).toBeLessThan(24);
+        expect(actor.x, actor.name).toBeLessThan(level.rows[0].length);
         expect(actor.y, actor.name).toBeGreaterThan(0);
-        expect(actor.y, actor.name).toBeLessThan(24);
-        expect(isSolidAt(world, actor.x, actor.y), actor.name).toBe(false);
+        expect(actor.y, actor.name).toBeLessThan(level.rows.length);
+        if ((actor.z ?? 0) > 0) {
+          // Rooftop soldiers stand on the tower top under their feet.
+          expect(supportHeight(world, actor.x, actor.y), actor.name).toBeCloseTo(
+            actor.z ?? 0,
+          );
+        } else {
+          expect(isSolidAt(world, actor.x, actor.y), actor.name).toBe(false);
+        }
         if (actor.hostile) {
           expect(actor.hp, actor.name).toBeGreaterThan(0);
-          expect(actor.attack, actor.name).toBeDefined();
+          expect(actor.attack ?? actor.gun, actor.name).toBeDefined();
         }
       }
     }
+  });
+
+  it("gates the district extraction on exactly its hostile roster", () => {
+    const district = LEVELS[levelIndexById("district")];
+    const hostiles = district.actors.filter((actor) => actor.hostile);
+    expect(district.huntTargets).toBe(7);
+    expect(hostiles.length).toBe(district.huntTargets);
+    expect(district.title).toBe("ROOFTOP DISTRICT");
+  });
+
+  it("builds the district towers from its legend heights", () => {
+    const district = LEVELS[levelIndexById("district")];
+    const world = worldOf(district);
+    expect(district.rows.length).toBe(64);
+    expect(world.width).toBe(64);
+    expect(district.heights).toEqual({ a: 4, b: 6, c: 8, d: 10, e: 12 });
+    // NW low-rise, NE high-rise, and the flanking mid-rise strips.
+    expect(supportHeight(world, 2.5, 2.5)).toBe(4);
+    expect(supportHeight(world, 44.5, 17.5)).toBe(12);
+    expect(supportHeight(world, 25.5, 10.5)).toBe(6);
   });
 });

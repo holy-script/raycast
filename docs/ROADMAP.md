@@ -4,18 +4,20 @@ Milestones are ordered. A milestone is complete only when every acceptance crite
 is checked and the verification command passes. Update this file and
 [PROGRESS.md](PROGRESS.md) whenever a milestone starts or finishes.
 
-Current position: **M0–M10 complete locally.** Ranged combat, interaction, doors/pickups,
-level transitions, and the reactor map are playable and covered by 642 deterministic
-matrix checks (99 scenarios), a 40-check happy-path run, a 109-check flight sweep, and a
-42-check paused-state gallery. The guardian is the only shipped chassis, with all six
-states in a 16×4×19 atlas; the scout and brute prototypes were removed until their art
-pass exists. M8 delivered procedural audio, a pause/settings menu (sensitivity, FOV,
-mute) with persisted settings, a profiled render loop, and a clean five-minute production
-session. M9 added the first-person viewmodel and the visual-stability pass. M10 makes the
-plasma projector fire straight projectiles, adds a marauder gunner with line of sight, and
-renders depth-tested glow impacts. The playtest follow-up re-authored the death animation
-as a flat backward topple, gave the corpse its own pitch-static frame, and removed the
-near-wall double silhouette. M10 is complete and deployed.
+Current position: **M0–M11 complete locally.** Ranged combat, interaction, doors/pickups,
+level transitions, the reactor map, and the Rooftop District are playable and covered by
+691 deterministic matrix checks (105 scenarios), a 40-check happy-path run, a 109-check
+flight sweep, and a 42-check paused-state gallery. The guardian is the only shipped
+chassis, with all six states in a 16×4×19 atlas; the scout and brute prototypes were
+removed until their art pass exists. M8 delivered procedural audio, a pause/settings menu
+(sensitivity, FOV, mute) with persisted settings, a profiled render loop, and a clean
+five-minute production session. M9 added the first-person viewmodel and the
+visual-stability pass. M10 made the plasma projector fire straight projectiles, added a
+marauder gunner with line of sight, and rendered depth-tested glow impacts. The playtest
+follow-up re-authored the death animation as a flat backward topple, gave the corpse its
+own pitch-static frame, and removed the near-wall double silhouette. M11 takes the same
+movement and combat into a 64×64 city: legend-height towers, jetpack rooftop traversal,
+elevated sentries, and a hunt-gated extraction. M11 is complete and deployed.
 
 ## M0 — Foundation
 
@@ -226,3 +228,36 @@ Verified 2026-11-11.
 
 Deferred: muzzle-aligned spawn, projectile gravity/drop, penetration, and destructible
 projectiles. Bolts are intentionally straight so aim and travel stay readable.
+
+## M11 — Rooftop District ✅
+
+Goal: take the jetpack and the plasma projector out of corridor mazes and into a
+city-scale arena where height is part of the map.
+
+- [x] Heightmap legend: map characters `a`–`e` author solid towers at 4/6/8/10/12 m;
+  legend cells render through the facade texture, stay solid from the street, and become
+  walkable surfaces on their roof (`createWorld(rows, spawn, { heights })`)
+- [x] 64×64 district map: four tower quadrants with 2-cell alleys, two mid-rise strips, an
+  8-wide north-south avenue, an open central plaza, and five 1.4 m street crates
+- [x] New facade, asphalt, and roof textures selected per level through
+  `floorTexture`/`topTexture`; facade sampling repeats every 3 m of height
+- [x] Elevation-aware content: `z` on actor, pickup, and exit specs; 3D pickup collection;
+  landing and walking support on tower tops
+- [x] Four rooftop sentries posted on outer roof cells (their sight line must clear the
+  parapet), two street gunners, and one plaza bruiser; gun-only hostiles supported
+- [x] Hunt gating: `huntTargets` keeps extraction locked and reports the remaining hunters
+  until every hostile dies
+- [x] Courtyard → district gate beacon and district → courtyard extraction; the HUD
+  objective shows the live `killed/targets` count
+- [x] Deterministic coverage: tower-legend unit tests, per-level size/elevation tests, and
+  matrix scenarios `l06`–`l11` for arrival, posed and jetpack rooftop landings, sentry
+  fire from above, the hunt gate, and the courtyard gate
+
+**Acceptance:** `npm run typecheck`, 76 unit tests, `npm run build`, `npm run playtest`
+(40/40), `npm run playtest:matrix` (691/691 across 105 scenarios, 123 captures),
+`npm run playtest:flight` (109/109), and `npm run playtest:states` (42/42) pass with zero
+page errors; captures show the avenue canyon, a rooftop perch, a sentry firing down from a
+roof edge, and the locked extraction toast. Verified 2026-11-12.
+
+Deferred: indoor tower floors, rooftop cover props, destructible crates, and a district
+boss. The district is an outdoor arena; tower interiors remain future work.

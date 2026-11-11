@@ -116,8 +116,8 @@ interface Impact {
 export interface GameAssets {
   atlases: Record<string, SpriteAtlas>;
   textures: Record<number, Texture>;
-  floor: Texture;
-  wallTop: Texture;
+  floors: Record<string, Texture>;
+  tops: Record<string, Texture>;
   props: Record<PickupKind | "beacon", Texture>;
   viewmodel: Record<ViewmodelPose, Texture>;
 }
@@ -193,6 +193,8 @@ export interface HudState {
   damageFlash: number;
   levelTitle: string;
   objective: string;
+  huntKills: number;
+  huntTargets: number;
   prompt: string;
   toast: string;
   keycard: boolean;
@@ -218,6 +220,7 @@ export interface RenderDebug {
     onGround: boolean;
   };
   level: string;
+  hunt: { kills: number; targets: number };
   viewmodel: { pose: string; dx: number; dy: number };
   actors: Array<{
     name: string;
@@ -264,6 +267,7 @@ export class Game {
   private doors: WorldDoor[] = [];
   private exits: ExitSpec[] = [];
   private keycard = false;
+  private huntKills = 0;
   private time = 0;
   private toastText = "";
   private toastT = 0;
@@ -275,7 +279,9 @@ export class Game {
   constructor(renderer: Renderer, assets: GameAssets, canvas: HTMLCanvasElement) {
     this.renderer = renderer;
     this.assets = assets;
-    this.world = createWorld(LEVELS[0].rows);
+    this.world = createWorld(LEVELS[0].rows, undefined, {
+      heights: LEVELS[0].heights,
+    });
     this.input = new InputController(canvas);
 
     this.player = {
@@ -590,6 +596,38 @@ export class Game {
         actor.state = "walk";
       }
 
+      if (actor.spec.behavior === "sentry" && actor.spec.gun) {
+        const gun = actor.spec.gun;
+        this.faceTowards(actor, this.player.x, this.player.y, dt * 3);
+        const distance = Math.hypot(
+          this.player.x - actor.x,
+          this.player.y - actor.y,
+        );
+        const ready = Boolean(
+          !this.player.dead &&
+            distance <= gun.range &&
+            actor.attackCooldown <= 0 &&
+            hasLineOfSight(
+              this.world,
+              actor.x,
+              actor.y,
+              actor.z + 0.9,
+              this.player.x,
+              this.player.y,
+              this.player.z + 0.5,
+              gun.range,
+            ),
+        );
+        if (ready) {
+          actor.state = "attack";
+          actor.stateT = 0;
+          actor.hitLanded = false;
+          actor.attackCooldown = gun.cooldown;
+        } else {
+          actor.state = "idle";
+        }
+      }
+
       if (actor.spec.behavior === "chase" && actor.spec.chase) {
         const dx = this.player.x - actor.x;
         const dy = this.player.y - actor.y;
@@ -798,6 +836,7 @@ export class Game {
     this.emit("hit");
     if (actor.hp <= 0) {
       actor.state = "death";
+      if (actor.spec.hostile) this.huntKills += 1;
       this.setToast(`${actor.spec.name.toUpperCase()} DOWN`, 1.6);
       this.emit("kill");
       return;
@@ -898,6 +937,7 @@ export class Game {
       const distance = Math.hypot(
         this.player.x - pickup.x,
         this.player.y - pickup.y,
+        this.player.z - (pickup.z ?? 0),
       );
       if (distance <= radius && distance < best) {
         best = distance;
@@ -917,7 +957,6 @@ export class Game {
   }
 
   private collectPickups(): void {
-    if (this.player.z > 0.8) return;
     const pickup = this.nearestPickup(PICKUP_RADIUS);
     if (pickup) this.collectPickup(pickup);
   }
@@ -938,17 +977,36 @@ export class Game {
     }
   }
 
+  private exitsUnlocked(): boolean {
+    return !this.level.huntTargets || this.huntKills >= this.level.huntTargets;
+  }
+
   private checkExits(): void {
     for (const exit of this.exits) {
+      const horizontal = Math.hypot(
+        this.player.x - exit.x,
+        this.player.y - exit.y,
+      );
       if (
-        Math.hypot(this.player.x - exit.x, this.player.y - exit.y) <=
-        EXIT_RADIUS
+        horizontal > EXIT_RADIUS ||
+        Math.abs(this.player.z - (exit.z ?? 0)) > 1.2
       ) {
-        const index = levelIndexById(exit.target);
-        this.emit("level");
-        this.loadLevel(index, `ENTERING ${LEVELS[index].title}`);
-        return;
+        continue;
       }
+      if (!this.exitsUnlocked()) {
+        if (this.toastT <= 0) {
+          const left = (this.level.huntTargets ?? 0) - this.huntKills;
+          this.setToast(
+            `EXTRACTION LOCKED · ${left} HUNTER${left === 1 ? "" : "S"} REMAIN`,
+            2,
+          );
+        }
+        continue;
+      }
+      const index = levelIndexById(exit.target);
+      this.emit("level");
+      this.loadLevel(index, `ENTERING ${LEVELS[index].title}`);
+      return;
     }
   }
 
@@ -963,10 +1021,14 @@ export class Game {
     this.level = level;
     this.levelIndex = index;
     this.time = 0;
-    this.world = createWorld(level.rows, {
-      x: level.spawn.x,
-      y: level.spawn.y,
-    });
+    this.world = createWorld(
+      level.rows,
+      {
+        x: level.spawn.x,
+        y: level.spawn.y,
+      },
+      { heights: level.heights },
+    );
     this.actors = level.actors.map((spec, i) => this.createActor(spec, i));
     this.pickups = level.pickups.map((pickup, i) => ({
       ...pickup,
@@ -978,6 +1040,7 @@ export class Game {
     this.bolts = [];
     this.impacts = [];
     this.keycard = false;
+    this.huntKills = 0;
     this.placeAtSpawn();
     this.toastText = "";
     this.toastT = 0;
@@ -991,7 +1054,10 @@ export class Game {
       spec,
       x: spec.x,
       y: spec.y,
-      z: (spec.hover?.height ?? 0) + Math.sin(animTime * (spec.hover?.speed ?? 1)) * (spec.hover?.bob ?? 0),
+      z:
+        (spec.z ?? 0) +
+        (spec.hover?.height ?? 0) +
+        Math.sin(animTime * (spec.hover?.speed ?? 1)) * (spec.hover?.bob ?? 0),
       facing: spec.facing,
       state:
         spec.behavior === "patrol" || spec.behavior === "chase"
@@ -1011,12 +1077,18 @@ export class Game {
 
   render(): void {
     const camera = this.cameraState();
+    const floor =
+      this.assets.floors[this.level.floorTexture ?? "floor"] ??
+      this.assets.floors.floor;
+    const top =
+      this.assets.tops[this.level.topTexture ?? "top"] ??
+      this.assets.tops.top;
     this.renderer.render(
       camera,
       this.world,
       this.assets.textures,
-      this.assets.floor,
-      this.assets.wallTop,
+      floor,
+      top,
       [...this.buildSprites(camera), ...this.buildPropSprites(), ...this.buildBoltSprites()],
       this.viewmodelVisible ? this.buildViewmodel() : undefined,
     );
@@ -1231,7 +1303,7 @@ export class Game {
       draws.push({
         x: pickup.x,
         y: pickup.y,
-        z: 0.3 + bob,
+        z: (pickup.z ?? 0) + 0.3 + bob,
         facing: 0,
         frame: { texture, sx: 0, sy: 0, sw: texture.width, sh: texture.height },
         worldSize: 0.42,
@@ -1244,7 +1316,7 @@ export class Game {
       draws.push({
         x: exit.x,
         y: exit.y,
-        z: 0,
+        z: exit.z ?? 0,
         facing: 0,
         frame: { texture, sx: 0, sy: 0, sw: texture.width, sh: texture.height },
         worldSize: 1.1,
@@ -1383,7 +1455,12 @@ export class Game {
       dead: this.player.dead,
       damageFlash: this.player.hitFlash / DAMAGE_FLASH_TIME,
       levelTitle: this.level.title,
-      objective: this.level.objective,
+      objective:
+        this.level.huntTargets !== undefined
+          ? `${this.level.objective} · ${this.huntKills}/${this.level.huntTargets}`
+          : this.level.objective,
+      huntKills: this.huntKills,
+      huntTargets: this.level.huntTargets ?? 0,
       prompt: this.interactionPrompt(),
       toast: this.toastT > 0 ? this.toastText : "",
       keycard: this.keycard,
@@ -1433,6 +1510,7 @@ export class Game {
         onGround: this.player.onGround,
       },
       level: this.level.id,
+      hunt: { kills: this.huntKills, targets: this.level.huntTargets ?? 0 },
       viewmodel: this.viewmodelState(),
       actors: this.actors.map((actor) => {
         const selection = this.spriteSelection(actor, camera);

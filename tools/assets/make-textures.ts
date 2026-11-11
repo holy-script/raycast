@@ -182,6 +182,103 @@ function topTexture(): void {
   });
 }
 
+/**
+ * Tower facade: concrete grid with two window rows per cell. The renderer
+ * repeats it every 3 m of tower height, so a 12 m tower reads as four storeys
+ * instead of one stretched pane.
+ */
+function facadeTexture(): void {
+  const rng = mulberry32(5150);
+  const panes = new Map<string, [number, number, number]>();
+
+  writePng("facade.png", (x, y) => {
+    const cellX = Math.floor(x / 32);
+    const cellY = Math.floor(y / 32);
+    const localX = x % 32;
+    const localY = y % 32;
+    const noise = (rng() - 0.5) * 10;
+
+    const seam = localX < 2 || localY < 2;
+    if (seam) return [34 + noise, 37 + noise, 45 + noise];
+
+    const inFrame =
+      localX >= 7 && localX <= 25 && localY >= 6 && localY <= 26;
+    const inGlass =
+      localX >= 9 && localX <= 23 && localY >= 8 && localY <= 24;
+
+    if (inFrame && !inGlass) {
+      const sill = localY > 23 ? -14 : 12;
+      return [88 + noise + sill, 94 + noise + sill, 106 + noise + sill];
+    }
+
+    if (inGlass) {
+      const key = `${cellX}:${cellY}`;
+      if (!panes.has(key)) {
+        const hash = Math.abs(Math.sin(cellX * 12.9898 + cellY * 78.233) * 43758.5453) % 1;
+        panes.set(
+          key,
+          hash < 0.2
+            ? [214, 186, 122]
+            : hash < 0.44
+              ? [92, 172, 196]
+              : [24, 32, 40],
+        );
+      }
+      const pane = panes.get(key)!;
+      const sheen = 6 - ((localY - 8) / 16) * 12;
+      const cross = localX === 16 || localY === 16;
+      const trim = cross ? -8 : 0;
+      return [
+        pane[0] + sheen + trim + noise * 0.4,
+        pane[1] + sheen + trim + noise * 0.4,
+        pane[2] + sheen + trim + noise * 0.4,
+      ];
+    }
+
+    return [56 + noise, 60 + noise, 70 + noise];
+  });
+}
+
+/** Street surface: dark asphalt with aggregate speckle and hairline cracks. */
+function asphaltTexture(): void {
+  const rng = mulberry32(3311);
+
+  writePng("asphalt.png", (x, y) => {
+    const noise = (rng() - 0.5) * 18;
+    const aggregate = rng() > 0.93 ? 16 : rng() > 0.9 ? -12 : 0;
+    const stain =
+      Math.hypot((x - 18) / 9, (y - 44) / 6) < 1 ? -6 : 0;
+    const crack =
+      Math.abs((x * 5 + y * 3) % 61) < 1 && Math.abs(y - x * 0.8) < 26
+        ? -14
+        : 0;
+
+    return [42 + noise + aggregate + stain + crack, 44 + noise + aggregate + stain + crack, 49 + noise + aggregate + stain + crack];
+  });
+}
+
+/** Rooftop slab: concrete panels, gravel speckle, and a drain ring. */
+function roofTexture(): void {
+  const rng = mulberry32(8842);
+
+  writePng("roof.png", (x, y) => {
+    const seam =
+      Math.abs(x - 31.5) < 1 || Math.abs(y - 31.5) < 1 || x < 2 || y < 2;
+    const noise = (rng() - 0.5) * 14;
+    const gravel = rng() > 0.9 ? 14 : rng() > 0.84 ? -10 : 0;
+
+    if (seam) return [38 + noise, 40 + noise, 45 + noise];
+
+    // No drain per tile: the roof texture repeats once per cell, so a ring in the
+    // tile reads as a regular polka-dot grid rather than an occasional fixture.
+    return [
+      74 + noise + gravel,
+      78 + noise + gravel,
+      84 + noise + gravel,
+    ];
+  });
+}
+
 const PROP_SIZE = 32;
 
 function writePropPng(
@@ -310,6 +407,9 @@ brickTexture();
 panelTexture();
 floorTexture();
 topTexture();
+facadeTexture();
+asphaltTexture();
+roofTexture();
 keycardProp();
 medkitProp();
 fuelProp();

@@ -8,6 +8,7 @@ import {
   supportHeight,
   tileAt,
   tileHeightAt,
+  TOWER_TILE,
   WALL_HEIGHT,
 } from "../src/engine/world";
 
@@ -121,5 +122,35 @@ describe("sector heights", () => {
     expect(supportHeight(world, 2.5, 1.5)).toBeCloseTo(0.2);
     expect(supportHeight(world, 2.5, 2.5)).toBeCloseTo(0.6);
     expect(supportHeight(world, 1.5, 1.5)).toBe(0);
+  });
+});
+
+describe("tower legend", () => {
+  const world = createWorld(
+    [
+      "######",
+      "#.a..#",
+      "#.b..#",
+      "######",
+    ],
+    { x: 1.5, y: 1.5 },
+    { heights: { a: 4, b: 12 } },
+  );
+
+  it("uses legend heights instead of the default wall height", () => {
+    expect(tileHeightAt(world, 2.5, 1.5)).toBe(4);
+    expect(tileHeightAt(world, 2.5, 2.5)).toBe(12);
+  });
+
+  it("maps legend cells to the facade tile", () => {
+    expect(tileAt(world, 2.5, 1.5)).toBe(TOWER_TILE);
+    expect(tileAt(world, 0.5, 0.5)).toBe(1);
+  });
+
+  it("keeps towers solid from the street and walkable from the roof", () => {
+    expect(canOccupy(world, 2.5, 1.5, 0.2, 0)).toBe(false);
+    expect(canOccupy(world, 2.5, 1.5, 0.2, 4)).toBe(true);
+    expect(canOccupy(world, 2.5, 1.5, 0.2, 3.9)).toBe(false);
+    expect(supportHeight(world, 2.5, 2.5)).toBe(12);
   });
 });

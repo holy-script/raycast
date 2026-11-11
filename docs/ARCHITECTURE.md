@@ -22,13 +22,14 @@ solid diorama from jetpack altitude and the player can land on a wall to look do
 | File | Responsibility |
 | --- | --- |
 | `src/engine/dda.ts` | Grid traversal helpers used by tests and editors; the renderer walks DDA inline per pixel |
-| `src/engine/world.ts` | ASCII map parsing, solid lookup, wall height / support height, height-aware collision |
+| `src/engine/world.ts` | ASCII map parsing, legend heights, solid lookup, wall height / support height, height-aware collision |
 | `src/engine/math.ts` | Angle wrap, yaw/pitch quantization, elevation angle |
-| `src/engine/renderer.ts` | Sky, per-pixel floors/faces/tops, sprites, shadows, depth buffer |
+| `src/engine/renderer.ts` | Sky, per-pixel floors/faces/tops, facade storey sampling, sprites, shadows, depth buffer |
 | `src/engine/atlas.ts` | Manifest parsing, frame lookup with fallback, image loading |
 | `src/engine/input.ts` | Pointer lock, key state, one-shot actions, scripted playtest input |
 | `src/game.ts` | Player physics, jetpack, combat/interaction, level loading, actor behavior, sprite selection, HUD |
-| `src/content/` | Level definitions (rows, spawn, actors, pickups, doors, exits) and actor specs |
+| `src/content/` | Level definitions (rows, heights, surfaces, spawn, actors, pickups, doors, exits) and actor specs |
+| `src/content/district-map.ts` | 64×64 Rooftop District rows and legend |
 | `src/main.ts` | Asset boot, render loop, DOM/HUD wiring, debug API |
 | `tools/blender/` | Headless turntable: raw RGBA, depth, and normal passes |
 | `tools/stylize/` | Palette stylizer, shared premultiplied downsample, ComfyUI CLI |
@@ -68,10 +69,13 @@ every altitude; only the settings menu can change it (55–90°).
 ## Walls
 
 Every solid cell is a block from `z = 0` to its own surface height: `WALL_HEIGHT = 1.4`
-for `#`/`X`, and `0.2 × digit` for map digits `1`–`9` (stairs, ledges, crates). Each pixel
-walks the grid with DDA along its horizontal ray, starting at the camera cell and bounded
-by the world edge and the floor-plane intersection. The first solid cell produces at most
-one surface for that pixel:
+for `#`/`X`, `0.2 × digit` for map digits `1`–`9` (stairs, ledges, crates), and an explicit
+legend height for characters listed in a level's `heights` map. The Rooftop District uses
+`a`–`e` at 4/6/8/10/12 m; legend cells map to the facade tile and sample the facade texture
+with `v = fract(wallZ / 3)` so window rows repeat every storey. Each pixel walks the grid
+with DDA along its horizontal ray, starting at the camera cell and bounded by the world
+edge and the floor-plane intersection. The first solid cell produces at most one surface
+for that pixel:
 
 ```ts
 zEntry = eyeZ + entry * rayZ;
@@ -248,15 +252,26 @@ and straight lines stay stable while flying. Only fog attenuation scales down at
 
 ## Levels, combat, and interaction
 
-`src/content/levels.ts` defines each level as `{ id, title, objective, rows, spawn,
-actors, pickups, doors, exits }`. `Game.loadLevel(index)` rebuilds the `World` from the
-rows, then deterministically resets time, player pose/health/fuel/cooldown, keycard, and
-actor animation phase (`index × 0.37`). Exits target another level id; the beacon prop
-marks the pad. Because the world is rebuilt, pickups, opened doors, and the keycard reset
-on every transition — the demo loop is one-way per visit.
+`src/content/levels.ts` defines each level as `{ id, title, objective, rows, heights?,
+floorTexture?, topTexture?, spawn, actors, pickups, doors, exits, huntTargets? }`.
+`Game.loadLevel(index)` rebuilds the `World` from the rows, then deterministically resets
+time, player pose/health/fuel/cooldown, keycard, hunt progress, and actor animation phase
+(`index × 0.37`). Exits target another level id; the beacon prop marks the pad. Because the
+world is rebuilt, pickups, opened doors, and the keycard reset on every transition — the
+demo loop is one-way per visit.
+
+Three levels ship: the 24×24 courtyard, the 24×24 reactor deck, and the 64×64 Rooftop
+District. The district declares legend heights, asphalt floors, roof tops, and
+`huntTargets: 7`; its actors, pickups, and exits can carry a `z` altitude. Grounded
+content validates against open floor, while elevated content must sit on a solid cell
+whose surface matches its `z`. The courtyard gate beacon at (2.5, 22.5) enters the
+district, and the plaza beacon returns.
 
 Actor states are `idle | walk | attack | hurt | death | talk`. Hostiles (`hostile: true`)
-stalk the player, and once within reach they enter `attack`:
+either stalk the player (`chase`) or hold a position and shoot when they have line of
+sight (`sentry`). Sentries must stand on the outer roof cell of their tower: one cell
+inward, the parapet clips their own downward sight line. Once within reach, chasers enter
+`attack`:
 
 | Timing | Value |
 | --- | --- |
@@ -266,6 +281,8 @@ stalk the player, and once within reach they enter `attack`:
 | Player max health / redeploy | 100 / 1.4 s |
 | Hostile melee (wind-up) | 8–14 per hit |
 | Marauder gun | 11 dmg, 9 m range, 1.7 s cooldown, 9 m/s bolt |
+| District street gunner | 8 dmg, 13 m range, 1.7 s cooldown, 9 m/s bolt |
+| District roof sentry | 9–10 dmg, 18–20 m range, 1.9–2.0 s cooldown, 10 m/s bolt |
 | Interaction radius | talk/door 2.4 m, pickup 0.5 m, exit pad 0.6 m |
 
 `attack()` spawns a player bolt at the camera eye along yaw and pitch (horizontal
@@ -275,20 +292,27 @@ switches the actor to `hurt` or `death`. Dead actors stay in the actor array wit
 `alive = false` so the final death frame still draws as a corpse; they no longer update,
 attack, or accept further hits.
 
-Hostiles with a `gun` spec (currently the marauder) check distance, cooldown, and a
-3D-sampled `hasLineOfSight` before entering `attack`; at `ATTACK_IMPACT` (0.20 s) they fire
-a bolt aimed at the player's chest. Without a clear shot they keep chasing and fall back
-to melee inside `attack.range`. Enemy bolts do not lead the target.
+Hostiles with a `gun` spec (the courtyard marauder, the district gunners, and the rooftop
+sentries) check distance, cooldown, and a 3D-sampled `hasLineOfSight` before entering
+`attack`; at `ATTACK_IMPACT` (0.20 s) they fire a bolt aimed at the player's chest. A
+`sentry` holds position and faces the player; a `chase` hostile with a gun keeps closing
+in and falls back to melee inside `attack.range`. Gun-only hostiles omit `attack` entirely.
+Enemy bolts do not lead the target.
 
 `interact()` returns `none | talk | door | locked | pickup`. Doors are grid cells marked
 `D` with a `DoorSpec`; opening one clears both the tile id and its height so movement and
 raycasts agree, and a door with `requires: "keycard"` refuses until the player has one.
-Pickups are billboards collected by walking within 0.5 m: keycard sets the flag, medkit
-heals, fuel refills. The HUD surfaces the current prompt (`E · talk`, `E · sealed —
-keycard required`, …) and a transient toast for outcomes.
+Pickups are billboards collected within a 0.5 m 3D radius: keycard sets the flag, medkit
+heals, fuel refills. Exits compare horizontal distance and the player's altitude to the
+pad's `z`, so a beacon on a roof cannot be triggered from the street. A level with
+`huntTargets` keeps every exit locked until that many hostiles die; the HUD objective
+appends the live `killed/targets` count and a refused exit toasts the remaining hunters.
+The HUD surfaces the current prompt (`E · talk`, `E · sealed — keycard required`, …) and a
+transient toast for outcomes.
 
-Prop billboards (pickups, beacon) share the sprite renderer with `worldSize` and a fixed
-z offset; the beacon pulses and the pickups bob so they read as interactive objects.
+Prop billboards (pickups, beacon) share the sprite renderer with `worldSize` and a surface
+`z` from the level spec; the beacon pulses and the pickups bob so they read as interactive
+objects.
 
 ## Projectiles and impacts
 
@@ -411,7 +435,7 @@ Screenshots and a JSON report land in `docs/screenshots/playtest/`.
 The companion harnesses share `tools/playtest/support.ts` (contact sheets, sky-row
 classification, image metrics):
 
-- `playtest:matrix` — 99 deterministic scenarios, 642 checks, golden-frame comparison.
+- `playtest:matrix` — 105 deterministic scenarios, 691 checks, golden-frame comparison.
 - `playtest:states` — paused player/guardian animation gallery, 42 checks.
 - `playtest:flight` — 18 altitude/pitch poses plus a live jetpack flight. It classifies
   every canvas pixel against the sky gradient, flags enclosed sky holes, fits the

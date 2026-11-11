@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-11T18:58:11.597Z",
+  "generatedAt": "2026-11-11T19:30:34.340Z",
   "url": "http://127.0.0.1:5202/?screenshot",
-  "durationMs": 4998,
+  "durationMs": 5257,
   "poses": [
     {
       "id": "f01-ground-level",
@@ -276,7 +276,7 @@
       "scenario": "f05-climb-8m-down",
       "name": "f05-climb-8m-down renders content",
       "ok": true,
-      "detail": "437 colors, mean luma 39.8"
+      "detail": "442 colors, mean luma 39.8"
     },
     {
       "scenario": "f05-climb-8m-down",
@@ -330,7 +330,7 @@
       "scenario": "f07-altitude-12m-down",
       "name": "f07-altitude-12m-down renders content",
       "ok": true,
-      "detail": "198 colors, mean luma 31.6"
+      "detail": "218 colors, mean luma 31.6"
     },
     {
       "scenario": "f07-altitude-12m-down",
@@ -420,7 +420,7 @@
       "scenario": "f10-ceiling-18m-down",
       "name": "f10-ceiling-18m-down renders content",
       "ok": true,
-      "detail": "329 colors, mean luma 40.7"
+      "detail": "330 colors, mean luma 40.7"
     },
     {
       "scenario": "f10-ceiling-18m-down",

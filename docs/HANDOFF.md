@@ -11,14 +11,14 @@ npm run typecheck
 npm test
 npm run build
 npm run playtest   # headless Chrome, 40 checks + screenshots
-npm run playtest:matrix  # 99 deterministic scenarios, 642 checks
+npm run playtest:matrix  # 105 deterministic scenarios, 691 checks
 npm run playtest:flight  # 18 airborne poses + live jetpack, 109 checks
 npm run playtest:states  # 42 state checks, 21 paused-state captures
 npm run dev        # http://localhost:5173
 ```
 
-Expected: typecheck clean, 71 tests passing across 9 files, Vite build succeeds, playtest
-40/40, matrix 642/642, flight 109/109, state gallery 42/42 with zero console errors.
+Expected: typecheck clean, 76 tests passing across 9 files, Vite build succeeds, playtest
+40/40, matrix 691/691, flight 109/109, state gallery 42/42 with zero console errors.
 Click the canvas,
 move with WASD, hold Space to jetpack up to 18 m, and look down to see the top-pitch
 sprite rows and the diorama. Walk up the panel stairs (x=10–13, y=18–21) onto the 0.4
@@ -31,6 +31,12 @@ the beacon to reach the reactor map, climb the terraces, unlock/open the vault d
 (13, 9), and use the vault beacon to return. `E` talks to NPCs and interacts; `F` or left
 click fires a plasma bolt at whatever is under the crosshair. Medkits and fuel canisters
 are picked up by walking over them.
+
+M11 loop: use the courtyard beacon at (2.5, 22.5) to enter the 64×64 Rooftop District.
+From the south avenue spawn (32.5, 58.5), advance into the plaza, kill the two street
+gunners and the plaza bruiser, jetpack onto the 4/6/8/10/12 m towers, and clear the four
+rooftop sentries. The beacon at the plaza centre (32.5, 32.5) returns to the courtyard
+only after all seven hostiles are dead; until then it toasts the remaining hunt count.
 
 Asset pipeline after a fresh clone (raw renders are gitignored):
 
@@ -82,7 +88,7 @@ window.__raycast.automation.setFuel(0.3);
 window.__raycast.automation.setHealth(40);
 window.__raycast.automation.attack();         // fire one bolt, false while dead/cooling
 window.__raycast.automation.interact();       // "none" | "talk" | "door" | "locked" | "pickup"
-window.__raycast.automation.loadLevel("reactor");  // levelIndexById, deterministic reload
+window.__raycast.automation.loadLevel("district");  // levelIndexById, deterministic reload
 window.__raycast.automation.frameCount();     // real rAF ticks (harness liveness)
 ```
 
@@ -95,7 +101,7 @@ flight.
 
 `?screenshot` hides the intro overlay for headless captures. Prefer the harnesses:
 `npm run playtest` is the happy-path browser check, `npm run playtest:matrix` walks
-99 deterministic state/route scenarios (642 checks, labelled contact sheet, golden
+105 deterministic state/route scenarios (691 checks, labelled contact sheet, golden
 frames), `npm run playtest:states` pauses the sim in every player/guardian body state
 for 21 gallery captures (42 checks), and `npm run playtest:flight` sweeps 18
 altitude/pitch poses plus a live jetpack flight (109 checks) while asserting no sky
@@ -199,9 +205,21 @@ alone can leave HUD values at `--`.
   calls `Page.bringToFront`, and the matrix re-fronts before `resume()`; removing either
   silently freezes real-time checks while `isPaused()` still reads false.
 - **Level determinism:** `loadLevel` must reset `time`, actor `animTime` to
-  `index × 0.37`, player pose/health/fuel/cooldown, input, and rebuild the world. The
-  matrix compares golden pixels, so any new level or actor field that affects visuals
-  needs an explicit reset here.
+  `index × 0.37`, player pose/health/fuel/cooldown, input, hunt kills, bolts/impacts, and
+  rebuild the world. The matrix compares golden pixels, so any new level or actor field
+  that affects visuals needs an explicit reset here.
+- **Legend heights:** a level's `heights` map turns a map character into a solid tower of
+  that height and the facade tile. Pass `{ heights: level.heights }` to `createWorld`
+  everywhere a level is parsed (game boot, level load, tests); omitting it makes towers
+  1.4 m walls and breaks rooftop placement.
+- **Rooftop sentries:** a sentry must stand on the tower's outer roof cell. One cell
+  inward, its own parapet clips the downward sight line, and it never fires. This was a
+  real matrix failure in `l08`; keep sentry specs on edge cells when moving towers.
+- **Elevated content:** pickups/actors/exits with `z > 0` must sit on a solid cell whose
+  surface equals `z`. `tests/levels.test.ts` enforces this; grounded content must sit on
+  support 0. Pickup collection and exit checks use 3D distance/altitude, not just X/Y.
+- **Hunt gate:** `loadLevel` resets `huntKills`; `huntTargets` must equal the number of
+  `hostile: true` actors in the level or the exit can never unlock (or unlocks early).
 - **State clocks:** `idle`/`walk` animate from `animTime`; `attack`/`hurt`/`death`/`talk`
   read `stateT` so their timing is independent of walk phase. `death` clamps to its last
   frame and the actor stays in the array (`alive = false`) so the corpse still draws.
@@ -251,7 +269,9 @@ alone can leave HUD values at `--`.
 ## Known constraints
 
 - Heights are blocks grown from `z = 0`; there are no sunken floors/pits, overhangs, or
-  ceilings. The walkable floor is one plane at 0.
+  ceilings. The walkable floor is one plane at 0. Legend characters (`a`–`e`) create
+  solid towers up to 12 m, but they have no interiors: towers are obstacles and rooftops,
+  not enterable buildings.
 - No ceiling geometry; sky is visible above the outer walls from ground level.
 - Actors are non-blocking (no player/actor or actor/actor collision). Hostiles deal melee
   contact damage and marauders fire bolts; both can be killed. Bolts are straight,
@@ -273,23 +293,24 @@ alone can leave HUD values at `--`.
   (`raycast.settings.v1`) and fail open when storage is blocked.
 - No license file yet.
 
-## Next task: M10 owner playtest and combat tuning
+## Next task: M11 owner playtest and district tuning
 
-M10 is complete locally (not yet deployed): ranged plasma bolts, the marauder gunner,
-and glow impacts are covered by `playtest` (40), `playtest:matrix` (642 across 99
-scenarios), `playtest:flight` (109), and `playtest:states` (42), plus 71 unit tests. The
-owner should playtest the shot feel and balance before any push to `main`.
+M11 is complete locally: the 64×64 Rooftop District, legend towers, rooftop sentries, and
+the hunt-gated extraction are covered by `playtest` (40), `playtest:matrix` (691 across
+105 scenarios), `playtest:flight` (109), and `playtest:states` (42), plus 76 unit tests.
+The owner should playtest rooftop combat and the seven-kill gate before the next design
+step.
 
-1. Tune `PLAYER_BOLT_SPEED/LIFE` and `PLAYER_ATTACK_DAMAGE/COOLDOWN` in `src/game.ts`,
-   and each actor's `gun` spec in `src/content/actors.ts`. Keep the matrix's ranged
-   assertions in sync if damage or timing changes.
-2. If the eye-spawned bolt should align with the viewmodel, add a camera-space muzzle
-   offset in `attack()` and review the `f09`/`f10` captures for parallax.
-3. If a new visual change lands, rerun `npm run playtest:matrix -- --update-golden`,
-   inspect the first mismatching run before committing, then run typecheck/tests/build,
-   both playtests, and check Vercel.
-4. Optional deferred work: true stacked-slice actor rendering; muzzle-aligned spawns,
-   projectile drop/penetration, or destructible bolts.
+1. Tune the district roster in `src/content/actors.ts` (sentry range/damage, gunner
+   ranges, bruiser chase) and pickup placement in `src/content/levels.ts`. Keep
+   `huntTargets` equal to the hostile count.
+2. If towers move, keep sentries on outer roof cells and update the `l07`/`l10` landing
+   positions; rerun `tests/levels.test.ts` so elevated content still matches roof heights.
+3. If a visual change lands, rerun `npm run playtest:matrix -- --update-golden`, inspect
+   the first mismatching run before committing, then run typecheck/tests/build, both
+   playtests, flight, states, and check Vercel.
+4. Deferred: tower interiors, rooftop cover props, destructible crates, a district boss,
+   muzzle-aligned bolt spawns, projectile drop/penetration, and stacked-slice sprites.
 
 If a design choice could go either way, record it in [DECISIONS.md](DECISIONS.md) with the
 tradeoff, then proceed.

@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: **2026-11-11**
+Last updated: **2026-11-12**
 
 ## Status at a glance
 
@@ -17,6 +17,7 @@ Last updated: **2026-11-11**
 | Audio, menus, deployment | M8 | ✅ Audio, pause/settings, profiled render loop, README capture, auto-deploy; public-session check clean |
 | Viewmodel and visual stability | M9 | ✅ Blender viewmodel, fixed FOV, pitch-scale compensation, wall-side depenetration, hardened playtests |
 | Ranged plasma combat | M10 | ✅ Camera-aimed projectiles, marauder gunner with line of sight, impact flash, depth-tested glow billboards |
+| Rooftop District | M11 | ✅ 64×64 city, 4–12 m legend towers, jetpack roof traversal, elevated sentries, hunt-gated extraction |
 
 ## Verification snapshot
 
@@ -25,10 +26,10 @@ Run from a clean checkout:
 ```bash
 npm ci
 npm run typecheck   # passes
-npm test            # 9 files, 71 tests pass
+npm test            # 9 files, 76 tests pass
 npm run build       # tsc + vite build
 npm run playtest    # 40/40 browser checks pass
-npm run playtest:matrix  # 99 scenarios, 642/642 checks, 114 captures, 0 console errors
+npm run playtest:matrix  # 105 scenarios, 691/691 checks, 123 captures, 0 console errors
 npm run playtest:flight  # 18 poses + live jetpack, 109/109 checks, 30 captures
 npm run playtest:states  # 42/42 state checks, 21 captures, 0 console errors
 npm run assets:verify -- --min-iou 0.4  # 1,216-frame guardian atlas; min IoU 0.43, mean 0.90
@@ -155,6 +156,38 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
 - Artifacts: `docs/screenshots/states/contact-sheet.png`, 43 PNGs, `report.json`.
 
 ## Session log
+
+### 2026-11-12 — M11 Rooftop District
+
+- New heightmap legend in `src/engine/world.ts`: `createWorld(rows, spawn, { heights })`
+  maps `a`–`e` to 4/6/8/10/12 m towers and to the facade tile (`TOWER_TILE`). Legend
+  cells stay solid from the street and become walkable surfaces at their roof height;
+  `canOccupy`, `supportHeight`, and `resolveFootprint` already handled the altitude.
+- Added `src/content/district-map.ts`: a 64×64 city of four tower quadrants with 2-cell
+  alleys, two mid-rise strips, an 8-wide north-south avenue, an open central plaza, and
+  five 1.4 m crates. Authored from a deterministic rectangle generator so the layout is
+  reproducible.
+- Procedural `facade.png`, `asphalt.png`, and `roof.png` textures. Facade sampling repeats
+  every 3 m of height so towers keep window rows at any legend height; floors and wall
+  tops are now chosen per level through `floorTexture`/`topTexture`.
+- Level content gained `z`: actors stand on rooftops, pickups collect in 3D, exits check
+  altitude, and prop billboards render at their surface height. Pickups placed above open
+  floor still validate against the surface under them.
+- Four rooftop sentries, two street gunners, and one plaza bruiser (seven hostiles). The
+  sentries are posted on their tower's outer roof cell; a sentry one cell inward had its
+  sight line clipped by its own parapet, which the first matrix run caught.
+- Hunt gating: the district declares `huntTargets: 7`; the extraction beacon refuses with
+  `EXTRACTION LOCKED · n HUNTERS REMAIN` until every hostile dies, and the HUD objective
+  shows the live kill count. A new courtyard gate beacon at (2.5, 22.5) enters the district;
+  the district beacon at the plaza centre returns to the courtyard.
+- Verification: typecheck clean, **76 unit tests** (tower legend, per-level sizes and
+  elevated placement, hunt-roster consistency), `playtest` 40/40, `playtest:matrix`
+  691/691 across 105 scenarios (123 captures, including `l06`–`l11` district arrival,
+  posed landing, jetpack climb, sentry fire, hunt gate, and courtyard gate),
+  `playtest:flight` 109/109, `playtest:states` 42/42, zero console errors.
+  `npm run build` succeeds (57.4 kB JS, 19.3 kB gzip).
+- Known approximations: towers have no interiors, rooftop cover is sparse, and the crates
+  are indestructible. Deferred to a later milestone.
 
 ### 2026-11-11 — Corpse outline fix, flat death pose, AI death frames
 

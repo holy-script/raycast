@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-11T18:57:38.951Z",
+  "generatedAt": "2026-11-11T19:29:51.990Z",
   "url": "http://127.0.0.1:5201/?screenshot",
-  "durationMs": 7672,
+  "durationMs": 8060,
   "scenarios": [
     "g01-spawn-idle",
     "g02-walk-forward",
@@ -101,9 +101,15 @@
     "l02-vault-return",
     "l03-terrace-climb",
     "l04-reactor-hover",
-    "l05-beacon-loop"
+    "l05-beacon-loop",
+    "l06-district-arrival",
+    "l07-rooftop-landing",
+    "l08-sentry-los",
+    "l09-hunt-gate",
+    "l10-jetpack-roof",
+    "l11-district-gate-entry"
   ],
-  "passed": 642,
+  "passed": 691,
   "failed": 0,
   "checks": [
     {
@@ -230,7 +236,7 @@
       "group": "ground",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "15 rects"
+      "detail": "16 rects"
     },
     {
       "scenario": "g03-walk-backward",
@@ -1070,7 +1076,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "17 rects"
+      "detail": "18 rects"
     },
     {
       "scenario": "a03-air-pitch-top",
@@ -1112,7 +1118,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "14 rects"
+      "detail": "15 rects"
     },
     {
       "scenario": "a04-mouse-yaw",
@@ -1238,7 +1244,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "17 rects"
+      "detail": "18 rects"
     },
     {
       "scenario": "a07-sector-back",
@@ -1322,7 +1328,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "16 rects"
+      "detail": "17 rects"
     },
     {
       "scenario": "a09-sector-north",
@@ -1490,7 +1496,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "17 rects"
+      "detail": "18 rects"
     },
     {
       "scenario": "a13-sector-nw",
@@ -1532,7 +1538,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "14 rects"
+      "detail": "15 rects"
     },
     {
       "scenario": "a14-pitch-band-low",
@@ -1658,7 +1664,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "17 rects"
+      "detail": "18 rects"
     },
     {
       "scenario": "a17-pitch-band-top",
@@ -1700,7 +1706,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "17 rects"
+      "detail": "18 rects"
     },
     {
       "scenario": "a18-fov-stable-altitude",
@@ -1742,7 +1748,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "17 rects"
+      "detail": "18 rects"
     },
     {
       "scenario": "a19-topdown-scale",
@@ -2134,7 +2140,7 @@
       "group": "surfaces",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "16 rects"
+      "detail": "17 rects"
     },
     {
       "scenario": "s09-wall-perch-down",
@@ -2316,7 +2322,7 @@
       "group": "surfaces",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "17 rects"
+      "detail": "18 rects"
     },
     {
       "scenario": "s13-corner-landing",
@@ -2533,7 +2539,7 @@
       "group": "actors",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "8 rects"
+      "detail": "9 rects"
     },
     {
       "scenario": "c05-hover-bob",
@@ -2701,7 +2707,7 @@
       "group": "actors",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "17 rects"
+      "detail": "18 rects"
     },
     {
       "scenario": "c09-overhead-guard",
@@ -2743,7 +2749,7 @@
       "group": "actors",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "17 rects"
+      "detail": "18 rects"
     },
     {
       "scenario": "c10-overhead-edge-actor",
@@ -2785,7 +2791,7 @@
       "group": "actors",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "17 rects"
+      "detail": "18 rects"
     },
     {
       "scenario": "c11-multi-actor-aerial",
@@ -3072,7 +3078,7 @@
       "group": "ui",
       "name": "resuming advances the simulation",
       "ok": true,
-      "detail": "patrol dx 0.39, 23 frames, paused=false, 6.43% pixels changed"
+      "detail": "patrol dx 0.37, 23 frames, paused=false, 6.40% pixels changed"
     },
     {
       "scenario": "u05-pause-resume",
@@ -3310,7 +3316,7 @@
       "group": "routes",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "17 rects"
+      "detail": "18 rects"
     },
     {
       "scenario": "r03-aerial-lookdown",
@@ -3625,7 +3631,7 @@
       "group": "interaction",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "6 rects"
+      "detail": "7 rects"
     },
     {
       "scenario": "i04-talk-cycle",
@@ -3660,7 +3666,7 @@
       "group": "interaction",
       "name": "i05-medkit-heal renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 61.7"
+      "detail": "512 colors, mean luma 63.9"
     },
     {
       "scenario": "i05-medkit-heal",
@@ -3674,7 +3680,7 @@
       "group": "interaction",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "15 rects"
+      "detail": "16 rects"
     },
     {
       "scenario": "i05-medkit-heal",
@@ -3947,7 +3953,7 @@
       "group": "combat",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "11 rects"
+      "detail": "12 rects"
     },
     {
       "scenario": "f03-bolt-miss",
@@ -4594,7 +4600,350 @@
       "detail": "WALK · ATTRACT · fuel 100%"
     },
     {
-      "scenario": "l05-beacon-loop",
+      "scenario": "l06-district-arrival",
+      "group": "levels",
+      "name": "the courtyard gate loads the rooftop district",
+      "ok": true,
+      "detail": "district · ROOFTOP DISTRICT"
+    },
+    {
+      "scenario": "l06-district-arrival",
+      "group": "levels",
+      "name": "the district spawns on the south avenue",
+      "ok": true,
+      "detail": "32.50, 58.50 · support 0"
+    },
+    {
+      "scenario": "l06-district-arrival",
+      "group": "levels",
+      "name": "the hunt objective starts empty",
+      "ok": true,
+      "detail": "Hunt the seven hostiles, then reach the extraction beacon. · 0/7"
+    },
+    {
+      "scenario": "l06-district-arrival",
+      "group": "levels",
+      "name": "four sentries stand on the rooftops",
+      "ok": true,
+      "detail": "spire-nw@8, spire-ne@12, spire-sw@12, spire-se@12"
+    },
+    {
+      "scenario": "l06-district-arrival",
+      "group": "levels",
+      "name": "l06-district-spawn matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l06-district-arrival",
+      "group": "levels",
+      "name": "l06-district-spawn renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 44.8"
+    },
+    {
+      "scenario": "l06-district-arrival",
+      "group": "levels",
+      "name": "l06-district-arrival matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l06-district-arrival",
+      "group": "levels",
+      "name": "l06-district-arrival renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 44.8"
+    },
+    {
+      "scenario": "l06-district-arrival",
+      "group": "levels",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "32.50, 58.50, 0.00, 1.00, 384.00, 39173.00, 0.00"
+    },
+    {
+      "scenario": "l06-district-arrival",
+      "group": "levels",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "13 rects"
+    },
+    {
+      "scenario": "l06-district-arrival",
+      "group": "levels",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "l07-rooftop-landing",
+      "group": "levels",
+      "name": "the player lands on the 4 m rooftop",
+      "ok": true,
+      "detail": "alt 4.00 m · support 4"
+    },
+    {
+      "scenario": "l07-rooftop-landing",
+      "group": "levels",
+      "name": "the HUD reports a rooftop perch",
+      "ok": true,
+      "detail": "PERCH · 4.0 m"
+    },
+    {
+      "scenario": "l07-rooftop-landing",
+      "group": "levels",
+      "name": "l07-rooftop-perch matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l07-rooftop-landing",
+      "group": "levels",
+      "name": "l07-rooftop-perch renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 66.8"
+    },
+    {
+      "scenario": "l07-rooftop-landing",
+      "group": "levels",
+      "name": "l07-rooftop-landing matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l07-rooftop-landing",
+      "group": "levels",
+      "name": "l07-rooftop-landing renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 66.8"
+    },
+    {
+      "scenario": "l07-rooftop-landing",
+      "group": "levels",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "6.50, 6.50, 4.00, 1.00, 384.00, 8.00, 92152.00"
+    },
+    {
+      "scenario": "l07-rooftop-landing",
+      "group": "levels",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "0 rects"
+    },
+    {
+      "scenario": "l07-rooftop-landing",
+      "group": "levels",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "PERCH · 4.0 m · fuel 100%"
+    },
+    {
+      "scenario": "l08-sentry-los",
+      "group": "levels",
+      "name": "the rooftop sentry fires down into the plaza",
+      "ok": true,
+      "detail": "1 high bolts · sentry attack"
+    },
+    {
+      "scenario": "l08-sentry-los",
+      "group": "levels",
+      "name": "l08-sentry-fire matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l08-sentry-los",
+      "group": "levels",
+      "name": "l08-sentry-fire renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 43.6"
+    },
+    {
+      "scenario": "l08-sentry-los",
+      "group": "levels",
+      "name": "l08-sentry-los matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l08-sentry-los",
+      "group": "levels",
+      "name": "l08-sentry-los renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 43.6"
+    },
+    {
+      "scenario": "l08-sentry-los",
+      "group": "levels",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "6.50, 30.50, 0.00, 1.00, 384.00, 68860.00, 0.00"
+    },
+    {
+      "scenario": "l08-sentry-los",
+      "group": "levels",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "6 rects"
+    },
+    {
+      "scenario": "l08-sentry-los",
+      "group": "levels",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "l09-hunt-gate",
+      "group": "levels",
+      "name": "the beacon refuses extraction before the hunt",
+      "ok": true,
+      "detail": "district · EXTRACTION LOCKED · 7 HUNTERS REMAIN"
+    },
+    {
+      "scenario": "l09-hunt-gate",
+      "group": "levels",
+      "name": "killing every hostile fills the hunt counter",
+      "ok": true,
+      "detail": "7/7"
+    },
+    {
+      "scenario": "l09-hunt-gate",
+      "group": "levels",
+      "name": "the unlocked beacon extracts to the courtyard",
+      "ok": true,
+      "detail": "courtyard · COURTYARD"
+    },
+    {
+      "scenario": "l09-hunt-gate",
+      "group": "levels",
+      "name": "l09-hunt-gate matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l09-hunt-gate",
+      "group": "levels",
+      "name": "l09-hunt-gate renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 51.6"
+    },
+    {
+      "scenario": "l09-hunt-gate",
+      "group": "levels",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 67138.00, 0.00"
+    },
+    {
+      "scenario": "l09-hunt-gate",
+      "group": "levels",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "14 rects"
+    },
+    {
+      "scenario": "l09-hunt-gate",
+      "group": "levels",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "l10-jetpack-roof",
+      "group": "levels",
+      "name": "the jetpack climbs from the alley onto the 4 m roof",
+      "ok": true,
+      "detail": "x=10.45 · alt 4.00 m"
+    },
+    {
+      "scenario": "l10-jetpack-roof",
+      "group": "levels",
+      "name": "the climb ends in a perch",
+      "ok": true,
+      "detail": "PERCH · 4.0 m"
+    },
+    {
+      "scenario": "l10-jetpack-roof",
+      "group": "levels",
+      "name": "l10-jetpack-roof matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l10-jetpack-roof",
+      "group": "levels",
+      "name": "l10-jetpack-roof renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 40.7"
+    },
+    {
+      "scenario": "l10-jetpack-roof",
+      "group": "levels",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "10.45, 6.50, 4.00, 0.98, 384.00, 0.00, 38926.00"
+    },
+    {
+      "scenario": "l10-jetpack-roof",
+      "group": "levels",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "3 rects"
+    },
+    {
+      "scenario": "l10-jetpack-roof",
+      "group": "levels",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "PERCH · 4.0 m · fuel 98%"
+    },
+    {
+      "scenario": "l11-district-gate-entry",
+      "group": "levels",
+      "name": "the courtyard gate loads the rooftop district",
+      "ok": true,
+      "detail": "district · ROOFTOP DISTRICT"
+    },
+    {
+      "scenario": "l11-district-gate-entry",
+      "group": "levels",
+      "name": "l11-district-gate-entry matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l11-district-gate-entry",
+      "group": "levels",
+      "name": "l11-district-gate-entry renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 44.8"
+    },
+    {
+      "scenario": "l11-district-gate-entry",
+      "group": "levels",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "32.50, 58.50, 0.00, 1.00, 384.00, 39173.00, 0.00"
+    },
+    {
+      "scenario": "l11-district-gate-entry",
+      "group": "levels",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "13 rects"
+    },
+    {
+      "scenario": "l11-district-gate-entry",
+      "group": "levels",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "l11-district-gate-entry",
       "group": "levels",
       "name": "no page errors",
       "ok": true,
@@ -5267,6 +5616,60 @@
     },
     {
       "name": "l05-beacon-loop",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l06-district-spawn",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l06-district-arrival",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l07-rooftop-perch",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l07-rooftop-landing",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l08-sentry-fire",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l08-sentry-los",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l09-hunt-gate",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l10-jetpack-roof",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l11-district-gate-entry",
       "kind": "canvas",
       "diff": 0,
       "baseline": "compared"

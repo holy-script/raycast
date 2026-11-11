@@ -1,10 +1,10 @@
 # Playtest matrix
 
 `npm run playtest:matrix` drives the same headless-Chrome/CDP harness as
-`npm run playtest`, but instead of one happy path it walks the game through 99
-deterministic state, interaction, combat, level, route, and viewmodel scenarios: 642
-checks (assertions plus golden-frame comparisons) and 114 captures (canvas frames plus
-full-page UI overlays).
+`npm run playtest`, but instead of one happy path it walks the game through 105
+deterministic state, interaction, combat, level, district, route, and viewmodel
+scenarios: 691 checks (assertions plus golden-frame comparisons) and 123 captures
+(canvas frames plus full-page UI overlays).
 
 The point is coverage the owner should not have to repeat by hand — every movement axis,
 vertical state, camera pitch band, collision surface, actor behavior, NPC/pickup/door
@@ -48,7 +48,7 @@ The in-page automation API makes runs reproducible instead of timing-dependent:
 | `setHealth(value)` | Pin health for hit/death overlay tests. |
 | `attack()` | Fire one plasma bolt; returns false while dead or cooling down, otherwise true even if the bolt eventually misses. |
 | `interact()` | Run one interaction; returns `none`, `talk`, `door`, `locked`, or `pickup`. |
-| `loadLevel(id)` | Swap to `courtyard` or `reactor` through the deterministic loader. |
+| `loadLevel(id)` | Swap to `courtyard`, `reactor`, or `district` through the deterministic loader. |
 | `frameCount()` | Count real rAF ticks; used to prove the live loop is alive. |
 | `press` / `release` / `look` | Scripted input with no pointer lock. |
 
@@ -203,6 +203,26 @@ the glow texture was raised to
 32 px, impact growth capped at 0.55 m, and alpha squared. The enemy bolt initially merged
 with the orange marauder silhouette, so `f10` captures at 0.5 s (bolt ~0.95 m from the
 camera) before stepping another 0.4 s to assert the damage.
+
+## M11 Rooftop District extension (2026-11-12)
+
+The district added six level scenarios (matrix now 105 scenarios / 691 checks). They cover
+verticality and the hunt gate without relying on live combat:
+
+| Scenario | Assertion |
+| --- | --- |
+| `l06-district-arrival` | The loader reports `district` / `ROOFTOP DISTRICT`, spawn is `(32.5, 58.5)` on support 0, the objective reads `0/7`, and four elevated actors sit at 8/12 m. |
+| `l07-rooftop-landing` | Dropped above the 4 m NW tower, the player settles at `z ≈ 4`, `support ≈ 4`, and the HUD reads `PERCH · 4.0 m`. |
+| `l08-sentry-los` | From the plaza at `(6.5, 30.5)`, the NW sentry fires a bolt whose origin is above 6.5 m — sight lines work from roof edge to street. |
+| `l09-hunt-gate` | Standing on the beacon before the hunt toasts `EXTRACTION LOCKED · 7 HUNTERS REMAIN` and stays in the district; after seven hostile deaths, the same step extracts to the courtyard. |
+| `l10-jetpack-roof` | Holding Space for 0.8 s then W for 0.35 s from the alley climbs onto the 4 m roof and ends in a perch. |
+| `l11-district-gate-entry` | The courtyard gate at `(2.5, 22.5)` loads the district. |
+
+The first run caught a real placement bug: a sentry one cell inside its tower roof had its
+downward sight line clipped by its own parapet, so `l08` saw zero bolts. Sentry specs now
+sit on outer roof cells. The courtyard gate originally sat at `(22.5, 22.5)`, on the state
+gallery's marauder pose, and silently hijacked the combat captures — it moved to
+`(2.5, 22.5)`.
 
 ## Extending it
 

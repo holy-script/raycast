@@ -1,5 +1,5 @@
 import { clamp, fract } from "./math";
-import { WALL_HEIGHT, type World } from "./world";
+import { TOWER_TILE, WALL_HEIGHT, type World } from "./world";
 
 export { WALL_HEIGHT };
 
@@ -7,6 +7,8 @@ const FOG_R = 16;
 const FOG_G = 18;
 const FOG_B = 30;
 const NEAR_PLANE = 0.01;
+/** World height of one facade window row before the texture repeats. */
+const FACADE_STOREY = 3;
 
 export interface Texture {
   width: number;
@@ -339,20 +341,30 @@ export class Renderer {
             let src: number;
             let dst = idx * 4;
             if (hitKind === 1) {
+              const facade = hitTile === TOWER_TILE;
               const texX = Math.min(
                 texture.width - 1,
                 Math.floor(clamp(hitU, 0.0001, 0.9999) * texture.width),
               );
-              const v =
-                hitHeight > 0
-                  ? clamp((cam.eyeZ + hitT * rayZ) / hitHeight, 0, 1)
+              // Facades repeat one texture every 3 m of tower height, so a 12 m
+              // tower reads as four storeys instead of one stretched pane. The
+              // per-cell column shift keeps neighbouring buildings from sharing
+              // an identical window pattern.
+              const wallZ = cam.eyeZ + hitT * rayZ;
+              const v = facade
+                ? fract(wallZ / FACADE_STOREY)
+                : hitHeight > 0
+                  ? clamp(wallZ / hitHeight, 0, 1)
                   : 0;
+              const column = facade
+                ? (texX + mapX * 37 + mapY * 59) % texture.width
+                : texX;
               const texY = clamp(
                 Math.floor((1 - v) * texture.height),
                 0,
                 texture.height - 1,
               );
-              src = (texY * texture.width + texX) * 4;
+              src = (texY * texture.width + column) * 4;
               const sideShade = hitSide === 0 ? 1 : 0.76;
               const shade =
                 clamp(1 / (1 + hitT * 0.085 * fogScale), 0.08, 1) * sideShade;

@@ -30,14 +30,16 @@ billboard scale, so actors keep a stable apparent size from the floor to the cei
 Blender-rendered first-person viewmodel (both gauntlets plus a plasma projector) animates
 through idle, wind-up, strike, and recovery, and bob follows the walk cycle. F/click
 launches a plasma bolt along the camera aim; marauder gunners answer with orange bolts
-that respect walls, and impacts bloom as depth-tested glow billboards.
+that respect walls, and impacts bloom as depth-tested glow billboards. A 64×64 Rooftop
+District extends the same movement and combat onto 4–12 m towers, with jetpack traversal,
+rooftop sentries, and an extraction beacon that unlocks after a seven-hostile hunt.
 
-**Status:** playable build with two levels, ranged and melee combat with hurt/death
-states, NPC dialogue, doors, keycard/medkit/fuel pickups, level transitions, synthesized
-audio, and a pause/settings menu. Verification runs a 99-scenario deterministic matrix
-(642 checks), a 40-check happy-path browser run, an 18-pose airborne flight sweep with a
-live jetpack sequence (109 checks), and a 42-check paused-state gallery capturing every
-body state.
+**Status:** playable build with three levels, ranged and melee combat with hurt/death
+states, NPC dialogue, doors, keycard/medkit/fuel pickups, level transitions, a 64×64
+Rooftop District with 4–12 m towers and hunt-gated extraction, synthesized audio, and a
+pause/settings menu. Verification runs a 105-scenario deterministic matrix (691 checks),
+a 40-check happy-path browser run, an 18-pose airborne flight sweep with a live jetpack
+sequence (109 checks), and a 42-check paused-state gallery capturing every body state.
 The M6 AI stylization infrastructure (Blender depth/normal controls, ComfyUI
 img2img + ControlNet, silhouette/palette verification, MCP studio server) remains the
 asset path. See the [roadmap](docs/ROADMAP.md), [pipeline](docs/PIPELINE.md), and
@@ -54,7 +56,7 @@ npm test           # unit tests
 npm run typecheck
 npm run build      # static build in dist/
 npm run playtest   # headless Chrome: input, physics, atlas, viewmodel, screenshot checks
-npm run playtest:matrix  # 99 deterministic state/interaction/combat/level scenarios
+npm run playtest:matrix  # 105 deterministic state/interaction/combat/level/district scenarios
 npm run playtest:flight  # 18 airborne poses + live jetpack sweep, wall/sky/sprite analysis
 npm run playtest:states  # paused-state gallery: 42 checks, 21 captures
 ```

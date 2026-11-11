@@ -11,6 +11,8 @@ export interface World {
 /** Default full-height block for now; digit cells are lower platforms/steps. */
 export const WALL_HEIGHT = 1.4;
 export const STEP_UP = 0.3;
+/** Tile id for legend-defined tower cells; renders with the facade texture. */
+export const TOWER_TILE = 4;
 
 const TILE_CHARS: Record<string, number> = {
   "#": 1,
@@ -18,15 +20,26 @@ const TILE_CHARS: Record<string, number> = {
   D: 3,
 };
 
+export interface WorldOptions {
+  /**
+   * Map characters that describe solid towers at an explicit height in world
+   * units. A legend lets a level author 64×64 districts with 4–12 m towers
+   * without overloading the digit platform scale.
+   */
+  heights?: Record<string, number>;
+}
+
 /** A digit 1-9 is a solid panel platform at 0.2 × digit world units. */
-function charHeight(char: string): number {
+function charHeight(char: string, heights?: Record<string, number>): number {
+  if (heights && char in heights) return heights[char];
   if (char === ".") return 0;
   const digit = Number(char);
   if (digit >= 1 && digit <= 9) return digit * 0.2;
   return WALL_HEIGHT;
 }
 
-function charTile(char: string): number {
+function charTile(char: string, heights?: Record<string, number>): number {
+  if (heights && char in heights) return TOWER_TILE;
   if (char === ".") return 0;
   const digit = Number(char);
   if (digit >= 1 && digit <= 9) return 2;
@@ -36,6 +49,7 @@ function charTile(char: string): number {
 export function createWorld(
   rows: string[],
   spawn = { x: 1.5, y: 1.5 },
+  options: WorldOptions = {},
 ): World {
   const height = rows.length;
   const width = rows[0]?.length ?? 0;
@@ -50,8 +64,8 @@ export function createWorld(
     for (let x = 0; x < width; x += 1) {
       const char = row[x];
       const cell = y * width + x;
-      tiles[cell] = charTile(char);
-      heights[cell] = charHeight(char);
+      tiles[cell] = charTile(char, options.heights);
+      heights[cell] = charHeight(char, options.heights);
     }
   }
 
