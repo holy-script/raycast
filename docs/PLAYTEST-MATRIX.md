@@ -12,6 +12,11 @@ interaction, combat outcome, level transition, UI toggle, and combined route. Ea
 scenario asserts on live state and on what the renderer actually drew, then captures a
 frame for visual review.
 
+The companion `npm run playtest:flight` suite covers what a static matrix cannot: an
+18-pose sweep from the ground to the 18 m ceiling plus a live jetpack burn, with
+analyzers for enclosed sky holes, wall-top straightness, and overhead sprite clipping.
+See [Flight suite](#flight-suite).
+
 ## Run
 
 ```bash
@@ -98,6 +103,37 @@ on the floor. A missing state in the atlas fails loudly instead of silently fall
 back to idle. It also serves as the visual-critique gallery: pass the captures to the
 playtester agent and review silhouette, grounding, pose readability, attachment of
 limbs/antenna, and framing.
+
+## Flight suite
+
+`npm run playtest:flight` is the perspective-correctness gate. It sweeps 18 poses from
+ground level to the 18 m ceiling — level, shallow, steep look-down, look-up, map edge,
+interior corner, wall-top hover, and straight-wall views — then flies the jetpack live:
+liftoff, a 1 s burn, ceiling arrival with a look-down, release/fall, landing, and a
+real-time burn. 109 checks and 30 captures land in `docs/screenshots/flight/` with
+`contact-sheet.png` (geometry canvases), `page-sheet.png` (HUD + viewmodel), and
+`report.json`.
+
+```bash
+npm run playtest:flight                 # local dev server on :5202
+FLIGHT_OUT=/tmp/rc-flight npm run playtest:flight
+npm run playtest:flight -- --url https://raycast-rosy.vercel.app/
+```
+
+Canvas captures hide the viewmodel so only world geometry is analyzed; full-page captures
+keep the HUD, minimap, and weapon for composition review. The harness classifies every
+pixel against a replica of `buildSky` and fails when an enclosed sky run appears below
+geometry (the old column-shear renderer produced 258 bad columns and 4,470 hole pixels in
+the top-pitch frame). It also fits the first non-sky row across 264 columns of a straight
+wall top and fails above 1.5 px residual (old renderer: 49.4 px; per-pixel renderer: 0.00),
+asserts the overhead scholar keeps `contentW > 18`, `contentH > 16`, and >250 opaque
+pixels inside the frame, and requires the live loop to sustain at least 45 FPS with no
+page errors. Sky runs that reach the bottom of the frame are ignored because they are the
+void beyond the floating map, not holes.
+
+Flight captures are intentionally not golden-compared: actors move between scenarios and
+page overlays are volatile. The structural analyzers catch the geometry regressions while
+the sheets are there for visual review.
 
 ## Golden frames
 

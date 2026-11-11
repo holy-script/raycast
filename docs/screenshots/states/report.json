@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-11T16:38:31.268Z",
+  "generatedAt": "2026-11-11T17:15:23.798Z",
   "url": "http://127.0.0.1:5204/?screenshot",
-  "durationMs": 2145,
+  "durationMs": 2283,
   "passed": 42,
   "failed": 0,
   "checks": [
@@ -51,13 +51,13 @@
       "state": "player",
       "name": "player-jet renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 46.5"
+      "detail": "512 colors, mean luma 45.7"
     },
     {
       "state": "player",
       "name": "player-aerial renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 45.3"
+      "detail": "512 colors, mean luma 41.7"
     },
     {
       "state": "player",
@@ -93,7 +93,7 @@
       "state": "guardian",
       "name": "guardian-idle renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 52.3"
+      "detail": "512 colors, mean luma 52.4"
     },
     {
       "state": "guardian",
@@ -117,7 +117,7 @@
       "state": "guardian",
       "name": "guardian-talk-early renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 53.2"
+      "detail": "512 colors, mean luma 53.3"
     },
     {
       "state": "guardian",
@@ -129,7 +129,7 @@
       "state": "guardian",
       "name": "guardian-talk-late renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 53.1"
+      "detail": "512 colors, mean luma 53.2"
     },
     {
       "state": "guardian",
@@ -285,7 +285,7 @@
       "name": "player-jet",
       "kind": "canvas",
       "colors": 512,
-      "meanLuma": 46.5
+      "meanLuma": 45.7
     },
     {
       "name": "player-jet-page",
@@ -295,7 +295,7 @@
       "name": "player-aerial",
       "kind": "canvas",
       "colors": 512,
-      "meanLuma": 45.3
+      "meanLuma": 41.7
     },
     {
       "name": "player-hurt-page",
@@ -318,7 +318,7 @@
       "expected": "idle",
       "observed": "idle",
       "colors": 512,
-      "meanLuma": 52.3
+      "meanLuma": 52.4
     },
     {
       "name": "guardian-talk-early",
@@ -327,7 +327,7 @@
       "expected": "talk",
       "observed": "talk",
       "colors": 512,
-      "meanLuma": 53.2
+      "meanLuma": 53.3
     },
     {
       "name": "guardian-talk-late",
@@ -336,7 +336,7 @@
       "expected": "talk",
       "observed": "talk",
       "colors": 512,
-      "meanLuma": 53.1
+      "meanLuma": 53.2
     },
     {
       "name": "guardian-talk-page",

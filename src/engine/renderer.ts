@@ -1,4 +1,3 @@
-import { castRayHits, type RayCellHit } from "./dda";
 import { clamp, fract } from "./math";
 import { WALL_HEIGHT, type World } from "./world";
 
@@ -124,23 +123,6 @@ export class Renderer {
     this.centerY = height / 2;
   }
 
-  /**
-   * Projects a point `forward` units ahead of the camera at height `dz` relative
-   * to the eye. Uses a true pitch rotation so the view can look straight down.
-   * Points at or behind the near plane project far off-screen instead of
-   * returning NaN, so a wall that crosses the near plane stays solid.
-   */
-  private projectYClipped(cam: CameraState, forward: number, dz: number): number {
-    const cos = Math.cos(cam.pitch);
-    const sin = Math.sin(cam.pitch);
-    const zCam = forward * cos + dz * sin;
-    const yCam = -forward * sin + dz * cos;
-    if (zCam > NEAR_PLANE) {
-      return this.centerY - (cam.focal * yCam) / zCam;
-    }
-    return yCam >= 0 ? -1e6 : 1e6;
-  }
-
   private buildSky(): Uint8Array {
     const { height } = this;
     const rows = new Uint8Array(height * 3);
@@ -177,8 +159,7 @@ export class Renderer {
     this.stats.spriteRects = [];
     this.drawSky();
     this.depth.fill(Infinity);
-    this.drawWalls(cam, world, textures, topTexture);
-    this.drawFloor(cam, world, floorTexture);
+    this.drawGeometry(cam, world, textures, floorTexture, topTexture);
     this.drawSprites(cam, sprites);
     if (viewmodel) this.drawViewmodel(viewmodel);
     this.ctx.putImageData(this.image, 0, 0);
@@ -201,262 +182,231 @@ export class Renderer {
     }
   }
 
-  private drawWalls(
+  /**
+   * Rasterizes floors, wall faces and wall tops with one camera-correct ray per
+   * pixel. Wall columns used to be cast in the horizontal plane and then sheared
+   * vertically for pitch, which moved a wall's screen x with its height and bent
+   * straight walls into curves while looking down. Deriving the horizontal ray
+   * from the pitched basis as well keeps every surface on the same perspective,
+   * and the ray parameter is the true camera-space depth for every occluder.
+   */
+  private drawGeometry(
     cam: CameraState,
     world: World,
     textures: Record<number, Texture>,
+    floorTexture: Texture,
     topTexture: Texture,
   ): void {
     const { width, height, pixels, depth } = this;
     const cosP = Math.cos(cam.pitch);
     const sinP = Math.sin(cam.pitch);
     const fogScale = cam.fogScale ?? 1;
-    let columns = 0;
-    let painted = 0;
-    let topPainted = 0;
-
+    const rightX = -cam.dirY;
+    const rightY = cam.dirX;
+    const colRayX = new Float32Array(width);
+    const colRayY = new Float32Array(width);
     for (let x = 0; x < width; x += 1) {
-      const cameraX = (2 * x) / width - 1;
-      const rayX = cam.dirX + cam.planeX * cameraX;
-      const rayY = cam.dirY + cam.planeY * cameraX;
-      const hits = castRayHits(world, cam.x, cam.y, rayX, rayY);
-      let columnPainted = false;
+      const xCam = (x + 0.5 - width / 2) / cam.focal;
+      colRayX[x] = rightX * xCam;
+      colRayY[x] = rightY * xCam;
+    }
+    const paintedColumns = new Uint8Array(width);
+    const centerY = this.centerY;
+    let wallPixels = 0;
+    let topPixels = 0;
 
-      for (const hit of hits) {
-        const texture = textures[hit.tile] ?? textures[1];
-        if (!texture) continue;
-        const wallHeight = hit.height;
-        const distance = hit.distance;
-        const zTop = distance * cosP + (wallHeight - cam.eyeZ) * sinP;
-        const zBottom = distance * cosP - cam.eyeZ * sinP;
-        // Distance 0 is the cell under the camera: only its top is visible.
-        // The whole face is behind the near plane.
-        if (distance > 0 && !(zTop <= NEAR_PLANE && zBottom <= NEAR_PLANE)) {
-          const yTopF = this.projectYClipped(cam, distance, wallHeight - cam.eyeZ);
-          const yBottomF = this.projectYClipped(cam, distance, -cam.eyeZ);
-          const yStart = Math.max(0, Math.ceil(yTopF));
-          const yEnd = Math.min(height - 1, Math.floor(yBottomF));
-          if (yStart <= yEnd) {
-            const texX = Math.min(
-              texture.width - 1,
-              Math.floor(clamp(hit.wallU, 0.0001, 0.9999) * texture.width),
-            );
-            const sideShade = hit.side === 0 ? 1 : 0.76;
-            const shade =
-              clamp(1 / (1 + distance * 0.085 * fogScale), 0.08, 1) * sideShade;
-            const fog = 1 - shade;
-            columnPainted = true;
+    for (let y = 0; y < height; y += 1) {
+      const yCam = (centerY - (y + 0.5)) / cam.focal;
+      const rayZ = sinP + cosP * yCam;
+      // Pitch rotates the forward axis, so the horizontal component changes
+      // with the screen row as well as the column.
+      const horizontal = cosP - sinP * yCam;
+      const baseX = cam.dirX * horizontal;
+      const baseY = cam.dirY * horizontal;
+      const rowOffset = y * width;
+      const floorPlaneT = rayZ < -1e-6 ? -cam.eyeZ / rayZ : Infinity;
 
-            for (let y = yStart; y <= yEnd; y += 1) {
-              // Invert the pitch projection for this scanline: `s` is the
-              // camera-space slope (up/forward) at the pixel. This keeps
-              // texture V correct even when the face crosses the near plane.
-              const s = (this.centerY - (y + 0.5)) / cam.focal;
-              const denominator = cosP - s * sinP;
-              if (Math.abs(denominator) < 1e-6) continue;
-              const dz = (distance * (sinP + s * cosP)) / denominator;
-              const t = (dz + cam.eyeZ) / wallHeight;
-              if (t < 0 || t > 1) continue;
+      for (let x = 0; x < width; x += 1) {
+        const rayX = baseX + colRayX[x];
+        const rayY = baseY + colRayY[x];
+        const idx = rowOffset + x;
 
-              const idx = y * width + x;
-              if (distance >= depth[idx]) continue;
+        let floorT = Infinity;
+        let floorWorldX = 0;
+        let floorWorldY = 0;
+        if (floorPlaneT > NEAR_PLANE && floorPlaneT < Infinity) {
+          const worldX = cam.x + floorPlaneT * rayX;
+          const worldY = cam.y + floorPlaneT * rayY;
+          const cellX = Math.floor(worldX);
+          const cellY = Math.floor(worldY);
+          if (
+            cellX >= 0 &&
+            cellY >= 0 &&
+            cellX < world.width &&
+            cellY < world.height &&
+            world.tiles[cellY * world.width + cellX] === 0
+          ) {
+            floorT = floorPlaneT;
+            floorWorldX = worldX;
+            floorWorldY = worldY;
+          }
+        }
 
+        let hitT = Infinity;
+        let hitKind: 0 | 1 | 2 = 0;
+        let hitSide: 0 | 1 = 0;
+        let hitU = 0;
+        let hitHeight = 0;
+        let hitTile = 0;
+
+        let mapX = Math.floor(cam.x);
+        let mapY = Math.floor(cam.y);
+        const deltaX = rayX === 0 ? Infinity : Math.abs(1 / rayX);
+        const deltaY = rayY === 0 ? Infinity : Math.abs(1 / rayY);
+        const stepX = rayX < 0 ? -1 : 1;
+        const stepY = rayY < 0 ? -1 : 1;
+        let sideDistX =
+          rayX < 0 ? (cam.x - mapX) * deltaX : (mapX + 1 - cam.x) * deltaX;
+        let sideDistY =
+          rayY < 0 ? (cam.y - mapY) * deltaY : (mapY + 1 - cam.y) * deltaY;
+        let entry = 0;
+        let nextEntry = Math.min(sideDistX, sideDistY);
+        let side: 0 | 1 = 0;
+
+        for (let step = 0; step < 4096; step += 1) {
+          if (entry > floorPlaneT + 1e-6) break;
+          if (mapX < 0 || mapY < 0 || mapX >= world.width || mapY >= world.height) {
+            break;
+          }
+
+          const cell = mapY * world.width + mapX;
+          const tile = world.tiles[cell];
+          if (tile !== 0) {
+            const cellHeight = world.heights[cell];
+            const zEntry = cam.eyeZ + entry * rayZ;
+            if (entry > NEAR_PLANE && zEntry >= -1e-4 && zEntry <= cellHeight + 1e-4) {
+              hitT = entry;
+              hitKind = 1;
+              hitSide = side;
+              hitU = side === 0 ? cam.y + entry * rayY : cam.x + entry * rayX;
+              hitU -= Math.floor(hitU);
+              if (side === 0 && rayX > 0) hitU = 1 - hitU;
+              if (side === 1 && rayY < 0) hitU = 1 - hitU;
+              hitHeight = cellHeight;
+              hitTile = tile;
+              break;
+            }
+            if (cam.eyeZ > cellHeight + 1e-3 && rayZ < -1e-6) {
+              const topT = (cellHeight - cam.eyeZ) / rayZ;
+              if (
+                topT > NEAR_PLANE &&
+                topT >= entry - 1e-4 &&
+                topT <= nextEntry + 1e-4
+              ) {
+                const topX = cam.x + topT * rayX;
+                const topY = cam.y + topT * rayY;
+                if (Math.floor(topX) === mapX && Math.floor(topY) === mapY) {
+                  hitT = topT;
+                  hitKind = 2;
+                  hitTile = tile;
+                  break;
+                }
+              }
+            }
+          }
+
+          if (nextEntry > floorPlaneT + 1e-6) break;
+          if (sideDistX < sideDistY) {
+            sideDistX += deltaX;
+            mapX += stepX;
+            side = 0;
+          } else {
+            sideDistY += deltaY;
+            mapY += stepY;
+            side = 1;
+          }
+          entry = nextEntry;
+          nextEntry = Math.min(sideDistX, sideDistY);
+        }
+
+        if (hitT < Infinity) {
+          const texture = textures[hitTile] ?? textures[1];
+          if (texture) {
+            let src: number;
+            let dst = idx * 4;
+            if (hitKind === 1) {
+              const texX = Math.min(
+                texture.width - 1,
+                Math.floor(clamp(hitU, 0.0001, 0.9999) * texture.width),
+              );
+              const v =
+                hitHeight > 0
+                  ? clamp((cam.eyeZ + hitT * rayZ) / hitHeight, 0, 1)
+                  : 0;
               const texY = clamp(
-                Math.floor((1 - t) * texture.height),
+                Math.floor((1 - v) * texture.height),
                 0,
                 texture.height - 1,
               );
-              const src = (texY * texture.width + texX) * 4;
-              const dst = idx * 4;
+              src = (texY * texture.width + texX) * 4;
+              const sideShade = hitSide === 0 ? 1 : 0.76;
+              const shade =
+                clamp(1 / (1 + hitT * 0.085 * fogScale), 0.08, 1) * sideShade;
+              const fog = 1 - shade;
               pixels[dst] = texture.data[src] * shade + FOG_R * fog;
               pixels[dst + 1] = texture.data[src + 1] * shade + FOG_G * fog;
               pixels[dst + 2] = texture.data[src + 2] * shade + FOG_B * fog;
               pixels[dst + 3] = 255;
-              depth[idx] = distance;
-              painted += 1;
+              wallPixels += 1;
+            } else {
+              const worldX = cam.x + hitT * rayX;
+              const worldY = cam.y + hitT * rayY;
+              const fx = fract(worldX);
+              const fy = fract(worldY);
+              const texX = Math.min(
+                topTexture.width - 1,
+                Math.floor(fx * topTexture.width),
+              );
+              const texY = Math.min(
+                topTexture.height - 1,
+                Math.floor(fy * topTexture.height),
+              );
+              src = (texY * topTexture.width + texX) * 4;
+              const edgeDistance = Math.min(fx, 1 - fx, fy, 1 - fy);
+              const bevel = 0.9 + clamp(edgeDistance / 0.06, 0, 1) * 0.1;
+              const shade =
+                clamp(1 / (1 + hitT * 0.075 * fogScale), 0.06, 1) * 0.95 * bevel;
+              const fog = 1 - shade;
+              pixels[dst] = topTexture.data[src] * shade + FOG_R * fog;
+              pixels[dst + 1] = topTexture.data[src + 1] * shade + FOG_G * fog;
+              pixels[dst + 2] = topTexture.data[src + 2] * shade + FOG_B * fog;
+              pixels[dst + 3] = 255;
+              topPixels += 1;
             }
+            depth[idx] = hitT;
+            paintedColumns[x] = 1;
           }
-        }
-
-        if (cam.eyeZ > wallHeight + 0.001) {
-          const tops = this.drawCellTop(
-            cam,
-            topTexture,
-            hit,
-            x,
-            rayX,
-            rayY,
-            cosP,
-            sinP,
-            fogScale,
-          );
-          topPainted += tops;
-          if (tops > 0) columnPainted = true;
+        } else if (floorT < Infinity) {
+          const texX = Math.floor(fract(floorWorldX) * floorTexture.width);
+          const texY = Math.floor(fract(floorWorldY) * floorTexture.height);
+          const src = (texY * floorTexture.width + texX) * 4;
+          const dst = idx * 4;
+          const shade = clamp(1 / (1 + floorT * 0.075 * fogScale), 0.06, 1);
+          const fog = 1 - shade;
+          pixels[dst] = floorTexture.data[src] * shade + FOG_R * fog;
+          pixels[dst + 1] = floorTexture.data[src + 1] * shade + FOG_G * fog;
+          pixels[dst + 2] = floorTexture.data[src + 2] * shade + FOG_B * fog;
+          pixels[dst + 3] = 255;
+          depth[idx] = floorT;
         }
       }
-
-      if (columnPainted) columns += 1;
     }
 
+    let columns = 0;
+    for (let x = 0; x < width; x += 1) if (paintedColumns[x]) columns += 1;
     this.stats.wallColumns = columns;
-    this.stats.wallPixels = painted;
-    this.stats.topPixels = topPainted;
-  }
-
-  /**
-   * Fills the horizontal top of one solid cell. Instead of intersecting a
-   * single global roof plane, this inverts the projection for every screen row
-   * and keeps only samples that fall inside the hit cell, so each platform and
-   * stair tread gets its own top at its own height.
-   */
-  private drawCellTop(
-    cam: CameraState,
-    texture: Texture,
-    hit: RayCellHit,
-    x: number,
-    rayX: number,
-    rayY: number,
-    cosP: number,
-    sinP: number,
-    fogScale: number,
-  ): number {    const { width, height, pixels, depth } = this;
-    const dz = hit.height - cam.eyeZ;
-    if (dz >= -0.001) return 0;
-
-    const yNear = this.projectYClipped(cam, Math.max(hit.distance, NEAR_PLANE), dz);
-    const yFar = this.projectYClipped(cam, hit.exitDistance, dz);
-    const yStart = Math.max(0, Math.ceil(Math.min(yNear, yFar)));
-    const yEnd = Math.min(height - 1, Math.floor(Math.max(yNear, yFar)));
-    if (yStart > yEnd) return 0;
-
-    let painted = 0;
-    for (let y = yStart; y <= yEnd; y += 1) {
-      const s = (this.centerY - (y + 0.5)) / cam.focal;
-      const denominator = s * cosP + sinP;
-      if (Math.abs(denominator) < 1e-6) continue;
-      const rawDistance = (dz * (cosP - s * sinP)) / denominator;
-      if (rawDistance <= NEAR_PLANE) continue;
-      // Clamp rows that land a hair outside the cell back onto its edge. This
-      // fills the one-pixel cracks that appeared where tops met wall faces.
-      const nearEdge = hit.distance + 1e-4;
-      const farEdge = Math.max(nearEdge, hit.exitDistance - 1e-4);
-      if (rawDistance < nearEdge - 0.03 || rawDistance > farEdge + 0.03) continue;
-      const distance =
-        rawDistance < nearEdge
-          ? nearEdge
-          : rawDistance > farEdge
-            ? farEdge
-            : rawDistance;
-
-      const worldX = cam.x + distance * rayX;
-      const worldY = cam.y + distance * rayY;
-      if (Math.floor(worldX) !== hit.mapX || Math.floor(worldY) !== hit.mapY) {
-        continue;
-      }
-
-      const idx = y * width + x;
-      if (distance >= depth[idx]) continue;
-
-      const fx = fract(worldX);
-      const fy = fract(worldY);
-      const texX = Math.min(
-        texture.width - 1,
-        Math.floor(fx * texture.width),
-      );
-      const texY = Math.min(
-        texture.height - 1,
-        Math.floor(fy * texture.height),
-      );
-      const src = (texY * texture.width + texX) * 4;
-      const dst = idx * 4;
-      const edgeDistance = Math.min(fx, 1 - fx, fy, 1 - fy);
-      const bevel = 0.9 + clamp(edgeDistance / 0.06, 0, 1) * 0.1;
-      const shade =
-        clamp(1 / (1 + distance * 0.075 * fogScale), 0.06, 1) * 0.95 * bevel;
-      const fog = 1 - shade;
-      pixels[dst] = texture.data[src] * shade + FOG_R * fog;
-      pixels[dst + 1] = texture.data[src + 1] * shade + FOG_G * fog;
-      pixels[dst + 2] = texture.data[src + 2] * shade + FOG_B * fog;
-      pixels[dst + 3] = 255;
-      depth[idx] = distance;
-      painted += 1;
-    }
-    return painted;
-  }
-
-  private drawFloor(
-    cam: CameraState,
-    world: World,
-    texture: Texture,
-  ): void {
-    const { width, height, pixels, depth } = this;
-    const cosP = Math.cos(cam.pitch);
-    const sinP = Math.sin(cam.pitch);
-    const forwardX = cam.dirX * cosP;
-    const forwardY = cam.dirY * cosP;
-    const forwardZ = sinP;
-    const rightX = -cam.dirY;
-    const rightY = cam.dirX;
-    const upX = -cam.dirX * sinP;
-    const upY = -cam.dirY * sinP;
-    const upZ = cosP;
-    const fogScale = cam.fogScale ?? 1;
-
-    const rayBaseX = new Float32Array(width);
-    const rayBaseY = new Float32Array(width);
-    for (let x = 0; x < width; x += 1) {
-      const xCam = (x + 0.5 - width / 2) / cam.focal;
-      rayBaseX[x] = rightX * xCam + forwardX;
-      rayBaseY[x] = rightY * xCam + forwardY;
-    }
-
-    for (let y = 0; y < height; y += 1) {
-      const yCam = (this.centerY - (y + 0.5)) / cam.focal;
-      const rowBase = y * width;
-
-      for (let x = 0; x < width; x += 1) {
-        const rayX = rayBaseX[x] + upX * yCam;
-        const rayY = rayBaseY[x] + upY * yCam;
-        const rayZ = forwardZ + upZ * yCam;
-        if (rayZ >= -0.0001) continue;
-
-        const idx = rowBase + x;
-        const floorT = -cam.eyeZ / rayZ;
-        const worldX = cam.x + floorT * rayX;
-        const worldY = cam.y + floorT * rayY;
-        const cellX = Math.floor(worldX);
-        const cellY = Math.floor(worldY);
-        const inBounds =
-          cellX >= 0 &&
-          cellY >= 0 &&
-          cellX < world.width &&
-          cellY < world.height;
-        if (!inBounds) continue;
-
-        const tile = world.tiles[cellY * world.width + cellX];
-        if (tile !== 0) continue;
-
-        const forward =
-          cam.dirX * (floorT * rayX) + cam.dirY * (floorT * rayY);
-        if (forward >= depth[idx]) continue;
-
-        const texX = Math.floor(fract(worldX) * texture.width);
-        const texY = Math.floor(fract(worldY) * texture.height);
-        const src = (texY * texture.width + texX) * 4;
-        const dst = idx * 4;
-        const shade = clamp(
-          1 / (1 + forward * 0.075 * fogScale),
-          0.06,
-          1,
-        );
-        const fog = 1 - shade;
-        pixels[dst] = texture.data[src] * shade + FOG_R * fog;
-        pixels[dst + 1] = texture.data[src + 1] * shade + FOG_G * fog;
-        pixels[dst + 2] = texture.data[src + 2] * shade + FOG_B * fog;
-        pixels[dst + 3] = 255;
-        depth[idx] = forward;
-      }
-    }
+    this.stats.wallPixels = wallPixels;
+    this.stats.topPixels = topPixels;
   }
 
   private drawSprites(cam: CameraState, sprites: SpriteDraw[]): void {
@@ -493,7 +443,7 @@ export class Renderer {
   }
 
   private drawSprite(cam: CameraState, entry: PreparedSprite): void {
-    const { sprite, forward, zCam, xCam, yCam } = entry;
+    const { sprite, zCam, xCam, yCam } = entry;
     const { width, height, pixels, depth } = this;
     const screenX = width / 2 + (cam.focal * xCam) / zCam;
     const screenY = this.centerY - (cam.focal * yCam) / zCam;
@@ -593,7 +543,10 @@ export class Renderer {
         if (alpha <= 0.02) continue;
 
         const idx = y * width + x;
-        if (forward >= depth[idx]) {
+        // Geometry depth is camera-space depth now, matching this billboard's
+        // zCam under any pitch. Comparing the old horizontal forward distance
+        // clipped actors behind walls that were below the camera.
+        if (zCam >= depth[idx]) {
           occluded += 1;
           continue;
         }
@@ -606,7 +559,7 @@ export class Renderer {
         pixels[dst + 1] = shadedG * alpha + pixels[dst + 1] * (1 - alpha);
         pixels[dst + 2] = shadedB * alpha + pixels[dst + 2] * (1 - alpha);
         pixels[dst + 3] = 255;
-        if (alpha > 0.4) depth[idx] = forward;
+        if (alpha > 0.4) depth[idx] = zCam;
         drawn += 1;
         if (x < minX) minX = x;
         if (x > maxX) maxX = x;
@@ -690,7 +643,7 @@ export class Renderer {
         if (d2 >= 1) continue;
         const idx = y * width + x;
         const floorDepth = depth[idx];
-        if (!Number.isFinite(floorDepth) || floorDepth < forward - 0.2) continue;
+        if (!Number.isFinite(floorDepth) || floorDepth < zCam - 0.2) continue;
         const alpha = 0.32 * fade * (1 - d2) * (1 - d2);
         const dst = idx * 4;
         pixels[dst] = pixels[dst] * (1 - alpha);

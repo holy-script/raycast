@@ -240,3 +240,25 @@ silent because no gesture creates a context. Game logic remains audio-free and
 deterministic, at the cost of a small event-name coupling. LocalStorage may be blocked
 (private browsing) and fails open. Settings apply immediately; FOV also widens the
 minimap wedge and the altitude boost stays a fixed +30°.
+
+## ADR-016 — Per-pixel pitched rays replace the column shear
+
+**Context:** Rotational pitch (ADR-008) still cast one ray per column in the horizontal
+plane and projected walls vertically. Under pitch, a wall's screen x then depended on its
+height, so straight wall tops bowed (up to ~142 px incorrectly, and 49 px of silhouette
+residual in the top-pitch captures) while steep look-down views left sky holes between
+wall tops and floors. The manual jetpack flight exposed both.
+
+**Decision:** `drawGeometry` traces one camera ray per screen pixel from the pitched basis
+(`rayZ = sinP + cosP·yCam`, `horizontal = cosP − sinP·yCam`) and runs DDA along its
+horizontal projection. Floor, wall face, and wall top candidates all use the ray
+parameter `t` as camera-space depth; sprites compute `zCam` from the same basis and compare
+against it. `npm run playtest:flight` locks this in with exact sky-hole classification, a
+wall-top straightness fit (264 columns, ≤1.5 px residual), overhead sprite completeness,
+and a live-flight FPS floor.
+
+**Consequences:** Straight walls stay straight at every pitch and altitude, and sprite
+occlusion shares one depth metric. Render cost rises to 3.4 ms at ground level and 6.8 ms
+at 16 m looking down (384×240), still inside a 60 FPS frame. ADR-008's per-column ray and
+horizontal-forward depth metric are superseded, as is ADR-015's altitude FOV boost: FOV is
+fixed at every altitude and clamped 55–90° from settings.

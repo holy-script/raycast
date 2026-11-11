@@ -339,6 +339,10 @@ async function boot(): Promise<void> {
         syncFrame();
         syncHud();
       },
+      setViewmodelVisible: (visible) => {
+        game.viewmodelVisible = visible;
+        syncFrame();
+      },
     },
   };
 }
@@ -371,6 +375,7 @@ declare global {
         attack: () => boolean;
         interact: () => "none" | "talk" | "door" | "locked" | "pickup";
         loadLevel: (id: string) => void;
+        setViewmodelVisible: (visible: boolean) => void;
       };
     };
   }

@@ -21,10 +21,10 @@ solid diorama from jetpack altitude and the player can land on a wall to look do
 
 | File | Responsibility |
 | --- | --- |
-| `src/engine/dda.ts` | Grid traversal; returns perpendicular distance, side, tile, `wallU` |
+| `src/engine/dda.ts` | Grid traversal helpers used by tests and editors; the renderer walks DDA inline per pixel |
 | `src/engine/world.ts` | ASCII map parsing, solid lookup, wall height / support height, height-aware collision |
 | `src/engine/math.ts` | Angle wrap, yaw/pitch quantization, elevation angle |
-| `src/engine/renderer.ts` | Sky, walls, floor, wall tops, sprites, shadows, depth buffer |
+| `src/engine/renderer.ts` | Sky, per-pixel floors/faces/tops, sprites, shadows, depth buffer |
 | `src/engine/atlas.ts` | Manifest parsing, frame lookup with fallback, image loading |
 | `src/engine/input.ts` | Pointer lock, key state, one-shot actions, scripted playtest input |
 | `src/game.ts` | Player physics, jetpack, combat/interaction, level loading, actor behavior, sprite selection, HUD |
@@ -40,112 +40,89 @@ solid diorama from jetpack altitude and the player can land on a wall to look do
 ## Camera
 
 ```ts
-const tanHalf = Math.tan(fov / 2);        // 70° on the ground, up to 100° at altitude
+const tanHalf = Math.tan(fov / 2);        // 70° default, configurable 55–90°
 dir       = (cos(yaw), sin(yaw));
 plane     = (-dirY, dirX) * tanHalf;      // screen-right vector
 focal     = (width / 2) / tanHalf;
 eyeZ      = player.z + EYE_HEIGHT + eyeBob;
 ```
 
-Pitch is a real camera rotation, not a horizon shear. Floor and roof pixels are cast with
-a full 3D ray per screen pixel:
+Pitch is a real rotation of the camera basis, never a horizon shear. Every screen pixel
+builds one 3D ray from the pitched basis:
 
 ```ts
-forward = (dirX * cosP, dirY * cosP, sinP);
-right   = (-dirY, dirX, 0);
-up      = (-dirX * sinP, -dirY * sinP, cosP);
-ray     = forward + right * xCam + up * yCam;
+yCam       = (centerY - (y + 0.5)) / focal;
+xCam       = (x + 0.5 - width / 2) / focal;
+rayZ       = sinP + cosP * yCam;
+horizontal = cosP - sinP * yCam;          // forward component after pitch
+rayX       = dirX * horizontal - dirY * xCam;
+rayY       = dirY * horizontal + dirX * xCam;
 ```
 
-Walls use the matching pinhole projection (sprites share the camera-space transform but
-are drawn screen-aligned):
-
-```ts
-projectYClipped(cam, forward, dz):
-  zCam = forward * cosP + dz * sinP;
-  yCam = -forward * sinP + dz * cosP;
-  if (zCam > 0.01) return H / 2 - focal * yCam / zCam;
-  return yCam >= 0 ? -1e6 : 1e6;
-```
-
-`forward` is the horizontal camera-space distance and `dz` is height relative to the eye.
-This supports looking steeply down without the vertical compression of a shear. Pitch is
-clamped to 1.1 rad (~63°) on the ground and 1.45 rad (~83°) airborne, keeping every ray
-pointing downward.
+`horizontal` depends on the screen row: pitch changes the horizontal component of each
+ray, not only its vertical target. The ray parameter `t` is the camera-space depth along
+the pitched forward axis, and floors, wall faces, wall tops, and sprites all use it. Pitch
+is clamped to 1.1 rad (~63°) on the ground and 1.45 rad (~83°) airborne. FOV is fixed at
+every altitude; only the settings menu can change it (55–90°).
 
 ## Walls
 
 Every solid cell is a block from `z = 0` to its own surface height: `WALL_HEIGHT = 1.4`
-for `#`/`X`, and `0.2 × digit` for map digits `1`–`9` (stairs, ledges, crates). For each
-screen column `castRayHits` traverses the grid and returns *every* solid cell the ray
-enters, near to far, each with its `height` and `exitDistance`. Drawing all hits means a
-low step never hides a taller wall behind it.
+for `#`/`X`, and `0.2 × digit` for map digits `1`–`9` (stairs, ledges, crates). Each pixel
+walks the grid with DDA along its horizontal ray, starting at the camera cell and bounded
+by the world edge and the floor-plane intersection. The first solid cell produces at most
+one surface for that pixel:
 
 ```ts
-for (const hit of hits) {
-  yTop    = projectYClipped(cam, hit.distance, hit.height - eyeZ);
-  yBottom = projectYClipped(cam, hit.distance, -eyeZ);
-  texX    = floor(hit.wallU * texture.width);
-}
+zEntry = eyeZ + entry * rayZ;
+faceHit = entry > NEAR_PLANE && zEntry >= 0 && zEntry <= cellHeight;
+topHit  = eyeZ > cellHeight && rayZ < 0 &&
+          topT = (cellHeight - eyeZ) / rayZ ∈ [entry, nextEntry];
 ```
 
-When the camera stands on a solid cell, `castRayHits` also emits that cell at distance 0
-with its exit distance. The renderer skips its face (there is none facing the camera) but
-draws its top, so steep downward rays have a surface instead of leaving sky holes below
-the player.
+A face is painted at its entry distance with texture V derived from the hit height
+(`v = (eyeZ + entry·rayZ) / cellHeight`) and texture U from the side coordinate. A top is
+painted where the ray crosses `z = cellHeight` inside that cell, sampled by world-space
+fractional coordinates. Because the test is per pixel, a face crossing the near plane is
+still painted where `entry > NEAR_PLANE`; there is no altitude skip, so walls stay opaque
+from every eye height.
 
-`projectYClipped` rotates the point into camera space and handles the near plane:
-`zCam = d·cosP + dz·sinP`. When `zCam` is at or behind `NEAR_PLANE = 0.01` it returns a
-sentinel far off-screen instead of dividing by zero. A face whose top and bottom are both
-behind the near plane is skipped; a face that merely crosses it is still painted, so a
-wall stays solid while the player is pressed against it. There is no altitude skip: wall
-faces render at every eye height, which is what prevents the "transparent walls" look from
-above.
+Depth is the ray parameter `entry`/`topT`, so a top nearer than the floor plane wins and a
+closer wall hides everything behind it. The renderer used to cast one ray per column in
+the horizontal plane and shear the vertical spans for pitch; that moved a wall's screen x
+with its height and bent straight walls into curves while looking down. The flight suite
+(`npm run playtest:flight`) fits the projected wall-top line and fails above 1.5 px of
+residual to keep that regression out.
 
-Texture V is not interpolated from the clipped screen span, because that breaks when the
-face crosses the near plane. Instead each scanline inverts the projection exactly:
-
-```ts
-s  = (centerY - (y + 0.5)) / focal;            // camera-space up/forward slope
-dz = d * (sinP + s·cosP) / (cosP - s·sinP);    // height relative to the eye
-t  = (dz + eyeZ) / hit.height;                 // 0 at the floor, 1 at the top
-```
-
-Shade falls off with distance (`1 / (1 + d·0.085)`), with vertical faces at 76%, and is
-blended toward the fog color `(16, 18, 30)`.
+Shade falls off with distance (`1 / (1 + t·0.085)`, scaled by `fogScale` above eye height),
+with vertical faces at 76%, and is blended toward the fog color `(16, 18, 30)`.
 
 ## Floor and cell tops
 
-The walkable floor is one plane at `z = 0`. Every pixel below the horizon casts an exact
-3D ray and intersects it (`floorT = -eyeZ / rayZ`); the sample is textured only when it
-lands in an in-bounds walkable cell (`tile === 0`). Out-of-bounds and solid-cell hits
-stay sky here, because solid cells get their own tops.
+For every pixel whose ray points below the horizon (`rayZ < 0`), the walkable floor is the
+plane `z = 0` at `floorT = -eyeZ / rayZ`. The sample is textured only when it lands in an
+in-bounds walkable cell (`tile === 0`); solid cells are covered by their own tops, which
+are the per-cell `topT` hit described above. This is why stairs, platforms, crates, and
+wall tops each render at their own height with no global roof plane.
 
-Tops are drawn per DDA hit, not from a single global roof plane. For a cell of height
-`h`, the screen rows between the projections of its near and far boundaries are scanned,
-and each row inverts the pitch projection to find where the view ray crosses `z = h`:
+Tops use the world-space fractional coordinate for texture U/V, a bevel from the distance
+to the cell edge, and a darker shade than faces. Both floor and tops compare their `t`
+against the current pixel depth, so geometry never paints through a nearer wall.
 
-```ts
-s        = (centerY - (y + 0.5)) / focal;
-distance = dz·(cosP - s·sinP) / (s·cosP + sinP);   // dz = h - eyeZ
-```
-
-The sample is kept only when it falls inside `[mapX, mapX+1) × [mapY, mapY+1)`, so each
-stair tread, platform, crate and wall gets its own top at its own height. Tops use a
-bright edge highlight (`×1.32`) and a darker interior (`×0.82`).
-
-Only pixels nearer than `depth[idx]` are drawn, so floor and wall tops are rejected
-behind walls. Depth stores horizontal forward distance, matching wall and sprite depth.
+Sky remains only where a pixel has no floor, face, or top candidate. Looking down from
+altitude at the map border therefore shows the void beyond the floating island, not a
+hole: the analyzer in the flight suite ignores sky runs that reach the bottom of the
+frame and flags only enclosed holes between geometry.
 
 ## Depth buffer
 
-`depth: Float32Array(width × height)` stores the camera-space forward distance of the
+`depth: Float32Array(width × height)` stores the camera-space ray parameter `t` of the
 nearest opaque surface per pixel:
 
 1. Fill with `Infinity`.
-2. Walls write `distance` for each covered pixel.
-3. Floor and wall tops write their forward distance where nearer.
-4. Sprites test against the current value, skip, and write where alpha > 0.6.
+2. Floor, wall face, and wall top write their hit `t` (nearest wins).
+3. Sprites compute `zCam` with the same pitched basis and test against the current value,
+   skipping pixels where `zCam >= depth[idx]`, and writing where alpha > 0.4.
 
 This is a true 2D depth map, not the 1D column buffer used by Wolfenstein-style engines,
 so sprites correctly occlude and are occluded behind partial geometry and at different
@@ -153,8 +130,8 @@ heights.
 
 ## Sprites
 
-Rendering order: sky → clear depth → walls → floor/wall tops → shadows and sprites (far
-to near).
+Rendering order: sky → clear depth → floors/wall faces/wall tops (one per-pixel pass) →
+shadows and sprites (far to near).
 
 A sprite is centered on `(x, y)`, has `worldSize` world units of height, and its frame
 bottom is offset by `anchorZ` (currently `-0.075`). Sprites are screen-aligned billboards:
@@ -174,9 +151,9 @@ widthPx  = heightPx · frameW/frameH;
 
 `zCam` stays positive for actors below an overhead camera even while `forward ≈ 0`. The
 old code divided by the horizontal distance, which shrank overhead sprites to a line and
-then flung them off-screen. Sprites at `zCam ≤ 0.12` are rejected. The depth test still
-compares horizontal `forward`, matching walls and floor, which store horizontal forward
-distance.
+then flung them off-screen. Sprites at `zCam ≤ 0.12` are rejected. Occlusion compares the
+same `zCam` against the geometry pass's per-pixel `t`, so sprite depth and wall/floor
+depth share one metric under pitch.
 
 Per pixel: sample the atlas rect, multiply RGB by the actor tint and distance shade,
 blend by alpha, and update depth for opaque pixels. A soft elliptical shadow fades out at
@@ -380,25 +357,37 @@ coverage, fixed FOV, and page errors, plus these regressions:
 
 Screenshots and a JSON report land in `docs/screenshots/playtest/`.
 
+The companion harnesses share `tools/playtest/support.ts` (contact sheets, sky-row
+classification, image metrics):
+
+- `playtest:matrix` — 97 deterministic scenarios, 625 checks, golden-frame comparison.
+- `playtest:states` — paused player/guardian animation gallery, 42 checks.
+- `playtest:flight` — 18 altitude/pitch poses plus a live jetpack flight. It classifies
+  every canvas pixel against the sky gradient, flags enclosed sky holes, fits the
+  wall-top silhouette (max residual ≤ 1.5 px over 264 columns), asserts overhead sprite
+  content is unclipped, and enforces a real-time loop of at least 45 FPS.
+
+The flight suite is the regression gate for perspective-correct geometry: the old
+horizontal-ray plus vertical-shear projection produced up to 49 px of wall-top residuals
+and hundreds of enclosed sky holes; the per-pixel renderer measures 0.00 px and zero
+holes.
+
 ## Performance notes
 
-At 384×240 the framebuffer has ~92k pixels. Wall and floor drawing is per-pixel but
-bounded; sprites are bounded by their screen rect. The depth array and per-column ray
-base arrays are reused. Profiled in headless Chrome on Apple Silicon (M-series) with the
-courtyard's 17 actors and 384 wall columns:
+At 384×240 the framebuffer has ~92k pixels. The geometry pass walks the grid once per
+pixel (bounded by the floor-plane hit and DDA steps), sprites are bounded by their screen
+rect, and the row/column ray bases are reused across the pass. Measured in headless Chrome
+on Apple Silicon (M-series) with the courtyard actors by wrapping `renderer.render`:
 
-| Measurement | Value |
+| Pose | `render()` |
 | --- | --- |
-| `render()` — courtyard, ground level | 1.9 ms |
-| `render()` — reactor deck | 1.2 ms |
-| `render()` — overhead at 15 m | 1.4 ms |
-| `drawMinimap()` | 0.04 ms |
-| `update()` | < 0.01 ms |
-| Frame interval over 4.5 s | p50 8.3 ms, p99 10.3 ms, max 10.4 ms (120 Hz display) |
+| Courtyard, ground level | 3.4 ms |
+| Courtyard from 16 m, looking down | 6.8 ms |
+| Overhead at 14 m | 3.7 ms |
 
-The simulation and render together use well under a sixth of a 60 FPS frame, so no
-resolution scale or typed-array batching is needed at this target. The dominant memory
-cost is the decoded six-state guardian atlas (~45 MB), plus ~1 MB of viewmodel frames; it
-is documented under known issues in [PROGRESS.md](PROGRESS.md) and only matters if more
-characters are added.
+The worst measured pose still renders in under half of a 60 FPS frame. The live loop runs
+at ~60 FPS, and `npm run playtest:flight` fails if the real-time loop drops below 45 FPS
+or hits a page error. The dominant memory cost is the decoded six-state guardian atlas
+(~45 MB), plus ~1 MB of viewmodel frames; it is documented under known issues in
+[PROGRESS.md](PROGRESS.md) and only matters if more characters are added.
 

@@ -13,6 +13,7 @@
     "test:watch": "vitest",
     "playtest": "tsx tools/playtest/run.ts",
     "playtest:matrix": "tsx tools/playtest/matrix.ts",
+    "playtest:flight": "tsx tools/playtest/flight.ts",
     "playtest:states": "tsx tools/playtest/states.ts",
     "mcp:studio": "tsx tools/mcp/studio.ts",
     "assets:textures": "tsx tools/assets/make-textures.ts",

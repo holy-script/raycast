@@ -33,8 +33,9 @@ through idle, wind-up, strike, and recovery, and bob follows the walk cycle.
 **Status:** playable build with two levels, combat with hurt/death states, NPC dialogue,
 doors, keycard/medkit/fuel pickups, level transitions, synthesized audio, and a
 pause/settings menu. Verification runs a 97-scenario deterministic matrix (625 checks),
-a 40-check happy-path browser run, and a 42-check paused-state gallery capturing every
-body state. The M6 AI stylization infrastructure (Blender depth/normal controls, ComfyUI
+a 40-check happy-path browser run, an 18-pose airborne flight sweep with a live jetpack
+sequence (109 checks), and a 42-check paused-state gallery capturing every body state.
+The M6 AI stylization infrastructure (Blender depth/normal controls, ComfyUI
 img2img + ControlNet, silhouette/palette verification, MCP studio server) remains the
 asset path. See the [roadmap](docs/ROADMAP.md), [pipeline](docs/PIPELINE.md), and
 [progress log](docs/PROGRESS.md).
@@ -51,6 +52,7 @@ npm run typecheck
 npm run build      # static build in dist/
 npm run playtest   # headless Chrome: input, physics, atlas, viewmodel, screenshot checks
 npm run playtest:matrix  # 97 deterministic state/interaction/combat/level scenarios
+npm run playtest:flight  # 18 airborne poses + live jetpack sweep, wall/sky/sprite analysis
 npm run playtest:states  # paused-state gallery: 42 checks, 21 captures
 ```
 
@@ -120,7 +122,7 @@ tools/comfy/      API-format workflow + placeholder validation + HTTP client
 tools/verify/     silhouette IoU and palette-drift metrics/report
 tools/atlas/      atlas packer + manifest generator
 tools/mcp/        stdio MCP server for atlas generation and single-view repair
-tools/playtest/   CDP harness: happy-path run, state matrix, paused-state gallery
+tools/playtest/   CDP harness: happy-path run, state matrix, flight sweep, state gallery
 .qoder/agents/    playtester subagent definition
 tests/            Vitest coverage for DDA, math, world, atlas, settings, Comfy workflow, style metrics
 docs/             spec, roadmap, progress, architecture, pipeline, handoff, ADRs

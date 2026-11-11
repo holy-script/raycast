@@ -228,6 +228,7 @@ export class Game {
   readonly input: InputController;
   minimapVisible = true;
   hudDetailVisible = true;
+  viewmodelVisible = true;
   flying = false;
   sensitivity = 1;
   fovDegrees = (DEFAULT_FOV * 180) / Math.PI;
@@ -886,7 +887,7 @@ export class Game {
       this.assets.floor,
       this.assets.wallTop,
       [...this.buildSprites(camera), ...this.buildPropSprites()],
-      this.buildViewmodel(),
+      this.viewmodelVisible ? this.buildViewmodel() : undefined,
     );
   }
 

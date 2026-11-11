@@ -92,19 +92,22 @@ actually drawn.
 `?screenshot` hides the intro overlay for headless captures. Prefer the harnesses:
 `npm run playtest` is the happy-path browser check, `npm run playtest:matrix` walks
 97 deterministic state/route scenarios (625 checks, labelled contact sheet, golden
-frames), and `npm run playtest:states` pauses the sim in every player/guardian body state
-for 21 gallery captures (42 checks). All start Vite, drive Chrome over CDP, write
-screenshots plus `report.json`, and exit non-zero on failure; see
-[PLAYTEST-MATRIX.md](PLAYTEST-MATRIX.md). To verify a deployed build instead of the local
-server:
+frames), `npm run playtest:states` pauses the sim in every player/guardian body state
+for 21 gallery captures (42 checks), and `npm run playtest:flight` sweeps 18
+altitude/pitch poses plus a live jetpack flight (109 checks) while asserting no sky
+holes, straight wall-top projection, unclipped overhead sprites, and ≥45 FPS. All start
+Vite, drive Chrome over CDP, write screenshots plus `report.json`, and exit non-zero on
+failure; see [PLAYTEST-MATRIX.md](PLAYTEST-MATRIX.md). To verify a deployed build instead
+of the local server:
 
 ```bash
 PLAYTEST_OUT=/tmp/rc-prod-check npm run playtest -- --url https://raycast-rosy.vercel.app/
 ```
 
-`PLAYTEST_OUT` keeps the production screenshots out of the repo. If you need a one-off
-capture, drive Chrome through CDP and wait for the HUD; `--virtual-time-budget` alone can
-leave HUD values at `--`.
+`PLAYTEST_OUT` keeps the production screenshots out of the repo (`MATRIX_OUT`,
+`STATES_OUT`, and `FLIGHT_OUT` do the same for the other harnesses). If you need a
+one-off capture, drive Chrome through CDP and wait for the HUD; `--virtual-time-budget`
+alone can leave HUD values at `--`.
 
 ## Invariants to preserve
 
@@ -113,20 +116,28 @@ leave HUD values at `--`.
   `(dx·dirY − dy·dirX)`. Flipping either independently mirrors sprites.
 - **Perpendicular distance:** DDA returns perpendicular distance, not Euclidean. All wall
   and sprite scaling assumes it.
-- **Pitch is rotation, not shear:** `projectY` / `projectYClipped` rotate the camera basis.
-  Floor/roof and wall/sprite projections must use the same basis or geometry separates.
-- **Near plane:** walls are clipped with `zCam > 0.01`; never divide by it. A face crossing
-  the plane must still paint, and wall texture V must come from the per-pixel inverse
-  projection, not the clipped span.
-- **Depth metric:** walls, floor, cell tops, and sprites all compare horizontal forward
-  distance. Sprite size and screen position use `zCam` instead, but the occlusion value
-  stays forward. Any new geometry must use the same depth metric or occlusion breaks.
-- **No altitude skip for walls:** wall faces render at every eye height. Tops are drawn per
-  `castRayHits` hit, not from a global roof plane; keep them tied to each cell's height
-  and exit distance.
-- **Origin cell:** when the camera stands on a solid cell, `castRayHits` emits it at
-  distance 0. The renderer skips its face but must draw its top, or steep rays show sky
-  beneath the player.
+- **Per-pixel pitch basis:** every pixel derives both its vertical ray (`rayZ = sinP +
+  cosP·yCam`) and its horizontal ray (`horizontal = cosP − sinP·yCam`). A wall's screen x
+  depends on height only through this shared perspective. The old per-column horizontal
+  ray plus vertical shear moved screen x with height and bent straight walls into curves;
+  do not reintroduce a column-only ray.
+- **Surface tests:** a wall face paints where `entry > NEAR_PLANE` and
+  `eyeZ + entry·rayZ ∈ [0, cellHeight]`; a top paints where
+  `topT = (cellHeight − eyeZ)/rayZ` lands inside that cell's entry/exit span. Face
+  texture V must come from the hit height, not a projected screen span.
+- **Depth metric:** `t` is the camera-space depth along the pitched ray for floor, wall
+  faces, and wall tops. Sprites compute `zCam` with the same basis and compare against it.
+  Do not mix in horizontal forward distance; that reintroduces occlusion drift under
+  pitch.
+- **Sky is a column prefix:** a column may show sky above geometry but never an enclosed
+  sky run below it. Runs that reach the bottom edge are the void beyond the map and are
+  ignored. `npm run playtest:flight` classifies pixels against `buildSky` output.
+- **Wall-top straightness:** under pitch, a straight wall top must project to a straight
+  line. The flight suite fits it over 264 columns and fails above 1.5 px residual; this is
+  the regression gate for perspective-correct geometry.
+- **No altitude skip:** faces and tops are tested at every eye height, per pixel. A wall
+  crossing the near plane still paints; when the camera is above a solid cell its top is
+  hit inside the cell span, so steep rays do not leave sky beneath the player.
 - **Support heights:** surfaces are blocks grown from `z = 0`. `supportHeight` samples the
   centre cell only; collision passes `STEP_UP = 0.3` to `canOccupy`, while actors use the
   default 0.02 so they stay on the floor.

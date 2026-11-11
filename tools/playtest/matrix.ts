@@ -1,8 +1,14 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { spawn, type ChildProcess } from "node:child_process";
 import { PNG } from "pngjs";
 import { Browser, sleep } from "./cdp";
+import {
+  composeSheet,
+  imageMetrics,
+  ratioDiff,
+  startDevServer,
+  waitForHttp,
+} from "./support";
 import type { HudState, RenderDebug } from "../../src/game";
 
 const root = resolve(import.meta.dirname, "../..");
@@ -53,131 +59,6 @@ const scenarios: Scenario[] = [];
 let currentScenario = "";
 let currentGroup = "";
 
-// 3x5 glyphs scaled 2x, so sheets stay readable without a canvas dependency.
-const GLYPHS: Record<string, string[]> = {
-  A: ["010", "101", "111", "101", "101"],
-  B: ["110", "101", "110", "101", "110"],
-  C: ["011", "100", "100", "100", "011"],
-  D: ["110", "101", "101", "101", "110"],
-  E: ["111", "100", "110", "100", "111"],
-  F: ["111", "100", "110", "100", "100"],
-  G: ["011", "100", "101", "101", "011"],
-  H: ["101", "101", "111", "101", "101"],
-  I: ["111", "010", "010", "010", "111"],
-  J: ["001", "001", "001", "101", "010"],
-  K: ["101", "101", "110", "101", "101"],
-  L: ["100", "100", "100", "100", "111"],
-  M: ["101", "111", "111", "101", "101"],
-  N: ["101", "111", "101", "101", "101"],
-  O: ["010", "101", "101", "101", "010"],
-  P: ["110", "101", "110", "100", "100"],
-  Q: ["010", "101", "101", "111", "011"],
-  R: ["110", "101", "110", "101", "101"],
-  S: ["011", "100", "010", "001", "110"],
-  T: ["111", "010", "010", "010", "010"],
-  U: ["101", "101", "101", "101", "111"],
-  V: ["101", "101", "101", "101", "010"],
-  W: ["101", "101", "111", "111", "101"],
-  X: ["101", "101", "010", "101", "101"],
-  Y: ["101", "101", "010", "010", "010"],
-  Z: ["111", "001", "010", "100", "111"],
-  "0": ["111", "101", "101", "101", "111"],
-  "1": ["010", "110", "010", "010", "111"],
-  "2": ["110", "001", "010", "100", "111"],
-  "3": ["110", "001", "010", "001", "110"],
-  "4": ["101", "101", "111", "001", "001"],
-  "5": ["111", "100", "110", "001", "110"],
-  "6": ["011", "100", "111", "101", "111"],
-  "7": ["111", "001", "010", "010", "010"],
-  "8": ["111", "101", "111", "101", "111"],
-  "9": ["111", "101", "111", "001", "110"],
-  "-": ["000", "000", "111", "000", "000"],
-  ".": ["000", "000", "000", "000", "010"],
-  "/": ["001", "001", "010", "100", "100"],
-};
-
-function fillRect(
-  target: PNG,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  color: [number, number, number],
-): void {
-  for (let row = y; row < y + height; row += 1) {
-    for (let col = x; col < x + width; col += 1) {
-      if (row < 0 || col < 0 || row >= target.height || col >= target.width) continue;
-      const offset = (row * target.width + col) * 4;
-      target.data[offset] = color[0];
-      target.data[offset + 1] = color[1];
-      target.data[offset + 2] = color[2];
-      target.data[offset + 3] = 255;
-    }
-  }
-}
-
-function drawLabel(
-  target: PNG,
-  text: string,
-  x: number,
-  y: number,
-  scale: number,
-): void {
-  const color: [number, number, number] = [255, 210, 138];
-  let cursor = x;
-  for (const character of text) {
-    const glyph = GLYPHS[character] ?? GLYPHS["-"];
-    for (let row = 0; row < glyph.length; row += 1) {
-      for (let col = 0; col < 3; col += 1) {
-        if (glyph[row][col] !== "1") continue;
-        fillRect(target, cursor + col * scale, y + row * scale, scale, scale, color);
-      }
-    }
-    cursor += 3 * scale + scale;
-  }
-}
-
-function blit(target: PNG, source: PNG, x: number, y: number): void {
-  for (let row = 0; row < source.height; row += 1) {
-    for (let col = 0; col < source.width; col += 1) {
-      if (y + row >= target.height || x + col >= target.width) continue;
-      const from = (row * source.width + col) * 4;
-      const to = ((y + row) * target.width + (x + col)) * 4;
-      target.data[to] = source.data[from];
-      target.data[to + 1] = source.data[from + 1];
-      target.data[to + 2] = source.data[from + 2];
-      target.data[to + 3] = 255;
-    }
-  }
-}
-
-function composeSheet(
-  shots: Array<{ name: string }>,
-  file: string,
-  shotDir: string,
-): void {
-  const cols = 5;
-  const gap = 6;
-  const labelHeight = 16;
-  const cellW = 384 + gap;
-  const cellH = 240 + labelHeight + gap;
-  const rows = Math.ceil(shots.length / cols);
-  const sheet = new PNG({ width: cols * cellW + gap, height: rows * cellH + gap });
-  fillRect(sheet, 0, 0, sheet.width, sheet.height, [10, 11, 16]);
-  shots.forEach((shot, index) => {
-    const x = gap + (index % cols) * cellW;
-    const y = gap + Math.floor(index / cols) * cellH;
-    drawLabel(sheet, shot.name.toUpperCase(), x, y + 2, 2);
-    blit(
-      sheet,
-      PNG.sync.read(readFileSync(join(shotDir, `${shot.name}.png`))),
-      x,
-      y + labelHeight,
-    );
-  });
-  writeFileSync(file, PNG.sync.write(sheet));
-}
-
 function check(name: string, ok: boolean, detail: string): void {
   checks.push({ scenario: currentScenario, group: currentGroup, name, ok, detail });
   console.log(`${ok ? "PASS" : "FAIL"}  ${currentScenario} · ${name} — ${detail}`);
@@ -192,66 +73,10 @@ function angleNear(value: number, target: number, tolerance: number): boolean {
   return Math.abs(delta) <= tolerance;
 }
 
-function ratioDiff(a: PNG, b: PNG): number {
-  if (a.width !== b.width || a.height !== b.height) return 1;
-  let changed = 0;
-  for (let index = 0; index < a.data.length; index += 4) {
-    if (
-      Math.abs(a.data[index] - b.data[index]) > 4 ||
-      Math.abs(a.data[index + 1] - b.data[index + 1]) > 4 ||
-      Math.abs(a.data[index + 2] - b.data[index + 2]) > 4
-    ) {
-      changed += 1;
-    }
-  }
-  return changed / (a.width * a.height);
-}
-
-function imageMetrics(image: PNG): { meanLuma: number; colors: number } {
-  const seen = new Set<number>();
-  let luma = 0;
-  for (let index = 0; index < image.data.length; index += 4) {
-    const r = image.data[index];
-    const g = image.data[index + 1];
-    const b = image.data[index + 2];
-    luma += 0.2126 * r + 0.7152 * g + 0.0722 * b;
-    if (seen.size < 512) seen.add(((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3));
-  }
-  return { meanLuma: luma / (image.width * image.height), colors: seen.size };
-}
-
-async function waitForHttp(url: string, timeoutMs = 30_000): Promise<void> {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    try {
-      const response = await fetch(url);
-      if (response.ok) return;
-    } catch {
-      // Server is still booting.
-    }
-    await sleep(200);
-  }
-  throw new Error(`Timed out waiting for ${url}`);
-}
-
-function startDevServer(): ChildProcess {
-  const child = spawn(
-    process.platform === "win32" ? "npm.cmd" : "npm",
-    ["run", "dev", "--", "--port", String(port), "--strictPort", "--host", "127.0.0.1"],
-    { cwd: root, stdio: ["ignore", "pipe", "pipe"] },
-  );
-  child.stdout?.on("data", (data: Buffer) => {
-    const text = data.toString();
-    if (/error/i.test(text)) process.stderr.write(text);
-  });
-  child.stderr?.on("data", (data: Buffer) => process.stderr.write(data));
-  return child;
-}
-
 async function main(): Promise<void> {
   mkdirSync(outDir, { recursive: true });
 
-  const devServer = remoteUrl ? undefined : startDevServer();
+  const devServer = remoteUrl ? undefined : startDevServer(root, port);
   let browser: Browser | undefined;
   const startedAt = Date.now();
   try {
@@ -1848,9 +1673,13 @@ async function main(): Promise<void> {
       `${JSON.stringify(report, null, 2)}\n`,
     );
     composeSheet(
-      captures.filter((capture) => capture.kind === "canvas"),
+      captures
+        .filter((capture) => capture.kind === "canvas")
+        .map((capture) => ({
+          name: capture.name,
+          file: join(outDir, `${capture.name}.png`),
+        })),
       join(outDir, "contact-sheet.png"),
-      outDir,
     );
 
     console.log(

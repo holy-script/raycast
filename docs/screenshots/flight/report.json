@@ -1,0 +1,959 @@
+{
+  "generatedAt": "2026-11-11T17:14:46.866Z",
+  "url": "http://127.0.0.1:5202/?screenshot",
+  "durationMs": 5277,
+  "poses": [
+    {
+      "id": "f01-ground-level",
+      "note": "ground, level look",
+      "x": 5.5,
+      "y": 4.5,
+      "z": 0,
+      "yaw": 0,
+      "pitch": 0
+    },
+    {
+      "id": "f02-ground-lookdown",
+      "note": "ground, steep look-down",
+      "x": 5.5,
+      "y": 4.5,
+      "z": 0,
+      "yaw": -1.5707963267948966,
+      "pitch": -0.7
+    },
+    {
+      "id": "f03-hover-4m-level",
+      "note": "4 m hover, level look",
+      "x": 11.5,
+      "y": 12.5,
+      "z": 4,
+      "yaw": 0,
+      "pitch": 0
+    },
+    {
+      "id": "f04-hover-4m-down",
+      "note": "4 m hover, 26 deg down",
+      "x": 11.5,
+      "y": 12.5,
+      "z": 4,
+      "yaw": 0.8,
+      "pitch": -0.45
+    },
+    {
+      "id": "f05-climb-8m-down",
+      "note": "8 m climb, 49 deg down",
+      "x": 11.5,
+      "y": 12.5,
+      "z": 8,
+      "yaw": 2.2,
+      "pitch": -0.85
+    },
+    {
+      "id": "f06-climb-8m-uptilt",
+      "note": "8 m climb, up-tilt",
+      "x": 11.5,
+      "y": 12.5,
+      "z": 8,
+      "yaw": -2.4,
+      "pitch": 0.5
+    },
+    {
+      "id": "f07-altitude-12m-down",
+      "note": "12 m altitude, 37 deg down",
+      "x": 11.5,
+      "y": 12.5,
+      "z": 12,
+      "yaw": 3.141592653589793,
+      "pitch": -0.65
+    },
+    {
+      "id": "f08-altitude-12m-down",
+      "note": "12 m altitude, 57 deg down",
+      "x": 11.5,
+      "y": 12.5,
+      "z": 12,
+      "yaw": -1.5707963267948966,
+      "pitch": -1
+    },
+    {
+      "id": "f09-altitude-16m-top",
+      "note": "16 m altitude, top band",
+      "x": 11.5,
+      "y": 12.5,
+      "z": 16,
+      "yaw": 0,
+      "pitch": -1.45
+    },
+    {
+      "id": "f10-ceiling-18m-down",
+      "note": "18 m ceiling, 63 deg down",
+      "x": 5.5,
+      "y": 4.5,
+      "z": 18,
+      "yaw": 0.7853981633974483,
+      "pitch": -1.1
+    },
+    {
+      "id": "f11-ceiling-18m-level",
+      "note": "18 m ceiling, level look",
+      "x": 5.5,
+      "y": 4.5,
+      "z": 18,
+      "yaw": 0,
+      "pitch": 0
+    },
+    {
+      "id": "f12-map-edge",
+      "note": "inside the map edge, 52 deg down",
+      "x": 2.5,
+      "y": 2.5,
+      "z": 10,
+      "yaw": 0.7853981633974483,
+      "pitch": -0.9
+    },
+    {
+      "id": "f13-corner-overshoot",
+      "note": "corner, 52 deg down",
+      "x": 22.4,
+      "y": 22.4,
+      "z": 14,
+      "yaw": -2.356194490192345,
+      "pitch": -0.9
+    },
+    {
+      "id": "f14-wall-line-a",
+      "note": "straight wall, 46 deg down",
+      "x": 11.5,
+      "y": 4.5,
+      "z": 4,
+      "yaw": -1.5707963267948966,
+      "pitch": -0.8
+    },
+    {
+      "id": "f15-wall-line-b",
+      "note": "straight wall, 34 deg down",
+      "x": 11.5,
+      "y": 4.5,
+      "z": 4,
+      "yaw": -1.5707963267948966,
+      "pitch": -0.6
+    },
+    {
+      "id": "f16-wall-line-c",
+      "note": "south wall, 40 deg down",
+      "x": 11.5,
+      "y": 20.5,
+      "z": 4,
+      "yaw": 1.5707963267948966,
+      "pitch": -0.7
+    },
+    {
+      "id": "f17-overhead-scholar",
+      "note": "overhead sprite completeness",
+      "x": 4.5,
+      "y": 11.3,
+      "z": 3.5,
+      "yaw": 1.5707963267948966,
+      "pitch": -1.25
+    },
+    {
+      "id": "f18-wall-top-hover",
+      "note": "hovering over a wall top",
+      "x": 3.5,
+      "y": 2.5,
+      "z": 2.6,
+      "yaw": 3.141592653589793,
+      "pitch": -1.2
+    }
+  ],
+  "fps": 59.78975032851511,
+  "passed": 109,
+  "failed": 0,
+  "checks": [
+    {
+      "scenario": "f01-ground-level",
+      "name": "f01-ground-level has no sky holes",
+      "ok": true,
+      "detail": "0 hole px in 0 columns (max run 0)"
+    },
+    {
+      "scenario": "f01-ground-level",
+      "name": "f01-ground-level renders content",
+      "ok": true,
+      "detail": "122 colors, mean luma 52.8"
+    },
+    {
+      "scenario": "f01-ground-level",
+      "name": "projections stay finite",
+      "ok": true,
+      "detail": "384 cols, 68006 wall px, 0 top px"
+    },
+    {
+      "scenario": "f01-ground-level",
+      "name": "paused state and HUD are coherent",
+      "ok": true,
+      "detail": "5.5,4.5 at 0.0 m · WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "f02-ground-lookdown",
+      "name": "f02-ground-lookdown has no sky holes",
+      "ok": true,
+      "detail": "0 hole px in 0 columns (max run 0)"
+    },
+    {
+      "scenario": "f02-ground-lookdown",
+      "name": "f02-ground-lookdown renders content",
+      "ok": true,
+      "detail": "65 colors, mean luma 56.9"
+    },
+    {
+      "scenario": "f02-ground-lookdown",
+      "name": "projections stay finite",
+      "ok": true,
+      "detail": "115 cols, 9463 wall px, 0 top px"
+    },
+    {
+      "scenario": "f02-ground-lookdown",
+      "name": "paused state and HUD are coherent",
+      "ok": true,
+      "detail": "5.5,4.5 at 0.0 m · WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "f03-hover-4m-level",
+      "name": "f03-hover-4m-level has no sky holes",
+      "ok": true,
+      "detail": "0 hole px in 0 columns (max run 0)"
+    },
+    {
+      "scenario": "f03-hover-4m-level",
+      "name": "f03-hover-4m-level renders content",
+      "ok": true,
+      "detail": "91 colors, mean luma 31.9"
+    },
+    {
+      "scenario": "f03-hover-4m-level",
+      "name": "projections stay finite",
+      "ok": true,
+      "detail": "384 cols, 12020 wall px, 4367 top px"
+    },
+    {
+      "scenario": "f03-hover-4m-level",
+      "name": "paused state and HUD are coherent",
+      "ok": true,
+      "detail": "11.5,12.5 at 4.0 m · AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "f04-hover-4m-down",
+      "name": "f04-hover-4m-down has no sky holes",
+      "ok": true,
+      "detail": "0 hole px in 0 columns (max run 0)"
+    },
+    {
+      "scenario": "f04-hover-4m-down",
+      "name": "f04-hover-4m-down renders content",
+      "ok": true,
+      "detail": "318 colors, mean luma 37.4"
+    },
+    {
+      "scenario": "f04-hover-4m-down",
+      "name": "projections stay finite",
+      "ok": true,
+      "detail": "384 cols, 25670 wall px, 20050 top px"
+    },
+    {
+      "scenario": "f04-hover-4m-down",
+      "name": "paused state and HUD are coherent",
+      "ok": true,
+      "detail": "11.5,12.5 at 4.0 m · AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "f05-climb-8m-down",
+      "name": "f05-climb-8m-down has no sky holes",
+      "ok": true,
+      "detail": "0 hole px in 0 columns (max run 0)"
+    },
+    {
+      "scenario": "f05-climb-8m-down",
+      "name": "f05-climb-8m-down renders content",
+      "ok": true,
+      "detail": "437 colors, mean luma 39.8"
+    },
+    {
+      "scenario": "f05-climb-8m-down",
+      "name": "projections stay finite",
+      "ok": true,
+      "detail": "384 cols, 18672 wall px, 26462 top px"
+    },
+    {
+      "scenario": "f05-climb-8m-down",
+      "name": "paused state and HUD are coherent",
+      "ok": true,
+      "detail": "11.5,12.5 at 8.0 m · AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "f05-climb-8m-down",
+      "name": "looking down from altitude shows ground geometry",
+      "ok": true,
+      "detail": "18672 wall px + 26462 top px"
+    },
+    {
+      "scenario": "f06-climb-8m-uptilt",
+      "name": "f06-climb-8m-uptilt has no sky holes",
+      "ok": true,
+      "detail": "0 hole px in 0 columns (max run 0)"
+    },
+    {
+      "scenario": "f06-climb-8m-uptilt",
+      "name": "f06-climb-8m-uptilt renders content",
+      "ok": true,
+      "detail": "24 colors, mean luma 28.6"
+    },
+    {
+      "scenario": "f06-climb-8m-uptilt",
+      "name": "projections stay finite",
+      "ok": true,
+      "detail": "0 cols, 0 wall px, 0 top px"
+    },
+    {
+      "scenario": "f06-climb-8m-uptilt",
+      "name": "paused state and HUD are coherent",
+      "ok": true,
+      "detail": "11.5,12.5 at 8.0 m · AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "f07-altitude-12m-down",
+      "name": "f07-altitude-12m-down has no sky holes",
+      "ok": true,
+      "detail": "0 hole px in 0 columns (max run 0)"
+    },
+    {
+      "scenario": "f07-altitude-12m-down",
+      "name": "f07-altitude-12m-down renders content",
+      "ok": true,
+      "detail": "198 colors, mean luma 31.6"
+    },
+    {
+      "scenario": "f07-altitude-12m-down",
+      "name": "projections stay finite",
+      "ok": true,
+      "detail": "384 cols, 8060 wall px, 8990 top px"
+    },
+    {
+      "scenario": "f07-altitude-12m-down",
+      "name": "paused state and HUD are coherent",
+      "ok": true,
+      "detail": "11.5,12.5 at 12.0 m · AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "f07-altitude-12m-down",
+      "name": "looking down from altitude shows ground geometry",
+      "ok": true,
+      "detail": "8060 wall px + 8990 top px"
+    },
+    {
+      "scenario": "f08-altitude-12m-down",
+      "name": "f08-altitude-12m-down has no sky holes",
+      "ok": true,
+      "detail": "0 hole px in 0 columns (max run 0)"
+    },
+    {
+      "scenario": "f08-altitude-12m-down",
+      "name": "f08-altitude-12m-down renders content",
+      "ok": true,
+      "detail": "296 colors, mean luma 38.4"
+    },
+    {
+      "scenario": "f08-altitude-12m-down",
+      "name": "projections stay finite",
+      "ok": true,
+      "detail": "384 cols, 14573 wall px, 23977 top px"
+    },
+    {
+      "scenario": "f08-altitude-12m-down",
+      "name": "paused state and HUD are coherent",
+      "ok": true,
+      "detail": "11.5,12.5 at 12.0 m · AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "f08-altitude-12m-down",
+      "name": "looking down from altitude shows ground geometry",
+      "ok": true,
+      "detail": "14573 wall px + 23977 top px"
+    },
+    {
+      "scenario": "f09-altitude-16m-top",
+      "name": "f09-altitude-16m-top has no sky holes",
+      "ok": true,
+      "detail": "0 hole px in 0 columns (max run 0)"
+    },
+    {
+      "scenario": "f09-altitude-16m-top",
+      "name": "f09-altitude-16m-top renders content",
+      "ok": true,
+      "detail": "329 colors, mean luma 45.7"
+    },
+    {
+      "scenario": "f09-altitude-16m-top",
+      "name": "projections stay finite",
+      "ok": true,
+      "detail": "362 cols, 12953 wall px, 31292 top px"
+    },
+    {
+      "scenario": "f09-altitude-16m-top",
+      "name": "paused state and HUD are coherent",
+      "ok": true,
+      "detail": "11.5,12.5 at 16.0 m · AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "f09-altitude-16m-top",
+      "name": "looking down from altitude shows ground geometry",
+      "ok": true,
+      "detail": "12953 wall px + 31292 top px"
+    },
+    {
+      "scenario": "f10-ceiling-18m-down",
+      "name": "f10-ceiling-18m-down has no sky holes",
+      "ok": true,
+      "detail": "0 hole px in 0 columns (max run 0)"
+    },
+    {
+      "scenario": "f10-ceiling-18m-down",
+      "name": "f10-ceiling-18m-down renders content",
+      "ok": true,
+      "detail": "329 colors, mean luma 40.7"
+    },
+    {
+      "scenario": "f10-ceiling-18m-down",
+      "name": "projections stay finite",
+      "ok": true,
+      "detail": "384 cols, 13023 wall px, 25503 top px"
+    },
+    {
+      "scenario": "f10-ceiling-18m-down",
+      "name": "paused state and HUD are coherent",
+      "ok": true,
+      "detail": "5.5,4.5 at 18.0 m · AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "f10-ceiling-18m-down",
+      "name": "looking down from altitude shows ground geometry",
+      "ok": true,
+      "detail": "13023 wall px + 25503 top px"
+    },
+    {
+      "scenario": "f11-ceiling-18m-level",
+      "name": "f11-ceiling-18m-level has no sky holes",
+      "ok": true,
+      "detail": "0 hole px in 0 columns (max run 0)"
+    },
+    {
+      "scenario": "f11-ceiling-18m-level",
+      "name": "f11-ceiling-18m-level renders content",
+      "ok": true,
+      "detail": "24 colors, mean luma 28.6"
+    },
+    {
+      "scenario": "f11-ceiling-18m-level",
+      "name": "projections stay finite",
+      "ok": true,
+      "detail": "0 cols, 0 wall px, 0 top px"
+    },
+    {
+      "scenario": "f11-ceiling-18m-level",
+      "name": "paused state and HUD are coherent",
+      "ok": true,
+      "detail": "5.5,4.5 at 18.0 m · AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "f12-map-edge",
+      "name": "f12-map-edge has no sky holes",
+      "ok": true,
+      "detail": "0 hole px in 0 columns (max run 0)"
+    },
+    {
+      "scenario": "f12-map-edge",
+      "name": "f12-map-edge renders content",
+      "ok": true,
+      "detail": "234 colors, mean luma 43.3"
+    },
+    {
+      "scenario": "f12-map-edge",
+      "name": "projections stay finite",
+      "ok": true,
+      "detail": "384 cols, 20306 wall px, 24703 top px"
+    },
+    {
+      "scenario": "f12-map-edge",
+      "name": "paused state and HUD are coherent",
+      "ok": true,
+      "detail": "2.5,2.5 at 10.0 m · AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "f12-map-edge",
+      "name": "looking down from altitude shows ground geometry",
+      "ok": true,
+      "detail": "20306 wall px + 24703 top px"
+    },
+    {
+      "scenario": "f13-corner-overshoot",
+      "name": "f13-corner-overshoot has no sky holes",
+      "ok": true,
+      "detail": "0 hole px in 0 columns (max run 0)"
+    },
+    {
+      "scenario": "f13-corner-overshoot",
+      "name": "f13-corner-overshoot renders content",
+      "ok": true,
+      "detail": "365 colors, mean luma 40.3"
+    },
+    {
+      "scenario": "f13-corner-overshoot",
+      "name": "projections stay finite",
+      "ok": true,
+      "detail": "384 cols, 16167 wall px, 26643 top px"
+    },
+    {
+      "scenario": "f13-corner-overshoot",
+      "name": "paused state and HUD are coherent",
+      "ok": true,
+      "detail": "22.4,22.4 at 14.0 m · AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "f13-corner-overshoot",
+      "name": "looking down from altitude shows ground geometry",
+      "ok": true,
+      "detail": "16167 wall px + 26643 top px"
+    },
+    {
+      "scenario": "f14-wall-line-a",
+      "name": "f14-wall-line-a has no sky holes",
+      "ok": true,
+      "detail": "0 hole px in 0 columns (max run 0)"
+    },
+    {
+      "scenario": "f14-wall-line-a",
+      "name": "f14-wall-line-a renders content",
+      "ok": true,
+      "detail": "83 colors, mean luma 39.1"
+    },
+    {
+      "scenario": "f14-wall-line-a",
+      "name": "projections stay finite",
+      "ok": true,
+      "detail": "384 cols, 25982 wall px, 14234 top px"
+    },
+    {
+      "scenario": "f14-wall-line-a",
+      "name": "paused state and HUD are coherent",
+      "ok": true,
+      "detail": "11.5,4.5 at 4.0 m · AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "f14-wall-line-a",
+      "name": "looking down from altitude shows ground geometry",
+      "ok": true,
+      "detail": "25982 wall px + 14234 top px"
+    },
+    {
+      "scenario": "f14-wall-line-a",
+      "name": "wall top projects as a straight line",
+      "ok": true,
+      "detail": "264 columns, max residual 0.00 px, slope 0.000"
+    },
+    {
+      "scenario": "f15-wall-line-b",
+      "name": "f15-wall-line-b has no sky holes",
+      "ok": true,
+      "detail": "0 hole px in 0 columns (max run 0)"
+    },
+    {
+      "scenario": "f15-wall-line-b",
+      "name": "f15-wall-line-b renders content",
+      "ok": true,
+      "detail": "85 colors, mean luma 32.6"
+    },
+    {
+      "scenario": "f15-wall-line-b",
+      "name": "projections stay finite",
+      "ok": true,
+      "detail": "384 cols, 21222 wall px, 13332 top px"
+    },
+    {
+      "scenario": "f15-wall-line-b",
+      "name": "paused state and HUD are coherent",
+      "ok": true,
+      "detail": "11.5,4.5 at 4.0 m · AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "f15-wall-line-b",
+      "name": "looking down from altitude shows ground geometry",
+      "ok": true,
+      "detail": "21222 wall px + 13332 top px"
+    },
+    {
+      "scenario": "f15-wall-line-b",
+      "name": "wall top projects as a straight line",
+      "ok": true,
+      "detail": "264 columns, max residual 0.00 px, slope 0.000"
+    },
+    {
+      "scenario": "f16-wall-line-c",
+      "name": "f16-wall-line-c has no sky holes",
+      "ok": true,
+      "detail": "0 hole px in 0 columns (max run 0)"
+    },
+    {
+      "scenario": "f16-wall-line-c",
+      "name": "f16-wall-line-c renders content",
+      "ok": true,
+      "detail": "195 colors, mean luma 33.3"
+    },
+    {
+      "scenario": "f16-wall-line-c",
+      "name": "projections stay finite",
+      "ok": true,
+      "detail": "384 cols, 19206 wall px, 18042 top px"
+    },
+    {
+      "scenario": "f16-wall-line-c",
+      "name": "paused state and HUD are coherent",
+      "ok": true,
+      "detail": "11.5,20.5 at 4.0 m · AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "f16-wall-line-c",
+      "name": "looking down from altitude shows ground geometry",
+      "ok": true,
+      "detail": "19206 wall px + 18042 top px"
+    },
+    {
+      "scenario": "f16-wall-line-c",
+      "name": "wall top projects as a straight line",
+      "ok": true,
+      "detail": "264 columns, max residual 0.00 px, slope 0.000"
+    },
+    {
+      "scenario": "f17-overhead-scholar",
+      "name": "f17-overhead-scholar has no sky holes",
+      "ok": true,
+      "detail": "0 hole px in 0 columns (max run 0)"
+    },
+    {
+      "scenario": "f17-overhead-scholar",
+      "name": "f17-overhead-scholar renders content",
+      "ok": true,
+      "detail": "276 colors, mean luma 49.7"
+    },
+    {
+      "scenario": "f17-overhead-scholar",
+      "name": "projections stay finite",
+      "ok": true,
+      "detail": "225 cols, 1146 wall px, 26058 top px"
+    },
+    {
+      "scenario": "f17-overhead-scholar",
+      "name": "paused state and HUD are coherent",
+      "ok": true,
+      "detail": "4.5,11.3 at 3.5 m · AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "f17-overhead-scholar",
+      "name": "looking down from altitude shows ground geometry",
+      "ok": true,
+      "detail": "1146 wall px + 26058 top px"
+    },
+    {
+      "scenario": "f17-overhead-scholar",
+      "name": "overhead sprite is complete and unclipped",
+      "ok": true,
+      "detail": "32x29 content, 692 px, 88 occluded, rect 48.6x48.6 at 192.0,123.5"
+    },
+    {
+      "scenario": "f18-wall-top-hover",
+      "name": "f18-wall-top-hover has no sky holes",
+      "ok": true,
+      "detail": "0 hole px in 0 columns (max run 0)"
+    },
+    {
+      "scenario": "f18-wall-top-hover",
+      "name": "f18-wall-top-hover renders content",
+      "ok": true,
+      "detail": "394 colors, mean luma 52.1"
+    },
+    {
+      "scenario": "f18-wall-top-hover",
+      "name": "projections stay finite",
+      "ok": true,
+      "detail": "384 cols, 27066 wall px, 26056 top px"
+    },
+    {
+      "scenario": "f18-wall-top-hover",
+      "name": "paused state and HUD are coherent",
+      "ok": true,
+      "detail": "3.5,2.5 at 2.6 m · AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "flight-live",
+      "name": "flight-live-liftoff canvas has no sky holes",
+      "ok": true,
+      "detail": "0 hole px in 0 columns (max run 0)"
+    },
+    {
+      "scenario": "flight-live",
+      "name": "flight-live-liftoff canvas renders content",
+      "ok": true,
+      "detail": "300 colors, mean luma 32.8"
+    },
+    {
+      "scenario": "flight-live",
+      "name": "flight-live-climb canvas has no sky holes",
+      "ok": true,
+      "detail": "0 hole px in 0 columns (max run 0)"
+    },
+    {
+      "scenario": "flight-live",
+      "name": "flight-live-climb canvas renders content",
+      "ok": true,
+      "detail": "93 colors, mean luma 29.9"
+    },
+    {
+      "scenario": "flight-live",
+      "name": "jetpack climbs after one second",
+      "ok": true,
+      "detail": "alt 5.41 m, vz 5.60, fuel 0.80 · JETPACK · BURN"
+    },
+    {
+      "scenario": "flight-live",
+      "name": "burn reaches the 18 m ceiling",
+      "ok": true,
+      "detail": "alt 18.00 m, fuel 0.16"
+    },
+    {
+      "scenario": "flight-live",
+      "name": "jetpack fuel was spent by the climb",
+      "ok": true,
+      "detail": "fuel 0.16"
+    },
+    {
+      "scenario": "flight-live",
+      "name": "ceiling look-down reaches the top pitch band",
+      "ok": true,
+      "detail": "pitch -78 deg · sprite band 3"
+    },
+    {
+      "scenario": "flight-live",
+      "name": "flight-live-apex canvas has no sky holes",
+      "ok": true,
+      "detail": "0 hole px in 0 columns (max run 0)"
+    },
+    {
+      "scenario": "flight-live",
+      "name": "flight-live-apex canvas renders content",
+      "ok": true,
+      "detail": "175 colors, mean luma 37.9"
+    },
+    {
+      "scenario": "flight-live",
+      "name": "ceiling view shows the ground",
+      "ok": true,
+      "detail": "18637 top px"
+    },
+    {
+      "scenario": "flight-live",
+      "name": "flight-live-fall canvas has no sky holes",
+      "ok": true,
+      "detail": "0 hole px in 0 columns (max run 0)"
+    },
+    {
+      "scenario": "flight-live",
+      "name": "flight-live-fall canvas renders content",
+      "ok": true,
+      "detail": "193 colors, mean luma 38.2"
+    },
+    {
+      "scenario": "flight-live",
+      "name": "releasing thrust starts the fall",
+      "ok": true,
+      "detail": "alt 16.84 m, vz -6.30"
+    },
+    {
+      "scenario": "flight-live",
+      "name": "flight-live-landed canvas has no sky holes",
+      "ok": true,
+      "detail": "0 hole px in 0 columns (max run 0)"
+    },
+    {
+      "scenario": "flight-live",
+      "name": "flight-live-landed canvas renders content",
+      "ok": true,
+      "detail": "34 colors, mean luma 57.5"
+    },
+    {
+      "scenario": "flight-live",
+      "name": "the flight lands back on the courtyard floor",
+      "ok": true,
+      "detail": "alt 0.00 m at 3.50,1.50 · WALK · ATTRACT"
+    },
+    {
+      "scenario": "flight-realtime",
+      "name": "flight-realtime-burn canvas has no sky holes",
+      "ok": true,
+      "detail": "0 hole px in 0 columns (max run 0)"
+    },
+    {
+      "scenario": "flight-realtime",
+      "name": "flight-realtime-burn canvas renders content",
+      "ok": true,
+      "detail": "45 colors, mean luma 29.0"
+    },
+    {
+      "scenario": "flight-realtime",
+      "name": "the live loop sustains interactive frame rate",
+      "ok": true,
+      "detail": "59.8 fps over 1.52 s"
+    },
+    {
+      "scenario": "flight-realtime",
+      "name": "a real-time burn climbs without the scripted stepper",
+      "ok": true,
+      "detail": "alt 8.15 m, 91 frames"
+    },
+    {
+      "scenario": "page",
+      "name": "no page errors",
+      "ok": true,
+      "detail": "0 errors"
+    }
+  ],
+  "captures": [
+    {
+      "name": "f01-ground-level",
+      "kind": "canvas"
+    },
+    {
+      "name": "f02-ground-lookdown",
+      "kind": "canvas"
+    },
+    {
+      "name": "f03-hover-4m-level",
+      "kind": "canvas"
+    },
+    {
+      "name": "f04-hover-4m-down",
+      "kind": "canvas"
+    },
+    {
+      "name": "f05-climb-8m-down",
+      "kind": "canvas"
+    },
+    {
+      "name": "f06-climb-8m-uptilt",
+      "kind": "canvas"
+    },
+    {
+      "name": "f07-altitude-12m-down",
+      "kind": "canvas"
+    },
+    {
+      "name": "f08-altitude-12m-down",
+      "kind": "canvas"
+    },
+    {
+      "name": "f09-altitude-16m-top",
+      "kind": "canvas"
+    },
+    {
+      "name": "f10-ceiling-18m-down",
+      "kind": "canvas"
+    },
+    {
+      "name": "f11-ceiling-18m-level",
+      "kind": "canvas"
+    },
+    {
+      "name": "f12-map-edge",
+      "kind": "canvas"
+    },
+    {
+      "name": "f13-corner-overshoot",
+      "kind": "canvas"
+    },
+    {
+      "name": "f14-wall-line-a",
+      "kind": "canvas",
+      "silhouette": 0
+    },
+    {
+      "name": "f15-wall-line-b",
+      "kind": "canvas",
+      "silhouette": 0
+    },
+    {
+      "name": "f16-wall-line-c",
+      "kind": "canvas",
+      "silhouette": 0
+    },
+    {
+      "name": "f17-overhead-scholar",
+      "kind": "canvas",
+      "holes": 0
+    },
+    {
+      "name": "f18-wall-top-hover",
+      "kind": "canvas"
+    },
+    {
+      "name": "flight-live-liftoff-canvas",
+      "kind": "canvas"
+    },
+    {
+      "name": "flight-live-liftoff",
+      "kind": "page"
+    },
+    {
+      "name": "flight-live-climb-canvas",
+      "kind": "canvas"
+    },
+    {
+      "name": "flight-live-climb",
+      "kind": "page"
+    },
+    {
+      "name": "flight-live-apex-canvas",
+      "kind": "canvas"
+    },
+    {
+      "name": "flight-live-apex",
+      "kind": "page"
+    },
+    {
+      "name": "flight-live-fall-canvas",
+      "kind": "canvas"
+    },
+    {
+      "name": "flight-live-fall",
+      "kind": "page"
+    },
+    {
+      "name": "flight-live-landed-canvas",
+      "kind": "canvas"
+    },
+    {
+      "name": "flight-live-landed",
+      "kind": "page"
+    },
+    {
+      "name": "flight-realtime-burn-canvas",
+      "kind": "canvas"
+    },
+    {
+      "name": "flight-realtime-burn",
+      "kind": "page"
+    }
+  ],
+  "consoleErrors": [],
+  "sheets": {
+    "canvas": "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/flight/contact-sheet.png",
+    "pages": "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/flight/page-sheet.png"
+  }
+}

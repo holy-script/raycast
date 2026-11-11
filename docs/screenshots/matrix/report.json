@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-11T16:38:25.984Z",
+  "generatedAt": "2026-11-11T17:15:56.488Z",
   "url": "http://127.0.0.1:5201/?screenshot",
-  "durationMs": 6654,
+  "durationMs": 7614,
   "scenarios": [
     "g01-spawn-idle",
     "g02-walk-forward",
@@ -137,7 +137,7 @@
       "group": "ground",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 66996.00, 0.00"
+      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 67138.00, 0.00"
     },
     {
       "scenario": "g01-spawn-idle",
@@ -172,14 +172,14 @@
       "group": "ground",
       "name": "g02-walk-forward renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 55.1"
+      "detail": "512 colors, mean luma 55.0"
     },
     {
       "scenario": "g02-walk-forward",
       "group": "ground",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.00, 1.50, 0.00, 1.00, 384.00, 64977.00, 0.00"
+      "detail": "5.00, 1.50, 0.00, 1.00, 384.00, 65156.00, 0.00"
     },
     {
       "scenario": "g02-walk-forward",
@@ -221,7 +221,7 @@
       "group": "ground",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "2.00, 1.50, 0.00, 1.00, 384.00, 70209.00, 0.00"
+      "detail": "2.00, 1.50, 0.00, 1.00, 384.00, 70226.00, 0.00"
     },
     {
       "scenario": "g03-walk-backward",
@@ -256,7 +256,7 @@
       "group": "ground",
       "name": "g04-strafe-right renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 67.1"
+      "detail": "512 colors, mean luma 67.2"
     },
     {
       "scenario": "g04-strafe-right",
@@ -305,7 +305,7 @@
       "group": "ground",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 3.00, 0.00, 1.00, 384.00, 82417.00, 0.00"
+      "detail": "5.50, 3.00, 0.00, 1.00, 384.00, 82518.00, 0.00"
     },
     {
       "scenario": "g05-strafe-left",
@@ -347,7 +347,7 @@
       "group": "ground",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "7.80, 4.50, 0.00, 1.00, 384.00, 57956.00, 0.00"
+      "detail": "7.80, 4.50, 0.00, 1.00, 384.00, 58265.00, 0.00"
     },
     {
       "scenario": "g06-sprint-forward",
@@ -389,7 +389,7 @@
       "group": "ground",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "6.56, 4.56, 0.00, 1.00, 384.00, 67627.00, 0.00"
+      "detail": "6.56, 4.56, 0.00, 1.00, 384.00, 67812.00, 0.00"
     },
     {
       "scenario": "g07-diagonal-walk",
@@ -431,7 +431,7 @@
       "group": "ground",
       "name": "g08-wall-block renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 73.0"
+      "detail": "512 colors, mean luma 73.1"
     },
     {
       "scenario": "g08-wall-block",
@@ -473,7 +473,7 @@
       "group": "ground",
       "name": "g09-north-wall-slide renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 61.4"
+      "detail": "512 colors, mean luma 61.5"
     },
     {
       "scenario": "g09-north-wall-slide",
@@ -515,14 +515,14 @@
       "group": "ground",
       "name": "g10-respawn-key renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 51.5"
+      "detail": "512 colors, mean luma 51.4"
     },
     {
       "scenario": "g10-respawn-key",
       "group": "ground",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 67109.00, 0.00"
+      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 67275.00, 0.00"
     },
     {
       "scenario": "g10-respawn-key",
@@ -564,14 +564,14 @@
       "group": "vertical",
       "name": "v01-jump-burst renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 40.3"
+      "detail": "512 colors, mean luma 40.2"
     },
     {
       "scenario": "v01-jump-burst",
       "group": "vertical",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 4.50, 0.81, 0.98, 384.00, 42524.00, 0.00"
+      "detail": "5.50, 4.50, 0.81, 0.98, 384.00, 42721.00, 0.00"
     },
     {
       "scenario": "v01-jump-burst",
@@ -627,7 +627,7 @@
       "group": "vertical",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 4.50, 6.14, 0.80, 293.00, 6198.00, 3040.00"
+      "detail": "5.50, 4.50, 6.14, 0.80, 294.00, 6148.00, 3517.00"
     },
     {
       "scenario": "v02-jet-burn",
@@ -711,14 +711,14 @@
       "group": "vertical",
       "name": "v04-jet-empty-fuel renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 51.0"
+      "detail": "512 colors, mean luma 50.9"
     },
     {
       "scenario": "v04-jet-empty-fuel",
       "group": "vertical",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 4.50, 0.35, 0.00, 384.00, 66167.00, 0.00"
+      "detail": "5.50, 4.50, 0.35, 0.00, 384.00, 66329.00, 0.00"
     },
     {
       "scenario": "v04-jet-empty-fuel",
@@ -753,14 +753,14 @@
       "group": "vertical",
       "name": "v05-fall-land renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 58.0"
+      "detail": "512 colors, mean luma 58.3"
     },
     {
       "scenario": "v05-fall-land",
       "group": "vertical",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 4.50, 0.00, 1.00, 314.00, 25823.00, 0.00"
+      "detail": "5.50, 4.50, 0.00, 1.00, 310.00, 28281.00, 0.00"
     },
     {
       "scenario": "v05-fall-land",
@@ -795,14 +795,14 @@
       "group": "vertical",
       "name": "v06-ground-refuel renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 55.0"
+      "detail": "512 colors, mean luma 54.9"
     },
     {
       "scenario": "v06-ground-refuel",
       "group": "vertical",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 4.50, 0.00, 0.70, 384.00, 67900.00, 0.00"
+      "detail": "5.50, 4.50, 0.00, 0.70, 384.00, 68006.00, 0.00"
     },
     {
       "scenario": "v06-ground-refuel",
@@ -844,14 +844,14 @@
       "group": "vertical",
       "name": "v07-freefly-up renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 34.3"
+      "detail": "512 colors, mean luma 34.2"
     },
     {
       "scenario": "v07-freefly-up",
       "group": "vertical",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 4.50, 4.00, 1.00, 361.00, 12972.00, 6853.00"
+      "detail": "5.50, 4.50, 4.00, 1.00, 363.00, 12914.00, 7322.00"
     },
     {
       "scenario": "v07-freefly-up",
@@ -893,7 +893,7 @@
       "group": "vertical",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "4.50, 13.50, 0.60, 1.00, 384.00, 33798.00, 0.00"
+      "detail": "4.50, 13.50, 0.60, 1.00, 384.00, 33939.00, 0.00"
     },
     {
       "scenario": "v08-freefly-descend-crate",
@@ -935,7 +935,7 @@
       "group": "vertical",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 4.50, 5.15, 1.00, 316.00, 8606.00, 4538.00"
+      "detail": "5.50, 4.50, 5.15, 1.00, 317.00, 8564.00, 4976.00"
     },
     {
       "scenario": "v09-freefly-off-fall",
@@ -970,14 +970,14 @@
       "group": "aim",
       "name": "a01-ground-pitch-clamp-down renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 59.9"
+      "detail": "512 colors, mean luma 59.2"
     },
     {
       "scenario": "a01-ground-pitch-clamp-down",
       "group": "aim",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 4.50, 0.00, 1.00, 0.00, 0.00, 0.00"
+      "detail": "5.50, 4.50, 0.00, 1.00, 19.00, 452.00, 0.00"
     },
     {
       "scenario": "a01-ground-pitch-clamp-down",
@@ -1012,14 +1012,14 @@
       "group": "aim",
       "name": "a02-ground-pitch-clamp-up renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 32.7"
+      "detail": "512 colors, mean luma 33.3"
     },
     {
       "scenario": "a02-ground-pitch-clamp-up",
       "group": "aim",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 4.50, 0.00, 1.00, 58.00, 1758.00, 0.00"
+      "detail": "5.50, 4.50, 0.00, 1.00, 80.00, 6853.00, 0.00"
     },
     {
       "scenario": "a02-ground-pitch-clamp-up",
@@ -1054,14 +1054,14 @@
       "group": "aim",
       "name": "a03-air-pitch-top renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 45.6"
+      "detail": "512 colors, mean luma 41.2"
     },
     {
       "scenario": "a03-air-pitch-top",
       "group": "aim",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "7.50, 1.58, 14.00, 1.00, 352.00, 2637.00, 13564.00"
+      "detail": "7.50, 1.58, 14.00, 1.00, 201.00, 5949.00, 19166.00"
     },
     {
       "scenario": "a03-air-pitch-top",
@@ -1103,7 +1103,7 @@
       "group": "aim",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 4.50, 0.00, 1.00, 384.00, 46349.00, 0.00"
+      "detail": "5.50, 4.50, 0.00, 1.00, 384.00, 46367.00, 0.00"
     },
     {
       "scenario": "a04-mouse-yaw",
@@ -1138,14 +1138,14 @@
       "group": "aim",
       "name": "a05-mouse-pitch renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 37.6"
+      "detail": "512 colors, mean luma 40.0"
     },
     {
       "scenario": "a05-mouse-pitch",
       "group": "aim",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 4.50, 0.00, 1.00, 301.00, 25721.00, 0.00"
+      "detail": "5.50, 4.50, 0.00, 1.00, 298.00, 32333.00, 0.00"
     },
     {
       "scenario": "a05-mouse-pitch",
@@ -1187,7 +1187,7 @@
       "group": "aim",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "16.50, 4.50, 0.00, 1.00, 384.00, 62900.00, 0.00"
+      "detail": "16.50, 4.50, 0.00, 1.00, 384.00, 63161.00, 0.00"
     },
     {
       "scenario": "a06-sector-front",
@@ -1222,14 +1222,14 @@
       "group": "aim",
       "name": "a07-sector-back renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 49.6"
+      "detail": "512 colors, mean luma 49.7"
     },
     {
       "scenario": "a07-sector-back",
       "group": "aim",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "22.50, 4.50, 0.00, 1.00, 384.00, 40017.00, 0.00"
+      "detail": "22.50, 4.50, 0.00, 1.00, 384.00, 40300.00, 0.00"
     },
     {
       "scenario": "a07-sector-back",
@@ -1271,7 +1271,7 @@
       "group": "aim",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "21.50, 7.50, 0.00, 1.00, 384.00, 35176.00, 0.00"
+      "detail": "21.50, 7.50, 0.00, 1.00, 384.00, 35506.00, 0.00"
     },
     {
       "scenario": "a08-sector-south",
@@ -1313,7 +1313,7 @@
       "group": "aim",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "21.50, 2.50, 0.00, 1.00, 384.00, 26170.00, 0.00"
+      "detail": "21.50, 2.50, 0.00, 1.00, 384.00, 26267.00, 0.00"
     },
     {
       "scenario": "a09-sector-north",
@@ -1348,7 +1348,7 @@
       "group": "aim",
       "name": "a10-sector-ne renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 67.3"
+      "detail": "512 colors, mean luma 67.4"
     },
     {
       "scenario": "a10-sector-ne",
@@ -1397,7 +1397,7 @@
       "group": "aim",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "17.50, 6.50, 1.40, 1.00, 384.00, 27257.00, 2857.00"
+      "detail": "17.50, 6.50, 1.40, 1.00, 384.00, 27411.00, 3038.00"
     },
     {
       "scenario": "a11-sector-sw",
@@ -1439,7 +1439,7 @@
       "group": "aim",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "22.50, 6.50, 0.00, 1.00, 384.00, 32832.00, 0.00"
+      "detail": "22.50, 6.50, 0.00, 1.00, 384.00, 33073.00, 0.00"
     },
     {
       "scenario": "a12-sector-se",
@@ -1474,14 +1474,14 @@
       "group": "aim",
       "name": "a13-sector-nw renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 41.6"
+      "detail": "512 colors, mean luma 41.7"
     },
     {
       "scenario": "a13-sector-nw",
       "group": "aim",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "22.50, 2.50, 0.00, 1.00, 384.00, 21784.00, 0.00"
+      "detail": "22.50, 2.50, 0.00, 1.00, 384.00, 22067.00, 0.00"
     },
     {
       "scenario": "a13-sector-nw",
@@ -1565,7 +1565,7 @@
       "group": "aim",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 1.50, 0.00, 1.00, 384.00, 68210.00, 0.00"
+      "detail": "5.50, 1.50, 0.00, 1.00, 384.00, 68289.00, 0.00"
     },
     {
       "scenario": "a15-pitch-band-level",
@@ -1600,14 +1600,14 @@
       "group": "aim",
       "name": "a16-pitch-band-high renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 33.6"
+      "detail": "512 colors, mean luma 33.5"
     },
     {
       "scenario": "a16-pitch-band-high",
       "group": "aim",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "4.50, 1.50, 3.00, 1.00, 275.00, 11536.00, 5052.00"
+      "detail": "4.50, 1.50, 3.00, 1.00, 275.00, 11077.00, 5874.00"
     },
     {
       "scenario": "a16-pitch-band-high",
@@ -1642,14 +1642,14 @@
       "group": "aim",
       "name": "a17-pitch-band-top renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 43.1"
+      "detail": "512 colors, mean luma 40.1"
     },
     {
       "scenario": "a17-pitch-band-top",
       "group": "aim",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "4.50, 1.50, 12.00, 1.00, 384.00, 8044.00, 25135.00"
+      "detail": "4.50, 1.50, 12.00, 1.00, 232.00, 9652.00, 20655.00"
     },
     {
       "scenario": "a17-pitch-band-top",
@@ -1684,14 +1684,14 @@
       "group": "aim",
       "name": "a18-fov-stable-altitude renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 42.8"
+      "detail": "512 colors, mean luma 40.0"
     },
     {
       "scenario": "a18-fov-stable-altitude",
       "group": "aim",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 4.50, 16.00, 1.00, 384.00, 8818.00, 21180.00"
+      "detail": "5.50, 4.50, 16.00, 1.00, 280.00, 10209.00, 17935.00"
     },
     {
       "scenario": "a18-fov-stable-altitude",
@@ -1726,14 +1726,14 @@
       "group": "aim",
       "name": "a19-topdown-scale renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 45.6"
+      "detail": "512 colors, mean luma 41.2"
     },
     {
       "scenario": "a19-topdown-scale",
       "group": "aim",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "7.50, 1.58, 14.00, 1.00, 352.00, 2637.00, 13564.00"
+      "detail": "7.50, 1.58, 14.00, 1.00, 201.00, 5949.00, 19166.00"
     },
     {
       "scenario": "a19-topdown-scale",
@@ -1768,14 +1768,14 @@
       "group": "surfaces",
       "name": "s01-stairs-approach renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 42.0"
+      "detail": "512 colors, mean luma 42.1"
     },
     {
       "scenario": "s01-stairs-approach",
       "group": "surfaces",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "11.50, 22.50, 0.00, 1.00, 384.00, 32795.00, 27314.00"
+      "detail": "11.50, 22.50, 0.00, 1.00, 384.00, 33152.00, 27005.00"
     },
     {
       "scenario": "s01-stairs-approach",
@@ -1824,7 +1824,7 @@
       "group": "surfaces",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "11.50, 19.35, 0.40, 1.00, 384.00, 26444.00, 0.00"
+      "detail": "11.50, 19.35, 0.40, 1.00, 384.00, 26671.00, 0.00"
     },
     {
       "scenario": "s02-stairs-climb",
@@ -1859,7 +1859,7 @@
       "group": "surfaces",
       "name": "s03-stairs-descend renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 57.6"
+      "detail": "512 colors, mean luma 57.7"
     },
     {
       "scenario": "s03-stairs-descend",
@@ -1901,14 +1901,14 @@
       "group": "surfaces",
       "name": "s04-platform-stand renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 44.3"
+      "detail": "512 colors, mean luma 44.1"
     },
     {
       "scenario": "s04-platform-stand",
       "group": "surfaces",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "11.50, 19.50, 0.40, 1.00, 384.00, 37491.00, 19525.00"
+      "detail": "11.50, 19.50, 0.40, 1.00, 384.00, 37408.00, 19891.00"
     },
     {
       "scenario": "s04-platform-stand",
@@ -1950,7 +1950,7 @@
       "group": "surfaces",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "4.50, 14.19, 0.00, 1.00, 384.00, 82228.00, 0.00"
+      "detail": "4.50, 14.19, 0.00, 1.00, 384.00, 82646.00, 0.00"
     },
     {
       "scenario": "s05-crate-block",
@@ -1985,14 +1985,14 @@
       "group": "surfaces",
       "name": "s06-crate-perch renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 55.8"
+      "detail": "512 colors, mean luma 58.4"
     },
     {
       "scenario": "s06-crate-perch",
       "group": "surfaces",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "4.50, 13.50, 0.60, 1.00, 384.00, 0.00, 79104.00"
+      "detail": "4.50, 13.50, 0.60, 1.00, 384.00, 0.00, 86400.00"
     },
     {
       "scenario": "s06-crate-perch",
@@ -2034,14 +2034,14 @@
       "group": "surfaces",
       "name": "s07-wall-land renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 51.7"
+      "detail": "512 colors, mean luma 51.1"
     },
     {
       "scenario": "s07-wall-land",
       "group": "surfaces",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "3.50, 2.50, 1.40, 1.00, 384.00, 30884.00, 51990.00"
+      "detail": "3.50, 2.50, 1.40, 1.00, 384.00, 32473.00, 50937.00"
     },
     {
       "scenario": "s07-wall-land",
@@ -2076,7 +2076,7 @@
       "group": "surfaces",
       "name": "s08-wall-stepoff renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 72.5"
+      "detail": "512 colors, mean luma 72.6"
     },
     {
       "scenario": "s08-wall-stepoff",
@@ -2104,7 +2104,7 @@
       "group": "surfaces",
       "name": "perched overhead view renders tops",
       "ok": true,
-      "detail": "56832 top px, 384 columns"
+      "detail": "92160 top px, 384 columns"
     },
     {
       "scenario": "s09-wall-perch-down",
@@ -2118,14 +2118,14 @@
       "group": "surfaces",
       "name": "s09-wall-perch-down renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 54.8"
+      "detail": "512 colors, mean luma 59.9"
     },
     {
       "scenario": "s09-wall-perch-down",
       "group": "surfaces",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "3.50, 2.50, 1.40, 1.00, 384.00, 0.00, 56832.00"
+      "detail": "3.50, 2.50, 1.40, 1.00, 384.00, 0.00, 92160.00"
     },
     {
       "scenario": "s09-wall-perch-down",
@@ -2160,7 +2160,7 @@
       "group": "surfaces",
       "name": "s10-near-wall renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 73.3"
+      "detail": "512 colors, mean luma 73.4"
     },
     {
       "scenario": "s10-near-wall",
@@ -2202,7 +2202,7 @@
       "group": "surfaces",
       "name": "s11-near-wall-lookdown renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 68.6"
+      "detail": "512 colors, mean luma 65.7"
     },
     {
       "scenario": "s11-near-wall-lookdown",
@@ -2251,14 +2251,14 @@
       "group": "surfaces",
       "name": "s12-wall-side-landing renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 55.3"
+      "detail": "512 colors, mean luma 56.5"
     },
     {
       "scenario": "s12-wall-side-landing",
       "group": "surfaces",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "2.99, 1.50, 0.00, 1.00, 384.00, 40330.00, 0.00"
+      "detail": "2.99, 1.50, 0.00, 1.00, 384.00, 44948.00, 0.00"
     },
     {
       "scenario": "s12-wall-side-landing",
@@ -2307,7 +2307,7 @@
       "group": "surfaces",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "1.19, 2.99, 0.00, 1.00, 384.00, 31870.00, 0.00"
+      "detail": "1.19, 2.99, 0.00, 1.00, 384.00, 31713.00, 0.00"
     },
     {
       "scenario": "s13-corner-landing",
@@ -2356,7 +2356,7 @@
       "group": "actors",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "14.50, 9.50, 0.00, 1.00, 384.00, 48741.00, 0.00"
+      "detail": "14.50, 9.50, 0.00, 1.00, 384.00, 48804.00, 0.00"
     },
     {
       "scenario": "c01-watcher-tracks",
@@ -2398,7 +2398,7 @@
       "group": "actors",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "11.50, 12.50, 0.00, 1.00, 384.00, 69173.00, 0.00"
+      "detail": "11.50, 12.50, 0.00, 1.00, 384.00, 69221.00, 0.00"
     },
     {
       "scenario": "c02-patrol-advance",
@@ -2440,7 +2440,7 @@
       "group": "actors",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "11.50, 12.50, 0.00, 1.00, 384.00, 69173.00, 0.00"
+      "detail": "11.50, 12.50, 0.00, 1.00, 384.00, 69221.00, 0.00"
     },
     {
       "scenario": "c03-patrol-reverse",
@@ -2482,7 +2482,7 @@
       "group": "actors",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "16.50, 12.50, 0.00, 1.00, 384.00, 36832.00, 0.00"
+      "detail": "16.50, 12.50, 0.00, 1.00, 384.00, 37036.00, 0.00"
     },
     {
       "scenario": "c04-chase-approach",
@@ -2517,7 +2517,7 @@
       "group": "actors",
       "name": "c05-hover-bob renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 55.5"
+      "detail": "512 colors, mean luma 55.6"
     },
     {
       "scenario": "c05-hover-bob",
@@ -2566,7 +2566,7 @@
       "group": "actors",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 1.50, 0.00, 1.00, 384.00, 68210.00, 0.00"
+      "detail": "5.50, 1.50, 0.00, 1.00, 384.00, 68289.00, 0.00"
     },
     {
       "scenario": "c06-idle-animation",
@@ -2601,14 +2601,14 @@
       "group": "actors",
       "name": "c07-occlusion-crate renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 42.0"
+      "detail": "512 colors, mean luma 42.1"
     },
     {
       "scenario": "c07-occlusion-crate",
       "group": "actors",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "4.50, 15.50, 0.00, 1.00, 384.00, 42044.00, 0.00"
+      "detail": "4.50, 15.50, 0.00, 1.00, 384.00, 42311.00, 0.00"
     },
     {
       "scenario": "c07-occlusion-crate",
@@ -2643,7 +2643,7 @@
       "group": "actors",
       "name": "c08-occlusion-wall renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 55.5"
+      "detail": "512 colors, mean luma 55.6"
     },
     {
       "scenario": "c08-occlusion-wall",
@@ -2671,7 +2671,7 @@
       "group": "actors",
       "name": "overhead actor keeps a readable silhouette",
       "ok": true,
-      "detail": "7x6 px, 28 opaque px, x=190.4"
+      "detail": "8x12 px, 63 opaque px, x=190.4"
     },
     {
       "scenario": "c09-overhead-guard",
@@ -2685,14 +2685,14 @@
       "group": "actors",
       "name": "c09-overhead-guard renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 45.6"
+      "detail": "512 colors, mean luma 41.2"
     },
     {
       "scenario": "c09-overhead-guard",
       "group": "actors",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "7.50, 1.58, 14.00, 1.00, 352.00, 2637.00, 13564.00"
+      "detail": "7.50, 1.58, 14.00, 1.00, 201.00, 5949.00, 19166.00"
     },
     {
       "scenario": "c09-overhead-guard",
@@ -2727,14 +2727,14 @@
       "group": "actors",
       "name": "c10-overhead-edge-actor renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 38.6"
+      "detail": "512 colors, mean luma 35.0"
     },
     {
       "scenario": "c10-overhead-edge-actor",
       "group": "actors",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "21.50, 4.58, 14.00, 1.00, 384.00, 1152.00, 7680.00"
+      "detail": "21.50, 4.58, 14.00, 1.00, 292.00, 2995.00, 12878.00"
     },
     {
       "scenario": "c10-overhead-edge-actor",
@@ -2769,14 +2769,14 @@
       "group": "actors",
       "name": "c11-multi-actor-aerial renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 51.1"
+      "detail": "512 colors, mean luma 48.2"
     },
     {
       "scenario": "c11-multi-actor-aerial",
       "group": "actors",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "11.50, 12.50, 14.00, 1.00, 384.00, 3979.00, 15171.00"
+      "detail": "11.50, 12.50, 14.00, 1.00, 362.00, 10956.00, 33077.00"
     },
     {
       "scenario": "c11-multi-actor-aerial",
@@ -2811,21 +2811,21 @@
       "group": "viewmodel",
       "name": "w01-idle-viewmodel renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 55.0"
+      "detail": "512 colors, mean luma 54.9"
     },
     {
       "scenario": "w01-idle-overlay",
       "group": "viewmodel",
       "name": "w01-idle-overlay renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 55.0"
+      "detail": "512 colors, mean luma 54.9"
     },
     {
       "scenario": "w01-idle-overlay",
       "group": "viewmodel",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 4.50, 0.00, 1.00, 384.00, 67900.00, 0.00"
+      "detail": "5.50, 4.50, 0.00, 1.00, 384.00, 68006.00, 0.00"
     },
     {
       "scenario": "w01-idle-overlay",
@@ -2853,21 +2853,21 @@
       "group": "viewmodel",
       "name": "w02-strike-viewmodel renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 55.3"
+      "detail": "512 colors, mean luma 55.2"
     },
     {
       "scenario": "w02-attack-swing",
       "group": "viewmodel",
       "name": "w02-attack-swing renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 55.3"
+      "detail": "512 colors, mean luma 55.2"
     },
     {
       "scenario": "w02-attack-swing",
       "group": "viewmodel",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 4.50, 0.00, 1.00, 384.00, 67900.00, 0.00"
+      "detail": "5.50, 4.50, 0.00, 1.00, 384.00, 68006.00, 0.00"
     },
     {
       "scenario": "w02-attack-swing",
@@ -2895,14 +2895,14 @@
       "group": "viewmodel",
       "name": "w03-swing-recovery renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 54.9"
+      "detail": "512 colors, mean luma 54.8"
     },
     {
       "scenario": "w03-swing-recovery",
       "group": "viewmodel",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 4.50, 0.00, 1.00, 384.00, 67900.00, 0.00"
+      "detail": "5.50, 4.50, 0.00, 1.00, 384.00, 68006.00, 0.00"
     },
     {
       "scenario": "w03-swing-recovery",
@@ -2930,7 +2930,7 @@
       "group": "ui",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 66996.00, 0.00"
+      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 67138.00, 0.00"
     },
     {
       "scenario": "u01-minimap-visible",
@@ -2965,7 +2965,7 @@
       "group": "ui",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 66996.00, 0.00"
+      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 67138.00, 0.00"
     },
     {
       "scenario": "u02-minimap-hidden",
@@ -3000,7 +3000,7 @@
       "group": "ui",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 66996.00, 0.00"
+      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 67138.00, 0.00"
     },
     {
       "scenario": "u03-hud-minimal",
@@ -3042,14 +3042,14 @@
       "group": "ui",
       "name": "u04-pause-freeze renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 55.0"
+      "detail": "512 colors, mean luma 54.9"
     },
     {
       "scenario": "u04-pause-freeze",
       "group": "ui",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 4.50, 0.00, 1.00, 384.00, 67900.00, 0.00"
+      "detail": "5.50, 4.50, 0.00, 1.00, 384.00, 68006.00, 0.00"
     },
     {
       "scenario": "u04-pause-freeze",
@@ -3070,21 +3070,21 @@
       "group": "ui",
       "name": "resuming advances the simulation",
       "ok": true,
-      "detail": "patrol dx 0.38, 23 frames, paused=false, 6.43% pixels changed"
+      "detail": "patrol dx 0.37, 23 frames, paused=false, 6.40% pixels changed"
     },
     {
       "scenario": "u05-pause-resume",
       "group": "ui",
       "name": "u05-pause-resume renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 53.5"
+      "detail": "512 colors, mean luma 53.4"
     },
     {
       "scenario": "u05-pause-resume",
       "group": "ui",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "7.50, 14.50, 0.00, 1.00, 384.00, 61760.00, 0.00"
+      "detail": "7.50, 14.50, 0.00, 1.00, 384.00, 61891.00, 0.00"
     },
     {
       "scenario": "u05-pause-resume",
@@ -3126,14 +3126,14 @@
       "group": "ui",
       "name": "u06-hud-values renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 35.3"
+      "detail": "512 colors, mean luma 34.2"
     },
     {
       "scenario": "u06-hud-values",
       "group": "ui",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "11.50, 12.50, 8.00, 1.00, 384.00, 12140.00, 9893.00"
+      "detail": "11.50, 12.50, 8.00, 1.00, 384.00, 13265.00, 11477.00"
     },
     {
       "scenario": "u06-hud-values",
@@ -3175,7 +3175,7 @@
       "group": "ui",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "3.50, 1.50, 0.00, 0.37, 384.00, 66996.00, 0.00"
+      "detail": "3.50, 1.50, 0.00, 0.37, 384.00, 67138.00, 0.00"
     },
     {
       "scenario": "u07-fuel-readout",
@@ -3210,14 +3210,14 @@
       "group": "routes",
       "name": "r01-jet-over-wall renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 36.6"
+      "detail": "512 colors, mean luma 36.3"
     },
     {
       "scenario": "r01-jet-over-wall",
       "group": "routes",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "3.55, 2.50, 1.40, 1.00, 384.00, 29367.00, 9626.00"
+      "detail": "3.55, 2.50, 1.40, 1.00, 384.00, 28505.00, 10929.00"
     },
     {
       "scenario": "r01-jet-over-wall",
@@ -3294,14 +3294,14 @@
       "group": "routes",
       "name": "r03-aerial-lookdown renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 51.0"
+      "detail": "512 colors, mean luma 48.6"
     },
     {
       "scenario": "r03-aerial-lookdown",
       "group": "routes",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "11.50, 12.50, 16.00, 1.00, 384.00, 3061.00, 14656.00"
+      "detail": "11.50, 12.50, 16.00, 1.00, 362.00, 12953.00, 31292.00"
     },
     {
       "scenario": "r03-aerial-lookdown",
@@ -3343,7 +3343,7 @@
       "group": "routes",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 66996.00, 0.00"
+      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 67138.00, 0.00"
     },
     {
       "scenario": "r04-respawn-midair",
@@ -3378,14 +3378,14 @@
       "group": "routes",
       "name": "r05-sprint-route renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 48.5"
+      "detail": "512 colors, mean luma 48.4"
     },
     {
       "scenario": "r05-sprint-route",
       "group": "routes",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "8.10, 1.50, 0.00, 1.00, 384.00, 53700.00, 0.00"
+      "detail": "8.10, 1.50, 0.00, 1.00, 384.00, 53854.00, 0.00"
     },
     {
       "scenario": "r05-sprint-route",
@@ -3441,7 +3441,7 @@
       "group": "interaction",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "17.50, 9.50, 0.00, 1.00, 384.00, 47260.00, 0.00"
+      "detail": "17.50, 9.50, 0.00, 1.00, 384.00, 47375.00, 0.00"
     },
     {
       "scenario": "i01-keycard-pickup",
@@ -3490,7 +3490,7 @@
       "group": "interaction",
       "name": "i02-door-locked renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 68.6"
+      "detail": "512 colors, mean luma 68.5"
     },
     {
       "scenario": "i02-door-locked",
@@ -3560,7 +3560,7 @@
       "group": "interaction",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "8.40, 11.50, 0.00, 1.00, 384.00, 67244.00, 0.00"
+      "detail": "8.40, 11.50, 0.00, 1.00, 384.00, 67295.00, 0.00"
     },
     {
       "scenario": "i03-door-unlock",
@@ -3616,7 +3616,7 @@
       "group": "interaction",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "8.50, 1.50, 0.00, 1.00, 384.00, 67946.00, 0.00"
+      "detail": "8.50, 1.50, 0.00, 1.00, 384.00, 68071.00, 0.00"
     },
     {
       "scenario": "i04-talk-cycle",
@@ -3665,7 +3665,7 @@
       "group": "interaction",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "1.50, 21.50, 0.00, 1.00, 384.00, 75921.00, 0.00"
+      "detail": "1.50, 21.50, 0.00, 1.00, 384.00, 75882.00, 0.00"
     },
     {
       "scenario": "i05-medkit-heal",
@@ -3756,14 +3756,14 @@
       "group": "interaction",
       "name": "i07-empty-interact renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 55.0"
+      "detail": "512 colors, mean luma 54.9"
     },
     {
       "scenario": "i07-empty-interact",
       "group": "interaction",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 4.50, 0.00, 1.00, 384.00, 67901.00, 0.00"
+      "detail": "5.50, 4.50, 0.00, 1.00, 384.00, 68006.00, 0.00"
     },
     {
       "scenario": "i07-empty-interact",
@@ -3805,7 +3805,7 @@
       "group": "combat",
       "name": "f01-enemy-hurt renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 47.8"
+      "detail": "512 colors, mean luma 47.9"
     },
     {
       "scenario": "f01-player-strike",
@@ -3819,14 +3819,14 @@
       "group": "combat",
       "name": "f01-player-strike renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 47.8"
+      "detail": "512 colors, mean luma 47.9"
     },
     {
       "scenario": "f01-player-strike",
       "group": "combat",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "17.00, 14.50, 0.00, 1.00, 384.00, 45860.00, 0.00"
+      "detail": "17.00, 14.50, 0.00, 1.00, 384.00, 46127.00, 0.00"
     },
     {
       "scenario": "f01-player-strike",
@@ -3896,7 +3896,7 @@
       "group": "combat",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "17.00, 14.50, 0.00, 1.00, 384.00, 45859.00, 0.00"
+      "detail": "17.00, 14.50, 0.00, 1.00, 384.00, 46127.00, 0.00"
     },
     {
       "scenario": "f02-player-kill",
@@ -3931,14 +3931,14 @@
       "group": "combat",
       "name": "f03-attack-arc renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 54.1"
+      "detail": "512 colors, mean luma 54.0"
     },
     {
       "scenario": "f03-attack-arc",
       "group": "combat",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "17.00, 14.50, 0.00, 1.00, 384.00, 61838.00, 0.00"
+      "detail": "17.00, 14.50, 0.00, 1.00, 384.00, 61938.00, 0.00"
     },
     {
       "scenario": "f03-attack-arc",
@@ -3980,7 +3980,7 @@
       "group": "combat",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "14.50, 14.50, 0.00, 1.00, 384.00, 46749.00, 0.00"
+      "detail": "14.50, 14.50, 0.00, 1.00, 384.00, 46936.00, 0.00"
     },
     {
       "scenario": "f04-attack-range",
@@ -4029,7 +4029,7 @@
       "group": "combat",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "17.60, 14.50, 0.00, 1.00, 384.00, 43077.00, 0.00"
+      "detail": "17.60, 14.50, 0.00, 1.00, 384.00, 43082.00, 0.00"
     },
     {
       "scenario": "f05-hostile-damage",
@@ -4092,7 +4092,7 @@
       "group": "combat",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 66996.00, 0.00"
+      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 67138.00, 0.00"
     },
     {
       "scenario": "f06-death-redeploy",
@@ -4127,14 +4127,14 @@
       "group": "combat",
       "name": "f07-attack-cooldown renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 48.8"
+      "detail": "512 colors, mean luma 48.9"
     },
     {
       "scenario": "f07-attack-cooldown",
       "group": "combat",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "17.00, 14.50, 0.00, 1.00, 384.00, 45859.00, 0.00"
+      "detail": "17.00, 14.50, 0.00, 1.00, 384.00, 46127.00, 0.00"
     },
     {
       "scenario": "f07-attack-cooldown",
@@ -4176,7 +4176,7 @@
       "group": "combat",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "17.60, 14.50, 0.00, 1.00, 384.00, 43077.00, 0.00"
+      "detail": "17.60, 14.50, 0.00, 1.00, 384.00, 43082.00, 0.00"
     },
     {
       "scenario": "f08-enemy-windup",
@@ -4225,7 +4225,7 @@
       "group": "levels",
       "name": "l01-reactor-spawn renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 42.5"
+      "detail": "512 colors, mean luma 42.6"
     },
     {
       "scenario": "l01-transition-reactor",
@@ -4239,14 +4239,14 @@
       "group": "levels",
       "name": "l01-transition-reactor renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 42.5"
+      "detail": "512 colors, mean luma 42.6"
     },
     {
       "scenario": "l01-transition-reactor",
       "group": "levels",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "2.50, 20.50, 0.00, 1.00, 384.00, 26484.00, 0.00"
+      "detail": "2.50, 20.50, 0.00, 1.00, 384.00, 26555.00, 55.00"
     },
     {
       "scenario": "l01-transition-reactor",
@@ -4302,7 +4302,7 @@
       "group": "levels",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 66996.00, 0.00"
+      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 67138.00, 0.00"
     },
     {
       "scenario": "l02-vault-return",
@@ -4358,14 +4358,14 @@
       "group": "levels",
       "name": "l03-terrace-climb renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 46.0"
+      "detail": "512 colors, mean luma 45.9"
     },
     {
       "scenario": "l03-terrace-climb",
       "group": "levels",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "9.50, 15.90, 0.00, 1.00, 384.00, 38935.00, 7.00"
+      "detail": "9.50, 15.90, 0.00, 1.00, 384.00, 39120.00, 9.00"
     },
     {
       "scenario": "l03-terrace-climb",
@@ -4400,14 +4400,14 @@
       "group": "levels",
       "name": "l04-reactor-hover renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 39.7"
+      "detail": "512 colors, mean luma 39.8"
     },
     {
       "scenario": "l04-reactor-hover",
       "group": "levels",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "2.50, 20.50, 0.00, 1.00, 384.00, 20970.00, 247.00"
+      "detail": "2.50, 20.50, 0.00, 1.00, 384.00, 21116.00, 240.00"
     },
     {
       "scenario": "l04-reactor-hover",
@@ -4456,7 +4456,7 @@
       "group": "levels",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 66998.00, 0.00"
+      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 67138.00, 0.00"
     },
     {
       "scenario": "l05-beacon-loop",
