@@ -84,6 +84,10 @@ Browser verification (2026-11-11, headless Chrome over CDP, `http://127.0.0.1:51
 - Production harness run (2026-11-11, after the M6 deploy): passed 29/29 against
   https://raycast-rosy.vercel.app/ with all three 16×4 atlases served; Vercel deployment
   `raycast-knbwjpvue` reached Ready in 11 s.
+- Production harness run (2026-11-11, after the M7 gameplay deploy): playtest 29/29 and
+  matrix 490/490 against https://raycast-rosy.vercel.app/ (external-URL runs report the
+  490 assertions and skip local golden comparisons). The deployed bundle hash changed to
+  `index-uLO0AW2V.js`, confirming the GitHub → Vercel auto-deploy.
 
 State-matrix verification (2026-11-11, `npm run playtest:matrix`):
 
