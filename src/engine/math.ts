@@ -37,6 +37,16 @@ export function spriteYawIndex(
 
 export type PitchIndex = 0 | 1 | 2 | 3;
 
+export interface PitchSample {
+  index: PitchIndex;
+  next: PitchIndex;
+  /** 0 = fully `index`, 1 = fully `next`. */
+  mix: number;
+}
+
+const PITCH_BOUNDARIES = [-0.155, 0.245, 0.87];
+const PITCH_FADE = 0.12;
+
 /**
  * 0 = camera below the entity (low), 1 = level, 2 = above (high),
  * 3 = near-overhead (top). Thresholds sit between the atlas elevations
@@ -54,6 +64,24 @@ export function quantizePitch(elevation: number, pitches = 4): PitchIndex {
   if (elevation >= 0.245) return 2;
   if (elevation >= -0.155) return 1;
   return 0;
+}
+
+/**
+ * Adds a narrow crossfade band around each pitch threshold so actors do not pop
+ * between atlas angles while the player rises or looks down.
+ */
+export function samplePitch(elevation: number, pitches = 4): PitchSample {
+  const index = quantizePitch(elevation, pitches);
+  if (pitches !== 4) return { index, next: index, mix: 0 };
+
+  for (let band = 0; band < PITCH_BOUNDARIES.length; band += 1) {
+    const delta = elevation - PITCH_BOUNDARIES[band];
+    if (Math.abs(delta) > PITCH_FADE) continue;
+    const mix = clamp(0.5 + delta / (2 * PITCH_FADE), 0, 1);
+    return { index: band as PitchIndex, next: (band + 1) as PitchIndex, mix };
+  }
+
+  return { index, next: index, mix: 0 };
 }
 
 export function elevationAngle(

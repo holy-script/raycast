@@ -16,6 +16,6 @@ describe("settings", () => {
 
     const high = clampSettings({ sensitivity: 9, fov: 400, muted: false });
     expect(high.sensitivity).toBe(2);
-    expect(high.fov).toBe(100);
+    expect(high.fov).toBe(90);
   });
 });

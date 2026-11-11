@@ -2,9 +2,13 @@ import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { PNG } from "pngjs";
 
-const DEFAULT_CHARACTERS = ["guardian", "scout", "brute"];
+const DEFAULT_CHARACTERS = ["guardian"];
 const FRAME_WORLD_SIZE = 1.15;
 const FRAME_ANCHOR_Z = -0.075;
+// Matches PITCH_SCALES in render_turntable.py. The near-overhead frame is
+// rendered with a tighter ortho frame, so its billboard must cover less world
+// space or characters visibly grow while the camera rises.
+const PITCH_ORTHO_SCALES = [1.15, 1.15, 1.15, 0.78];
 
 const STATES = [
   { name: "idle", fps: 2, frames: 2 },
@@ -129,6 +133,9 @@ function packCharacter(dir: CharacterDirs): number {
     frameHeight,
     frameWorldSize: FRAME_WORLD_SIZE,
     frameAnchorZ: FRAME_ANCHOR_Z,
+    pitchWorldScale: PITCH_ORTHO_SCALES.slice(0, pitches).map(
+      (scale) => scale / FRAME_WORLD_SIZE,
+    ),
     directions,
     pitches,
     pitchOrder: ["low", "level", "high", "top"].slice(0, pitches),

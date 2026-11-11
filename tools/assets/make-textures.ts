@@ -144,6 +144,44 @@ function floorTexture(): void {
   });
 }
 
+/** Slab surface for wall tops; using the side texture made tops read as streaks. */
+function topTexture(): void {
+  const rng = mulberry32(7717);
+  writePng("top.png", (x, y) => {
+    const border = x < 2 || y < 2 || x > 61 || y > 61;
+    const groove = Math.abs(x - 31.5) < 1 || Math.abs(y - 31.5) < 1;
+    const brushed = (rng() - 0.5) * 9;
+    const falloff = 8 - (y / SIZE) * 10;
+
+    if (border) return [24 + brushed, 28 + brushed, 34 + brushed];
+    if (groove) return [30 + brushed, 35 + brushed, 41 + brushed];
+
+    let r = 52 + brushed + falloff;
+    let g = 64 + brushed + falloff;
+    let b = 69 + brushed + falloff;
+
+    for (const [rx, ry] of [
+      [8, 8],
+      [55, 8],
+      [8, 55],
+      [55, 55],
+    ]) {
+      const d = Math.hypot(x - rx, y - ry);
+      if (d < 1.4) {
+        r += 24;
+        g += 28;
+        b += 30;
+      } else if (d < 2.4) {
+        r -= 14;
+        g -= 14;
+        b -= 14;
+      }
+    }
+
+    return [r, g, b];
+  });
+}
+
 const PROP_SIZE = 32;
 
 function writePropPng(
@@ -271,6 +309,7 @@ function doorTexture(): void {
 brickTexture();
 panelTexture();
 floorTexture();
+topTexture();
 keycardProp();
 medkitProp();
 fuelProp();

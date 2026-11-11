@@ -5,7 +5,7 @@ import { PNG } from "pngjs";
 
 const SCALE = 4;
 const ALPHA_CUTOFF = 0.5;
-const DEFAULT_CHARACTERS = ["guardian", "scout", "brute"];
+const DEFAULT_CHARACTERS = ["guardian"];
 
 interface CharacterDirs {
   name: string;

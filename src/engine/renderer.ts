@@ -45,6 +45,9 @@ export interface SpriteDraw {
   z: number;
   facing: number;
   frame: FrameRect;
+  /** Optional second atlas angle/frame; blended by `blend`. */
+  frameB?: FrameRect;
+  blend?: number;
   worldSize: number;
   /** Offset of the frame's bottom edge relative to the actor's feet. */
   anchorZ?: number;
@@ -73,10 +76,18 @@ export interface SpriteScreenRect {
   contentH: number;
 }
 
+export interface ViewmodelDraw {
+  texture: Texture;
+  /** Top-left corner in framebuffer pixels. */
+  x: number;
+  y: number;
+}
+
 export interface RenderStats {
   wallColumns: number;
   wallPixels: number;
   topPixels: number;
+  viewmodelPixels: number;
   spriteRects: SpriteScreenRect[];
 }
 
@@ -89,6 +100,7 @@ export class Renderer {
     wallColumns: 0,
     wallPixels: 0,
     topPixels: 0,
+    viewmodelPixels: 0,
     spriteRects: [],
   };
   private readonly image: ImageData;
@@ -154,17 +166,21 @@ export class Renderer {
     world: World,
     textures: Record<number, Texture>,
     floorTexture: Texture,
+    topTexture: Texture,
     sprites: SpriteDraw[],
+    viewmodel?: ViewmodelDraw,
   ): void {
     this.stats.wallColumns = 0;
     this.stats.wallPixels = 0;
     this.stats.topPixels = 0;
+    this.stats.viewmodelPixels = 0;
     this.stats.spriteRects = [];
     this.drawSky();
     this.depth.fill(Infinity);
-    this.drawWalls(cam, world, textures);
+    this.drawWalls(cam, world, textures, topTexture);
     this.drawFloor(cam, world, floorTexture);
     this.drawSprites(cam, sprites);
+    if (viewmodel) this.drawViewmodel(viewmodel);
     this.ctx.putImageData(this.image, 0, 0);
   }
 
@@ -189,6 +205,7 @@ export class Renderer {
     cam: CameraState,
     world: World,
     textures: Record<number, Texture>,
+    topTexture: Texture,
   ): void {
     const { width, height, pixels, depth } = this;
     const cosP = Math.cos(cam.pitch);
@@ -264,7 +281,7 @@ export class Renderer {
         if (cam.eyeZ > wallHeight + 0.001) {
           const tops = this.drawCellTop(
             cam,
-            texture,
+            topTexture,
             hit,
             x,
             rayX,
@@ -302,8 +319,7 @@ export class Renderer {
     cosP: number,
     sinP: number,
     fogScale: number,
-  ): number {
-    const { width, height, pixels, depth } = this;
+  ): number {    const { width, height, pixels, depth } = this;
     const dz = hit.height - cam.eyeZ;
     if (dz >= -0.001) return 0;
 
@@ -318,14 +334,19 @@ export class Renderer {
       const s = (this.centerY - (y + 0.5)) / cam.focal;
       const denominator = s * cosP + sinP;
       if (Math.abs(denominator) < 1e-6) continue;
-      const distance = (dz * (cosP - s * sinP)) / denominator;
-      if (
-        distance <= NEAR_PLANE ||
-        distance < hit.distance - 1e-4 ||
-        distance > hit.exitDistance + 1e-4
-      ) {
-        continue;
-      }
+      const rawDistance = (dz * (cosP - s * sinP)) / denominator;
+      if (rawDistance <= NEAR_PLANE) continue;
+      // Clamp rows that land a hair outside the cell back onto its edge. This
+      // fills the one-pixel cracks that appeared where tops met wall faces.
+      const nearEdge = hit.distance + 1e-4;
+      const farEdge = Math.max(nearEdge, hit.exitDistance - 1e-4);
+      if (rawDistance < nearEdge - 0.03 || rawDistance > farEdge + 0.03) continue;
+      const distance =
+        rawDistance < nearEdge
+          ? nearEdge
+          : rawDistance > farEdge
+            ? farEdge
+            : rawDistance;
 
       const worldX = cam.x + distance * rayX;
       const worldY = cam.y + distance * rayY;
@@ -348,10 +369,10 @@ export class Renderer {
       );
       const src = (texY * texture.width + texX) * 4;
       const dst = idx * 4;
-      const edge = fx < 0.06 || fx > 0.94 || fy < 0.06 || fy > 0.94;
+      const edgeDistance = Math.min(fx, 1 - fx, fy, 1 - fy);
+      const bevel = 0.9 + clamp(edgeDistance / 0.06, 0, 1) * 0.1;
       const shade =
-        clamp(1 / (1 + distance * 0.075 * fogScale), 0.06, 1) *
-        (edge ? 1.32 : 0.82);
+        clamp(1 / (1 + distance * 0.075 * fogScale), 0.06, 1) * 0.95 * bevel;
       const fog = 1 - shade;
       pixels[dst] = texture.data[src] * shade + FOG_R * fog;
       pixels[dst + 1] = texture.data[src + 1] * shade + FOG_G * fog;
@@ -514,6 +535,9 @@ export class Renderer {
     const data = texture.data;
     const spriteAlpha = sprite.alpha ?? 1;
     const tint = sprite.tint ?? [1, 1, 1];
+    const frameB =
+      sprite.frameB && sprite.frameB.texture === texture ? sprite.frameB : undefined;
+    const blend = frameB ? clamp(sprite.blend ?? 0, 0, 1) : 0;
     const shade = clamp(
       1 / (1 + zCam * 0.05 * (cam.fogScale ?? 1)),
       0.1,
@@ -533,13 +557,39 @@ export class Renderer {
       const u = (x + 0.5 - left) * uScale;
       if (u < 0 || u >= 1) continue;
       const texX = sx + Math.min(sw - 1, Math.floor(u * sw));
+      const texXB = frameB
+        ? frameB.sx + Math.min(frameB.sw - 1, Math.floor(u * frameB.sw))
+        : texX;
       for (let y = yStart; y <= yEnd; y += 1) {
         const v = (y + 0.5 - top) * vScale;
         if (v < 0 || v >= 1) continue;
 
         const texY = sy + Math.min(sh - 1, Math.floor(v * sh));
         const src = (texY * texture.width + texX) * 4;
-        const alpha = (data[src + 3] / 255) * spriteAlpha;
+        let alpha = data[src + 3] / 255;
+        let r = data[src];
+        let g = data[src + 1];
+        let b = data[src + 2];
+
+        if (frameB) {
+          const texYB = frameB.sy + Math.min(frameB.sh - 1, Math.floor(v * frameB.sh));
+          const srcB = (texYB * texture.width + texXB) * 4;
+          const alphaB = data[srcB + 3] / 255;
+          const blendedAlpha = alpha * (1 - blend) + alphaB * blend;
+          if (blendedAlpha > 1e-4) {
+            // Blend premultiplied colour so transparent texels do not darken edges.
+            r = (r * alpha * (1 - blend) + data[srcB] * alphaB * blend) / blendedAlpha;
+            g =
+              (g * alpha * (1 - blend) + data[srcB + 1] * alphaB * blend) /
+              blendedAlpha;
+            b =
+              (b * alpha * (1 - blend) + data[srcB + 2] * alphaB * blend) /
+              blendedAlpha;
+          }
+          alpha = blendedAlpha;
+        }
+
+        alpha *= spriteAlpha;
         if (alpha <= 0.02) continue;
 
         const idx = y * width + x;
@@ -549,14 +599,14 @@ export class Renderer {
         }
 
         const dst = idx * 4;
-        const r = data[src] * tint[0] * shade + FOG_R * fog;
-        const g = data[src + 1] * tint[1] * shade + FOG_G * fog;
-        const b = data[src + 2] * tint[2] * shade + FOG_B * fog;
-        pixels[dst] = r * alpha + pixels[dst] * (1 - alpha);
-        pixels[dst + 1] = g * alpha + pixels[dst + 1] * (1 - alpha);
-        pixels[dst + 2] = b * alpha + pixels[dst + 2] * (1 - alpha);
+        const shadedR = r * tint[0] * shade + FOG_R * fog;
+        const shadedG = g * tint[1] * shade + FOG_G * fog;
+        const shadedB = b * tint[2] * shade + FOG_B * fog;
+        pixels[dst] = shadedR * alpha + pixels[dst] * (1 - alpha);
+        pixels[dst + 1] = shadedG * alpha + pixels[dst + 1] * (1 - alpha);
+        pixels[dst + 2] = shadedB * alpha + pixels[dst + 2] * (1 - alpha);
         pixels[dst + 3] = 255;
-        if (alpha > 0.6) depth[idx] = forward;
+        if (alpha > 0.4) depth[idx] = forward;
         drawn += 1;
         if (x < minX) minX = x;
         if (x > maxX) maxX = x;
@@ -569,6 +619,41 @@ export class Renderer {
     rect.occluded = occluded;
     rect.contentW = maxX >= minX ? maxX - minX + 1 : 0;
     rect.contentH = maxY >= minY ? maxY - minY + 1 : 0;
+  }
+
+  /**
+   * Composites the first-person hands/weapon over the finished framebuffer.
+   * The viewmodel is drawn last and ignores depth so it never clips into walls.
+   */
+  private drawViewmodel(viewmodel: ViewmodelDraw): void {
+    const { width, height, pixels } = this;
+    const { texture } = viewmodel;
+    const data = texture.data;
+    // Snap to whole pixels: typed-array writes at fractional indices are
+    // silently dropped, which made the viewmodel invisible at bob offsets.
+    const originX = Math.round(viewmodel.x);
+    const originY = Math.round(viewmodel.y);
+    let drawn = 0;
+
+    for (let ty = 0; ty < texture.height; ty += 1) {
+      const y = originY + ty;
+      if (y < 0 || y >= height) continue;
+      for (let tx = 0; tx < texture.width; tx += 1) {
+        const x = originX + tx;
+        if (x < 0 || x >= width) continue;
+        const src = (ty * texture.width + tx) * 4;
+        const alpha = data[src + 3] / 255;
+        if (alpha <= 0.01) continue;
+        const dst = (y * width + x) * 4;
+        pixels[dst] = data[src] * alpha + pixels[dst] * (1 - alpha);
+        pixels[dst + 1] = data[src + 1] * alpha + pixels[dst + 1] * (1 - alpha);
+        pixels[dst + 2] = data[src + 2] * alpha + pixels[dst + 2] * (1 - alpha);
+        pixels[dst + 3] = 255;
+        drawn += 1;
+      }
+    }
+
+    this.stats.viewmodelPixels = drawn;
   }
 
   private drawShadow(cam: CameraState, entry: PreparedSprite): void {

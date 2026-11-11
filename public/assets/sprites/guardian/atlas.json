@@ -6,6 +6,12 @@
   "frameHeight": 96,
   "frameWorldSize": 1.15,
   "frameAnchorZ": -0.075,
+  "pitchWorldScale": [
+    1,
+    1,
+    1,
+    0.6782608695652174
+  ],
   "directions": 16,
   "pitches": 4,
   "pitchOrder": [

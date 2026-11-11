@@ -12,7 +12,7 @@ import {
   type Rgb,
 } from "./metrics";
 
-const DEFAULT_CHARACTERS = ["guardian", "scout", "brute"];
+const DEFAULT_CHARACTERS = ["guardian"];
 const DEFAULT_MIN_IOU = 0.98;
 const DEFAULT_MAX_DRIFT = 12;
 const FRAME_PATTERN = /^([a-z]+)_f(\d+)_p(\d+)_y(\d+)\.png$/;

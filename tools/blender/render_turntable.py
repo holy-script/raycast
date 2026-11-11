@@ -2,10 +2,9 @@
 
 Run headless:
   blender -b --factory-startup --python tools/blender/render_turntable.py -- \
-      --character scout --resolution 384 --samples 24
+      --character guardian --resolution 384 --samples 24
 
-Characters: guardian, scout, brute. Output defaults to
-assets-src/characters/{character}/raw.
+Characters: guardian. Output defaults to assets-src/characters/{character}/raw.
 
 Frame naming: {state}_f{frame}_p{pitch}_y{yaw}.png
   pitch 0 = camera below, 1 = level, 2 = above, 3 = near-overhead
@@ -43,44 +42,6 @@ CHARACTERS = {
         "antenna": 0.13,
         "shoulder_plate": False,
         "pack_scale": (0.2, 0.1, 0.19),
-    },
-    "scout": {
-        "palette": {
-            "jacket": (0.09, 0.42, 0.4, 1.0),
-            "pants": (0.05, 0.09, 0.14, 1.0),
-            "skin": (0.78, 0.62, 0.4, 1.0),
-            "pad": (0.05, 0.12, 0.14, 1.0),
-            "visor": (0.25, 0.95, 0.78, 1.0),
-            "belt": (0.32, 0.5, 0.28, 1.0),
-            "pack": (0.04, 0.08, 0.09, 1.0),
-        },
-        "bulk": 0.84,
-        "leg": 1.0,
-        "helmet": 0.86,
-        "visor_emission": 3.4,
-        "tanks": False,
-        "antenna": 0.2,
-        "shoulder_plate": False,
-        "pack_scale": (0.17, 0.09, 0.15),
-    },
-    "brute": {
-        "palette": {
-            "jacket": (0.3, 0.09, 0.06, 1.0),
-            "pants": (0.09, 0.1, 0.12, 1.0),
-            "skin": (0.55, 0.42, 0.3, 1.0),
-            "pad": (0.13, 0.13, 0.15, 1.0),
-            "visor": (1.0, 0.33, 0.08, 1.0),
-            "belt": (0.42, 0.22, 0.06, 1.0),
-            "pack": (0.06, 0.06, 0.08, 1.0),
-        },
-        "bulk": 1.3,
-        "leg": 1.0,
-        "helmet": 1.18,
-        "visor_emission": 2.8,
-        "tanks": True,
-        "antenna": 0.0,
-        "shoulder_plate": True,
-        "pack_scale": (0.25, 0.12, 0.2),
     },
 }
 

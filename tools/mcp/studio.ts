@@ -9,7 +9,7 @@ const TSX = join(ROOT, "node_modules/tsx/dist/cli.mjs");
 const COMFY = join(ROOT, "tools/stylize/comfy.ts");
 const PACK = join(ROOT, "tools/atlas/pack.ts");
 const VERIFY = join(ROOT, "tools/verify/style.ts");
-const CHARACTERS = ["guardian", "scout", "brute"] as const;
+const CHARACTERS = ["guardian"] as const;
 const FRAME_KEY = /^[a-z]+_f\d+_p\d+_y\d+$/;
 const ONLY_SELECTOR = /^[a-z*]*(:\d*){0,3}$/;
 

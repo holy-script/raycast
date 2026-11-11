@@ -5,6 +5,7 @@ import {
   elevationAngle,
   lerp,
   quantizePitch,
+  samplePitch,
   shortestAngleDelta,
   spriteYawIndex,
   wrapAngle,
@@ -16,10 +17,12 @@ import {
   type RenderStats,
   type SpriteDraw,
   type Texture,
+  type ViewmodelDraw,
 } from "./engine/renderer";
 import {
   canOccupy,
   createWorld,
+  resolveFootprint,
   STEP_UP,
   supportHeight,
   type World,
@@ -36,7 +39,8 @@ import {
 } from "./content/levels";
 
 const DEFAULT_FOV = (70 * Math.PI) / 180;
-const ALTITUDE_FOV_BOOST = (30 * Math.PI) / 180;
+const MAX_FOV_DEGREES = 90;
+const MIN_FOV_DEGREES = 55;
 const EYE_HEIGHT = 0.55;
 const PLAYER_RADIUS = 0.19;
 const WALK_SPEED = 3.0;
@@ -74,6 +78,7 @@ const DEATH_STATE_TIME = 0.67;
 const PITCH_LABELS = ["LOW", "LEVEL", "HIGH", "TOP"];
 
 type ActorState = "idle" | "walk" | "attack" | "hurt" | "death" | "talk";
+export type ViewmodelPose = "idle0" | "idle1" | "windup" | "strike" | "recover";
 
 export type GameEvent =
   | "strike"
@@ -92,7 +97,9 @@ export interface GameAssets {
   atlases: Record<string, SpriteAtlas>;
   textures: Record<number, Texture>;
   floor: Texture;
+  wallTop: Texture;
   props: Record<PickupKind | "beacon", Texture>;
+  viewmodel: Record<ViewmodelPose, Texture>;
 }
 
 interface Player {
@@ -105,6 +112,7 @@ interface Player {
   onGround: boolean;
   bobPhase: number;
   eyeBob: number;
+  moving: boolean;
   fuel: number;
   thrusting: boolean;
   health: number;
@@ -179,6 +187,8 @@ export interface RenderDebug {
     pitch: number;
     forwardX: number;
     forwardY: number;
+    fovDegrees: number;
+    tanHalf: number;
   };
   player: {
     x: number;
@@ -188,6 +198,7 @@ export interface RenderDebug {
     onGround: boolean;
   };
   level: string;
+  viewmodel: { pose: string; dx: number; dy: number };
   actors: Array<{
     name: string;
     x: number;
@@ -199,6 +210,7 @@ export interface RenderDebug {
     yawIndex: number;
     pitchIndex: number;
     frameIndex: number;
+    worldSize: number;
     hp: number;
     maxHp: number;
     alive: boolean;
@@ -251,6 +263,7 @@ export class Game {
       onGround: true,
       bobPhase: 0,
       eyeBob: 0,
+      moving: false,
       fuel: 1,
       thrusting: false,
       health: PLAYER_MAX_HEALTH,
@@ -322,32 +335,16 @@ export class Game {
     const stepDistance = speed * dt;
 
     if (moveX !== 0 || moveY !== 0) {
-      const nextX = this.player.x + moveX * stepDistance;
-      if (
-        canOccupy(
-          this.world,
-          nextX,
-          this.player.y,
-          PLAYER_RADIUS,
-          this.player.z,
-          STEP_UP,
-        )
-      ) {
-        this.player.x = nextX;
-      }
-      const nextY = this.player.y + moveY * stepDistance;
-      if (
-        canOccupy(
-          this.world,
-          this.player.x,
-          nextY,
-          PLAYER_RADIUS,
-          this.player.z,
-          STEP_UP,
-        )
-      ) {
-        this.player.y = nextY;
-      }
+      const step = resolveFootprint(
+        this.world,
+        this.player.x + moveX * stepDistance,
+        this.player.y + moveY * stepDistance,
+        PLAYER_RADIUS,
+        this.player.z,
+        STEP_UP,
+      );
+      this.player.x = step.x;
+      this.player.y = step.y;
     }
 
     const support = supportHeight(
@@ -420,7 +417,33 @@ export class Game {
       }
     }
 
+    // Landing or stepping down can leave the capsule overlapping a wall even
+    // though the centre cell is walkable. Separate every frame so the player
+    // never starts a frame wedged against a wall they cannot walk out of.
+    const separated = resolveFootprint(
+      this.world,
+      this.player.x,
+      this.player.y,
+      PLAYER_RADIUS,
+      this.player.z,
+      STEP_UP,
+    );
+    if (separated.x !== this.player.x || separated.y !== this.player.y) {
+      this.player.x = separated.x;
+      this.player.y = separated.y;
+      const settled = supportHeight(this.world, separated.x, separated.y);
+      if (
+        this.player.onGround &&
+        settled > this.player.z &&
+        settled - this.player.z <= STEP_UP + 0.001
+      ) {
+        this.player.z = settled;
+        this.player.vz = 0;
+      }
+    }
+
     const moving = length > 0;
+    this.player.moving = moving;
     const bobTarget =
       moving && this.player.onGround ? Math.sin(this.player.bobPhase) * 0.015 : 0;
     if (moving && this.player.onGround) {
@@ -861,8 +884,58 @@ export class Game {
       this.world,
       this.assets.textures,
       this.assets.floor,
+      this.assets.wallTop,
       [...this.buildSprites(camera), ...this.buildPropSprites()],
+      this.buildViewmodel(),
     );
+  }
+
+  /**
+   * Attack poses advance on the cooldown clock, so a swing is visible even when
+   * no enemy is in range. Walking sway and idle breathing use the camera bob
+   * phase to keep the hands anchored to the player's motion.
+   */
+  private viewmodelState(): {
+    pose: ViewmodelPose;
+    dx: number;
+    dy: number;
+  } {
+    const cooldown = this.player.attackCooldown;
+    const elapsed = PLAYER_ATTACK_COOLDOWN - cooldown;
+    let pose: ViewmodelPose;
+    if (cooldown > 0 && elapsed < 0.09) pose = "windup";
+    else if (cooldown > 0 && elapsed < 0.22) pose = "strike";
+    else if (cooldown > 0 && elapsed < 0.36) pose = "recover";
+    else pose = Math.floor(this.time / 0.9) % 2 === 0 ? "idle0" : "idle1";
+
+    const walking = this.player.moving && this.player.onGround;
+    const swing = Math.sin(this.player.bobPhase);
+    let dx = walking ? swing * 5 : Math.sin(this.time * 1.6) * 1.5;
+    let dy = walking
+      ? Math.abs(swing) * 4
+      : Math.sin(this.time * 1.6) * 1.2;
+    if (pose === "windup") {
+      dx += 7;
+      dy += 12;
+    } else if (pose === "strike") {
+      dx -= 9;
+      dy -= 14;
+    } else if (pose === "recover") {
+      dx -= 2;
+      dy -= 3;
+    }
+    if (this.player.dead) dy += 26;
+    return { pose, dx, dy };
+  }
+
+  private buildViewmodel(): ViewmodelDraw {
+    const state = this.viewmodelState();
+    const texture = this.assets.viewmodel[state.pose];
+    return {
+      texture,
+      x: this.renderer.width - texture.width + 10 + state.dx,
+      y: this.renderer.height - texture.height + 22 + state.dy,
+    };
   }
 
   setSensitivity(value: number): void {
@@ -870,7 +943,7 @@ export class Game {
   }
 
   setFovDegrees(value: number): void {
-    this.fovDegrees = clamp(value, 55, 100);
+    this.fovDegrees = clamp(value, MIN_FOV_DEGREES, MAX_FOV_DEGREES);
   }
 
   private baseFov(): number {
@@ -878,10 +951,10 @@ export class Game {
   }
 
   private cameraState(): CameraState {
-    const altitudeT = clamp((this.player.z - 1) / 10, 0, 1);
-    const baseFov = this.baseFov();
-    const fov = baseFov + ALTITUDE_FOV_BOOST * altitudeT;
-    const tanHalf = Math.tan(fov / 2);
+    // A fixed FOV keeps scale and straight lines stable at every altitude. The
+    // old altitude boost stacked up to +30 degrees on a 100 degree base and made
+    // everything near the screen edges stretch while rising.
+    const tanHalf = Math.tan(this.baseFov() / 2);
     const dirX = Math.cos(this.player.yaw);
     const dirY = Math.sin(this.player.yaw);
     const focal = this.renderer.width / 2 / tanHalf;
@@ -909,6 +982,8 @@ export class Game {
   private spriteSelection(actor: Actor, camera: CameraState): {
     yawIndex: number;
     pitchIndex: PitchIndex;
+    pitchNext: PitchIndex;
+    pitchMix: number;
     frameIndex: number;
     worldSize: number;
   } {
@@ -926,10 +1001,15 @@ export class Game {
       actor.z +
       (manifest.frameAnchorZ ?? 0) +
       (manifest.frameWorldSize * (actor.spec.scale ?? 1)) / 2;
-    const pitchIndex = quantizePitch(
+    const pitch = samplePitch(
       elevationAngle(camera.eyeZ, centerZ, distance),
       manifest.pitches,
     );
+    // The near-overhead row was rendered through a tighter ortho frame; shrink
+    // its billboard by the same ratio so actors keep a stable apparent size.
+    const pitchScaleA = manifest.pitchWorldScale?.[pitch.index] ?? 1;
+    const pitchScaleB = manifest.pitchWorldScale?.[pitch.next] ?? pitchScaleA;
+    const billboardSize = worldSize * lerp(pitchScaleA, pitchScaleB, pitch.mix);
     const stateDef = manifest.states[actor.state] ?? manifest.states.idle;
     const clock =
       actor.state === "idle" || actor.state === "walk"
@@ -944,7 +1024,14 @@ export class Game {
         Math.floor(clock * stateDef.fps),
       );
     }
-    return { yawIndex, pitchIndex, frameIndex, worldSize };
+    return {
+      yawIndex,
+      pitchIndex: pitch.index,
+      pitchNext: pitch.next,
+      pitchMix: pitch.mix,
+      frameIndex,
+      worldSize: billboardSize,
+    };
   }
 
   private buildSprites(camera: CameraState): SpriteDraw[] {
@@ -960,12 +1047,20 @@ export class Game {
       const distance = Math.hypot(dx, dy);
       if (distance < 0.001) continue;
 
-      const { yawIndex, pitchIndex, frameIndex, worldSize } = this.spriteSelection(
-        actor,
-        camera,
-      );
+      const {
+        yawIndex,
+        pitchIndex,
+        pitchNext,
+        pitchMix,
+        frameIndex,
+        worldSize,
+      } = this.spriteSelection(actor, camera);
       const frame = atlas.getFrame(actor.state, pitchIndex, yawIndex, frameIndex);
       if (!frame) continue;
+      const frameB =
+        pitchNext !== pitchIndex
+          ? atlas.getFrame(actor.state, pitchNext, yawIndex, frameIndex)
+          : undefined;
 
       draws.push({
         x: actor.x,
@@ -973,6 +1068,8 @@ export class Game {
         z: actor.z,
         facing: actor.facing,
         frame,
+        frameB: frameB ?? undefined,
+        blend: pitchMix,
         worldSize,
         anchorZ: manifest.frameAnchorZ ?? 0,
         tint: actor.spec.tint,
@@ -1117,6 +1214,8 @@ export class Game {
         pitch: camera.pitch,
         forwardX: camera.dirX,
         forwardY: camera.dirY,
+        fovDegrees: this.fovDegrees,
+        tanHalf: camera.tanHalf,
       },
       player: {
         x: this.player.x,
@@ -1126,6 +1225,7 @@ export class Game {
         onGround: this.player.onGround,
       },
       level: this.level.id,
+      viewmodel: this.viewmodelState(),
       actors: this.actors.map((actor) => {
         const selection = this.spriteSelection(actor, camera);
         return {
@@ -1139,6 +1239,7 @@ export class Game {
           yawIndex: selection.yawIndex,
           pitchIndex: selection.pitchIndex,
           frameIndex: selection.frameIndex,
+          worldSize: selection.worldSize,
           hp: actor.hp,
           maxHp: actor.maxHp,
           alive: actor.alive,

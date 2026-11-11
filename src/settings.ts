@@ -7,7 +7,7 @@ export interface Settings {
 }
 
 export const SENSITIVITY_RANGE = { min: 0.4, max: 2.0 } as const;
-export const FOV_RANGE = { min: 55, max: 100 } as const;
+export const FOV_RANGE = { min: 55, max: 90 } as const;
 
 const STORAGE_KEY = "raycast.settings.v1";
 

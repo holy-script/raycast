@@ -3,6 +3,7 @@ import {
   canOccupy,
   createWorld,
   isSolidAt,
+  resolveFootprint,
   STEP_UP,
   supportHeight,
   tileAt,
@@ -64,6 +65,29 @@ describe("world grid", () => {
     expect(canOccupy(world, 0.05, 2.5, 0.2, 10)).toBe(false);
     expect(canOccupy(world, 4.95, 2.5, 0.2, 10)).toBe(false);
     expect(canOccupy(world, 2.5, 0.05, 0.2, 10)).toBe(false);
+  });
+
+  it("separates a footprint that overlaps a wall", () => {
+    const resolved = resolveFootprint(world, 1.9, 2.5, 0.2, 0);
+    expect(resolved.x).toBeLessThan(1.81);
+    expect(resolved.y).toBeCloseTo(2.5, 5);
+    expect(canOccupy(world, resolved.x, resolved.y, 0.2)).toBe(true);
+  });
+
+  it("separates a footprint whose centre is inside a wall", () => {
+    const resolved = resolveFootprint(world, 2.5, 2.5, 0.2, 0);
+    expect(canOccupy(world, resolved.x, resolved.y, 0.2)).toBe(true);
+  });
+
+  it("does not push a player standing on the wall top", () => {
+    const resolved = resolveFootprint(world, 1.9, 2.5, 0.2, WALL_HEIGHT);
+    expect(resolved.x).toBeCloseTo(1.9, 5);
+    expect(resolved.y).toBeCloseTo(2.5, 5);
+  });
+
+  it("pushes the player inward at the map edge", () => {
+    const resolved = resolveFootprint(world, 0.05, 2.5, 0.2, 0);
+    expect(resolved.x).toBeGreaterThanOrEqual(0.2);
   });
 
   it("rejects maps with inconsistent row widths", () => {

@@ -20,6 +20,8 @@ export interface AtlasManifest {
   frameHeight: number;
   frameWorldSize: number;
   frameAnchorZ?: number;
+  /** Per-pitch billboard scale, compensating the tighter near-overhead frame. */
+  pitchWorldScale?: number[];
   directions: number;
   pitches: number;
   pitchOrder: string[];
@@ -42,6 +44,27 @@ export class SpriteAtlas {
 
   private key(state: string, pitch: number, yaw: number, frame: number): string {
     return `${state}|${pitch}|${yaw}|${frame}`;
+  }
+
+  /**
+   * Every state/pitch/yaw/frame the manifest advertises must exist. Rendering
+   * silently falls back to idle, so a missing combat frame otherwise looks like
+   * an actor that refuses to attack.
+   */
+  missingFrames(): string[] {
+    const missing: string[] = [];
+    for (const [state, definition] of Object.entries(this.manifest.states)) {
+      for (let pitch = 0; pitch < this.manifest.pitches; pitch += 1) {
+        for (let yaw = 0; yaw < this.manifest.directions; yaw += 1) {
+          for (let frame = 0; frame < definition.frames; frame += 1) {
+            if (!this.frames.has(this.key(state, pitch, yaw, frame))) {
+              missing.push(`${state} f${frame} p${pitch} y${yaw}`);
+            }
+          }
+        }
+      }
+    }
+    return missing;
   }
 
   getFrame(

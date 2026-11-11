@@ -55,31 +55,47 @@ async function boot(): Promise<void> {
       panel,
       door,
       floor,
+      wallTop,
       keycard,
       medkit,
       fuel,
       beacon,
       guardian,
-      scout,
-      brute,
+      vmIdle0,
+      vmIdle1,
+      vmWindup,
+      vmStrike,
+      vmRecover,
     ] = await Promise.all([
       loadTexture(`${BASE}assets/textures/brick.png`),
       loadTexture(`${BASE}assets/textures/panel.png`),
       loadTexture(`${BASE}assets/textures/door.png`),
       loadTexture(`${BASE}assets/textures/floor.png`),
+      loadTexture(`${BASE}assets/textures/top.png`),
       loadTexture(`${BASE}assets/textures/keycard.png`),
       loadTexture(`${BASE}assets/textures/medkit.png`),
       loadTexture(`${BASE}assets/textures/fuel.png`),
       loadTexture(`${BASE}assets/textures/beacon.png`),
       loadAtlas(`${BASE}assets/sprites/guardian/atlas.json`),
-      loadAtlas(`${BASE}assets/sprites/scout/atlas.json`),
-      loadAtlas(`${BASE}assets/sprites/brute/atlas.json`),
+      loadTexture(`${BASE}assets/sprites/player/idle0.png`),
+      loadTexture(`${BASE}assets/sprites/player/idle1.png`),
+      loadTexture(`${BASE}assets/sprites/player/windup.png`),
+      loadTexture(`${BASE}assets/sprites/player/strike.png`),
+      loadTexture(`${BASE}assets/sprites/player/recover.png`),
     ]);
     assets = {
       textures: { 1: brick, 2: panel, 3: door },
       floor,
+      wallTop,
       props: { keycard, medkit, fuel, beacon },
-      atlases: { guardian, scout, brute },
+      atlases: { guardian },
+      viewmodel: {
+        idle0: vmIdle0,
+        idle1: vmIdle1,
+        windup: vmWindup,
+        strike: vmStrike,
+        recover: vmRecover,
+      },
     };
   } catch (error) {
     loading.textContent = `ASSET LOAD FAILED — ${String(error)}`;
@@ -244,6 +260,16 @@ async function boot(): Promise<void> {
     setPose: (x, y, z, yaw, pitch) => game.setPose(x, y, z, yaw, pitch),
     setFlying: (value) => game.setFlying(value),
     debug: () => game.getRenderDebug(),
+    atlasReport: () =>
+      Object.fromEntries(
+        Object.entries(assets.atlases).map(([name, atlas]) => [
+          name,
+          {
+            states: Object.keys(atlas.manifest.states),
+            missing: atlas.missingFrames(),
+          },
+        ]),
+      ),
     audioRunning: () => audio.running,
     dismissIntro: () => {
       intro.classList.add("hidden");
@@ -324,6 +350,7 @@ declare global {
       setPose: (x: number, y: number, z: number, yaw: number, pitch: number) => void;
       setFlying: (value: boolean) => void;
       debug: () => RenderDebug;
+      atlasReport: () => Record<string, { states: string[]; missing: string[] }>;
       audioRunning: () => boolean;
       dismissIntro: () => void;
       automation: {

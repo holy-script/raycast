@@ -185,26 +185,17 @@ function startDevServer(): ChildProcess {
 }
 
 interface ChassisProfile {
-  id: "guardian" | "scout" | "brute";
+  id: "guardian";
   talk: { actor: string; level: string; x: number; y: number; yaw: number };
   combat: { actor: string; level: string; x: number; y: number; yaw: number; hp: number };
 }
 
+// Only the guardian chassis is authored; every actor renders through its atlas.
 const PROFILES: ChassisProfile[] = [
   {
     id: "guardian",
     talk: { actor: "guard", level: "courtyard", x: 9.8, y: 1.5, yaw: Math.PI },
     combat: { actor: "marauder", level: "courtyard", x: 22.7, y: 22.5, yaw: Math.PI, hp: 110 },
-  },
-  {
-    id: "scout",
-    talk: { actor: "scholar", level: "courtyard", x: 2.2, y: 12.5, yaw: 0 },
-    combat: { actor: "stalker", level: "courtyard", x: 16.3, y: 14.5, yaw: 0, hp: 70 },
-  },
-  {
-    id: "brute",
-    talk: { actor: "tinker", level: "courtyard", x: 19.2, y: 4.5, yaw: 0 },
-    combat: { actor: "reactor-brute", level: "reactor", x: 17.3, y: 6.5, yaw: 0, hp: 140 },
   },
 ];
 

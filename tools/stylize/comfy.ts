@@ -8,12 +8,10 @@ import { stylize as paletteStylize } from "./pixel-art";
 
 const FRAME_SIZE = 96;
 const FRAME_PATTERN = /^([a-z]+)_f(\d+)_p(\d+)_y(\d+)\.png$/;
-const DEFAULT_CHARACTERS = ["guardian", "scout", "brute"];
+const DEFAULT_CHARACTERS = ["guardian"];
 
 const DESCRIPTORS: Record<string, string> = {
   guardian: "bulky guardian robot with a rust jacket, teal trousers and a bright teal visor",
-  scout: "slim scout robot with a teal jacket, dark trousers, pale visor and a long antenna",
-  brute: "wide brute robot with charcoal armour, orange visor and heavy shoulder plates",
 };
 
 const DEFAULT_STYLE =

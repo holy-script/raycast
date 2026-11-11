@@ -20,3 +20,6 @@ artifacts/
 
 # Vercel project link (created by vercel CLI)
 .vercel/
+
+# Raw viewmodel renders; packed frames live in public/assets/sprites/player/
+assets-src/viewmodel/raw/

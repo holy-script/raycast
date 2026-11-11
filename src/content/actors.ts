@@ -1,5 +1,5 @@
 export type ActorBehavior = "idle" | "watcher" | "patrol" | "chase" | "hover";
-export type SpriteId = "guardian" | "scout" | "brute";
+export type SpriteId = "guardian";
 
 export interface ActorSpec {
   name: string;
@@ -29,7 +29,7 @@ const NORTH = -Math.PI * 0.5;
 export const COURTYARD_ACTORS: ActorSpec[] = [
   {
     name: "sentinel",
-    sprite: "scout",
+    sprite: "guardian",
     x: 18.5,
     y: 9.5,
     facing: WEST,
@@ -62,7 +62,7 @@ export const COURTYARD_ACTORS: ActorSpec[] = [
   },
   {
     name: "scholar",
-    sprite: "scout",
+    sprite: "guardian",
     x: 4.5,
     y: 12.5,
     facing: NORTH,
@@ -73,7 +73,7 @@ export const COURTYARD_ACTORS: ActorSpec[] = [
   },
   {
     name: "warden",
-    sprite: "brute",
+    sprite: "guardian",
     x: 12.5,
     y: 22.5,
     facing: NORTH,
@@ -83,7 +83,7 @@ export const COURTYARD_ACTORS: ActorSpec[] = [
   },
   {
     name: "ranger",
-    sprite: "scout",
+    sprite: "guardian",
     x: 1.5,
     y: 3.5,
     facing: SOUTH,
@@ -94,7 +94,7 @@ export const COURTYARD_ACTORS: ActorSpec[] = [
   },
   {
     name: "tinker",
-    sprite: "brute",
+    sprite: "guardian",
     x: 21.5,
     y: 4.5,
     facing: WEST,
@@ -117,7 +117,7 @@ export const COURTYARD_ACTORS: ActorSpec[] = [
   },
   {
     name: "drone",
-    sprite: "scout",
+    sprite: "guardian",
     x: 11.5,
     y: 9.5,
     facing: EAST,
@@ -128,7 +128,7 @@ export const COURTYARD_ACTORS: ActorSpec[] = [
   },
   {
     name: "wisp",
-    sprite: "scout",
+    sprite: "guardian",
     x: 2.5,
     y: 14.5,
     facing: SOUTH,
@@ -139,7 +139,7 @@ export const COURTYARD_ACTORS: ActorSpec[] = [
   },
   {
     name: "stalker",
-    sprite: "scout",
+    sprite: "guardian",
     x: 18.5,
     y: 14.5,
     facing: WEST,
@@ -153,7 +153,7 @@ export const COURTYARD_ACTORS: ActorSpec[] = [
   },
   {
     name: "prowler",
-    sprite: "brute",
+    sprite: "guardian",
     x: 6.5,
     y: 20.5,
     facing: WEST,
@@ -184,7 +184,7 @@ export const COURTYARD_ACTORS: ActorSpec[] = [
 export const REACTOR_ACTORS: ActorSpec[] = [
   {
     name: "engineer",
-    sprite: "scout",
+    sprite: "guardian",
     x: 15.5,
     y: 12.5,
     facing: SOUTH,
@@ -198,7 +198,7 @@ export const REACTOR_ACTORS: ActorSpec[] = [
   },
   {
     name: "reactor-scout",
-    sprite: "scout",
+    sprite: "guardian",
     x: 2.5,
     y: 12.5,
     facing: EAST,
@@ -212,7 +212,7 @@ export const REACTOR_ACTORS: ActorSpec[] = [
   },
   {
     name: "reactor-brute",
-    sprite: "brute",
+    sprite: "guardian",
     x: 19.5,
     y: 6.5,
     facing: WEST,

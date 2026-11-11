@@ -83,6 +83,86 @@ export function tileAt(world: World, x: number, y: number): number {
   return world.tiles[Math.floor(y) * world.width + Math.floor(x)];
 }
 
+export interface Footprint {
+  x: number;
+  y: number;
+}
+
+/**
+ * Pushes a circular footprint out of every solid cell taller than `z + maxStep`.
+ * A landing can leave the capsule overlapping a wall even though the centre cell
+ * is valid; without this, every candidate position is rejected and the player
+ * wedges in place. Out-of-bounds cells are treated as full walls so the map edge
+ * also pushes inward.
+ */
+export function resolveFootprint(
+  world: World,
+  x: number,
+  y: number,
+  radius: number,
+  z = 0,
+  maxStep = 0.02,
+): Footprint {
+  let px = x;
+  let py = y;
+
+  for (let iteration = 0; iteration < 4; iteration += 1) {
+    let pushed = false;
+    const minX = Math.floor(px - radius);
+    const maxX = Math.floor(px + radius);
+    const minY = Math.floor(py - radius);
+    const maxY = Math.floor(py + radius);
+
+    for (let cellY = minY; cellY <= maxY; cellY += 1) {
+      for (let cellX = minX; cellX <= maxX; cellX += 1) {
+        const height = tileHeightAt(world, cellX + 0.5, cellY + 0.5);
+        if (height <= z + maxStep) continue;
+
+        const nearestX = Math.max(cellX, Math.min(px, cellX + 1));
+        const nearestY = Math.max(cellY, Math.min(py, cellY + 1));
+        const dx = px - nearestX;
+        const dy = py - nearestY;
+        const distanceSq = dx * dx + dy * dy;
+        if (distanceSq >= radius * radius - 1e-9) continue;
+
+        if (distanceSq > 1e-12) {
+          const distance = Math.sqrt(distanceSq);
+          const push = radius - distance + 1e-4;
+          px += (dx / distance) * push;
+          py += (dy / distance) * push;
+        } else {
+          // The centre is inside the cell; leave through the closest face.
+          const toLeft = px - cellX;
+          const toRight = cellX + 1 - px;
+          const toTop = py - cellY;
+          const toBottom = cellY + 1 - py;
+          const nearest = Math.min(toLeft, toRight, toTop, toBottom);
+          const gap = radius + 1e-4;
+          if (nearest === toLeft) px = cellX - gap;
+          else if (nearest === toRight) px = cellX + 1 + gap;
+          else if (nearest === toTop) py = cellY - gap;
+          else py = cellY + 1 + gap;
+        }
+        pushed = true;
+      }
+    }
+    // Out-of-bounds cells push away from the map; keep the capsule inside it.
+    const edgeMinX = radius + 1e-4;
+    const edgeMaxX = Math.max(edgeMinX, world.width - radius - 1e-4);
+    const edgeMinY = radius + 1e-4;
+    const edgeMaxY = Math.max(edgeMinY, world.height - radius - 1e-4);
+    const clampedX = px < edgeMinX ? edgeMinX : px > edgeMaxX ? edgeMaxX : px;
+    const clampedY = py < edgeMinY ? edgeMinY : py > edgeMaxY ? edgeMaxY : py;
+    if (clampedX !== px || clampedY !== py) pushed = true;
+    px = clampedX;
+    py = clampedY;
+
+    if (!pushed) break;
+  }
+
+  return { x: px, y: py };
+}
+
 /**
  * A footprint is blocked by a solid tile only when its top is more than
  * `maxStep` above the feet. Once above a wall, the same cells become walkable

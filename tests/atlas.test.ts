@@ -84,4 +84,10 @@ describe("sprite atlas lookup", () => {
     const empty = new SpriteAtlas(manifest([]), texture);
     expect(empty.getFrame("idle", 1, 0, 0)).toBeUndefined();
   });
+
+  it("reports advertised frames that are missing instead of hiding the fallback", () => {
+    const missing = atlas.missingFrames();
+    expect(missing).toContain("walk f0 p0 y0");
+    expect(missing).not.toContain("idle f0 p1 y0");
+  });
 });

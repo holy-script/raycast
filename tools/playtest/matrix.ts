@@ -827,7 +827,7 @@ async function main(): Promise<void> {
           `camera selects tinker yaw ${sector.expected}`,
           Boolean(
             tinker &&
-              tinker.sprite === "brute" &&
+              tinker.sprite === "guardian" &&
               tinker.yawIndex === sector.expected,
           ),
           tinker
@@ -874,6 +874,33 @@ async function main(): Promise<void> {
         "viewing from 12 m selects the top pitch band",
         current.nearestName === "guard" && current.nearestPitch === 3,
         `${current.nearestName} pitch ${current.nearestPitch}`,
+      );
+    });
+
+    define("aim", "a18-fov-stable-altitude", async () => {
+      await pose(5.5, 4.5, 0, 0, 0);
+      const ground = (await debug()).camera;
+      await pose(5.5, 4.5, 16, 0, -1.0);
+      const high = (await debug()).camera;
+      check(
+        "projection FOV does not widen while climbing",
+        near(high.fovDegrees, ground.fovDegrees, 0.001) &&
+          near(high.tanHalf, ground.tanHalf, 1e-9),
+        `${ground.fovDegrees.toFixed(1)} deg ground, ${high.fovDegrees.toFixed(1)} deg at 16 m`,
+      );
+    });
+
+    define("aim", "a19-topdown-scale", async () => {
+      await pose(7.5, 1.58, 14, 0, -1.45);
+      const guard = (await debug()).actors.find((actor) => actor.name === "guard");
+      check(
+        "top-down billboards shrink by the ortho compensation factor",
+        Boolean(
+          guard &&
+            guard.pitchIndex === 3 &&
+            near(guard.worldSize, 0.78, 0.02),
+        ),
+        guard ? `pitch ${guard.pitchIndex} · size ${guard.worldSize.toFixed(3)} m` : "missing",
       );
     });
 
@@ -1005,6 +1032,46 @@ async function main(): Promise<void> {
         "a near wall survives a steep look-down",
         dbg.stats.wallColumns === 384 && dbg.stats.wallPixels > 20_000,
         `${dbg.stats.wallColumns} cols, ${dbg.stats.wallPixels} wall px`,
+      );
+    });
+
+    define("surfaces", "s12-wall-side-landing", async () => {
+      await pose(1.05, 1.5, 3, 0, -0.4);
+      await step(1.0);
+      const current = await state();
+      check(
+        "landing with the capsule overlapping a wall pushes clear",
+        current.onGround && current.z === 0 && current.x >= 1.18,
+        `x=${current.x.toFixed(3)}, alt ${current.z.toFixed(2)} m`,
+      );
+      await press("KeyW");
+      await step(0.6);
+      await release("KeyW");
+      const moved = await state();
+      check(
+        "movement stays free after a wall-side landing",
+        moved.x > 1.9,
+        `x=${moved.x.toFixed(2)}`,
+      );
+    });
+
+    define("surfaces", "s13-corner-landing", async () => {
+      await pose(1.05, 1.05, 3, 0, -0.4);
+      await step(1.0);
+      const current = await state();
+      check(
+        "a wall-corner landing ejects inward on both axes",
+        current.onGround && current.x >= 1.18 && current.y >= 1.18,
+        `x=${current.x.toFixed(3)}, y=${current.y.toFixed(3)}`,
+      );
+      await press("KeyD");
+      await step(0.6);
+      await release("KeyD");
+      const moved = await state();
+      check(
+        "strafing out of the corner is not blocked",
+        moved.y > 1.8,
+        `y=${moved.y.toFixed(2)}`,
       );
     });
 
@@ -1172,6 +1239,48 @@ async function main(): Promise<void> {
         `${visible.length} visible: ${visible.map((rect) => rect.id).join(", ")}`,
       );
     });
+
+    // ------------------------------------------------------------- viewmodel
+    define("viewmodel", "w01-idle-overlay", async () => {
+      await pose(5.5, 4.5, 0, 0, 0);
+      const dbg = await debug();
+      check(
+        "the first-person viewmodel covers the lower-right frame",
+        dbg.stats.viewmodelPixels > 2_000,
+        `${dbg.stats.viewmodelPixels} px`,
+      );
+      check(
+        "the viewmodel idles when standing still",
+        dbg.viewmodel.pose === "idle0" || dbg.viewmodel.pose === "idle1",
+        dbg.viewmodel.pose,
+      );
+      await saveCanvas("w01-idle-viewmodel", false);
+    }, true);
+
+    define("viewmodel", "w02-attack-swing", async () => {
+      await pose(5.5, 4.5, 0, 0, 0);
+      await attack();
+      await step(0.12);
+      const dbg = await debug();
+      check(
+        "the attack drives the viewmodel into its strike pose",
+        dbg.viewmodel.pose === "strike" && dbg.stats.viewmodelPixels > 2_000,
+        `${dbg.viewmodel.pose} · ${dbg.stats.viewmodelPixels} px`,
+      );
+      await saveCanvas("w02-strike-viewmodel", false);
+    }, true);
+
+    define("viewmodel", "w03-swing-recovery", async () => {
+      await pose(5.5, 4.5, 0, 0, 0);
+      await attack();
+      await step(0.55);
+      const dbg = await debug();
+      check(
+        "the viewmodel settles back to idle after the cooldown",
+        dbg.viewmodel.pose === "idle0" || dbg.viewmodel.pose === "idle1",
+        dbg.viewmodel.pose,
+      );
+    }, true);
 
     // -------------------------------------------------------------------- ui
     define("ui", "u01-minimap-visible", async () => {

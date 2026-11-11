@@ -124,20 +124,53 @@ async function main(): Promise<void> {
     });
 
     await waitForGame(browser);
-    const atlases = await browser.evaluate<Array<{ name: string; directions: number; pitches: number; frames: number }>>(
-      `Promise.all(["guardian", "scout", "brute"].map(async (name) => {
-        const response = await fetch("/assets/sprites/" + name + "/atlas.json");
-        const manifest = await response.json();
-        return { name: manifest.name, directions: manifest.directions, pitches: manifest.pitches, frames: manifest.frames.length };
-      }))`,
+    const atlas = await browser.evaluate<{
+      name: string;
+      directions: number;
+      pitches: number;
+      frames: number;
+      pitchWorldScale: number[] | null;
+    }>(`(async () => {
+      const response = await fetch("/assets/sprites/guardian/atlas.json");
+      const manifest = await response.json();
+      return {
+        name: manifest.name,
+        directions: manifest.directions,
+        pitches: manifest.pitches,
+        frames: manifest.frames.length,
+        pitchWorldScale: manifest.pitchWorldScale ?? null,
+      };
+    })()`);
+    check(
+      "guardian atlas loads with full 16-way coverage",
+      atlas.name === "guardian" &&
+        atlas.directions === 16 &&
+        atlas.pitches === 4 &&
+        atlas.frames === 1216,
+      `${atlas.name}:${atlas.directions}x${atlas.pitches}/${atlas.frames}`,
     );
     check(
-      "three 16-way character atlases load",
-      atlases.length === 3 &&
-        atlases.every(
-          (atlas) => atlas.directions === 16 && atlas.pitches === 4 && atlas.frames === 384,
+      "top-down billboard scale is compensated",
+      Array.isArray(atlas.pitchWorldScale) &&
+        atlas.pitchWorldScale.length === 4 &&
+        atlas.pitchWorldScale[3] < 0.8,
+      atlas.pitchWorldScale?.map((value) => value.toFixed(2)).join(", ") ?? "missing",
+    );
+    const atlasReport = await browser.evaluate<
+      Record<string, { states: string[]; missing: string[] }>
+    >("window.__raycast.atlasReport()");
+    check(
+      "guardian atlas has no missing animation frames",
+      atlasReport.guardian?.missing.length === 0 &&
+        ["idle", "walk", "attack", "hurt", "death", "talk"].every((state) =>
+          atlasReport.guardian.states.includes(state),
         ),
-      atlases.map((atlas) => `${atlas.name}:${atlas.directions}x${atlas.pitches}/${atlas.frames}`).join(", "),
+      `${atlasReport.guardian?.missing.length ?? "?"} missing frames`,
+    );
+    check(
+      "retired character atlases are not loaded",
+      Object.keys(atlasReport).join(",") === "guardian",
+      Object.keys(atlasReport).join(", ") || "none",
     );
 
     await browser.evaluate("window.__raycast.automation.enable()");
@@ -174,6 +207,35 @@ async function main(): Promise<void> {
 
     await pose(3.5, 1.5, 0, 0, 0);
     await shot("01-ground-spawn");
+
+    let dbg = await debug();
+    check(
+      "first-person viewmodel renders over the scene",
+      dbg.stats.viewmodelPixels > 2_000,
+      `${dbg.stats.viewmodelPixels} viewmodel px`,
+    );
+    check(
+      "viewmodel rests in an idle pose on the ground",
+      dbg.viewmodel.pose === "idle0" || dbg.viewmodel.pose === "idle1",
+      `${dbg.viewmodel.pose} at ${dbg.viewmodel.dx.toFixed(1)},${dbg.viewmodel.dy.toFixed(1)}`,
+    );
+
+    await browser.evaluate("window.__raycast.automation.attack()");
+    await sleep(150);
+    dbg = await debug();
+    await shot("27-viewmodel-strike");
+    check(
+      "attacking swings the viewmodel into the strike pose",
+      dbg.viewmodel.pose === "strike" && dbg.stats.viewmodelPixels > 2_000,
+      `${dbg.viewmodel.pose}, ${dbg.stats.viewmodelPixels} px`,
+    );
+    await sleep(550);
+    dbg = await debug();
+    check(
+      "viewmodel settles back to idle after the swing",
+      dbg.viewmodel.pose === "idle0" || dbg.viewmodel.pose === "idle1",
+      dbg.viewmodel.pose,
+    );
 
     await pose(11.5, 4.5, 0, 0, 0);
     await shot("02-ground-open");
@@ -291,11 +353,11 @@ async function main(): Promise<void> {
     await pose(15.5, 9.5, 0, 0, 0);
     await sleep(900); // watcher lerps toward the player before it settles on yaw 0
     current = await state();
-    await shot("11-scout-front");
+    await shot("11-sentinel-front");
     check(
-      "scout chassis renders at yaw 0",
+      "sentinel renders with the guardian atlas at yaw 0",
       current.nearestName === "sentinel" &&
-        current.nearestSprite === "scout" &&
+        current.nearestSprite === "guardian" &&
         current.nearestYaw === 0,
       `${current.nearestName}/${current.nearestSprite} yaw ${current.nearestYaw}`,
     );
@@ -303,11 +365,11 @@ async function main(): Promise<void> {
     await pose(12.5, 19.5, 0, Math.PI / 2, 0);
     await sleep(120);
     current = await state();
-    await shot("12-brute-front");
+    await shot("12-warden-front");
     check(
-      "brute chassis renders at yaw 0",
+      "warden renders with the guardian atlas at yaw 0",
       current.nearestName === "warden" &&
-        current.nearestSprite === "brute" &&
+        current.nearestSprite === "guardian" &&
         current.nearestYaw === 0,
       `${current.nearestName}/${current.nearestSprite} yaw ${current.nearestYaw}`,
     );
@@ -319,6 +381,19 @@ async function main(): Promise<void> {
       "midair altitude registers",
       current.z > 6.8 && current.z <= 8 && current.nearestPitch === 3,
       `alt ${current.z.toFixed(2)} m, sprite pitch ${current.nearestPitch}`,
+    );
+
+    // Regression: an altitude FOV boost stretched geometry near the screen
+    // edges, reading as fisheye distortion while climbing.
+    await pose(5.5, 4.5, 0, 0, 0);
+    const groundCamera = (await debug()).camera;
+    await pose(5.5, 4.5, 16, 0, -1.0);
+    const highCamera = (await debug()).camera;
+    check(
+      "FOV stays fixed from the ground to the ceiling",
+      near(highCamera.fovDegrees, groundCamera.fovDegrees, 0.001) &&
+        near(highCamera.tanHalf, groundCamera.tanHalf, 1e-9),
+      `${groundCamera.fovDegrees.toFixed(1)} deg ground, ${highCamera.fovDegrees.toFixed(1)} deg at 16 m`,
     );
 
     await pose(11.5, 12.5, 16, 0, -1.0);
@@ -333,7 +408,7 @@ async function main(): Promise<void> {
     // Regression: wall faces used to be skipped entirely once the eye rose above
     // the wall height, leaving only tops and floor visible ("transparent" walls).
     await pose(11.5, 6.5, 2, Math.PI / 2, -0.3);
-    let dbg = await debug();
+    dbg = await debug();
     await shot("13-airborne-walls");
     check(
       "wall faces stay opaque while airborne",
@@ -385,6 +460,18 @@ async function main(): Promise<void> {
       Boolean(guardRect && Math.abs(guardRect.x - 192) < 48),
       guardRect ? `x=${guardRect.x.toFixed(1)}` : "guard not projected",
     );
+    const overheadGuard = dbg.actors.find((actor) => actor.name === "guard");
+    check(
+      "top-down actors use the compensated billboard scale",
+      Boolean(
+        overheadGuard &&
+          overheadGuard.pitchIndex === 3 &&
+          near(overheadGuard.worldSize, 0.78, 0.02),
+      ),
+      overheadGuard
+        ? `pitch ${overheadGuard.pitchIndex} · size ${overheadGuard.worldSize.toFixed(3)} m`
+        : "guard missing",
+    );
 
     await pose(21.5, 4.58, 14, 0, -1.45);
     dbg = await debug();
@@ -417,6 +504,29 @@ async function main(): Promise<void> {
       "stepping off a wall drops back to the floor",
       current.z <= 0.001 && current.support <= 0.001,
       `alt ${current.z.toFixed(2)} m, support ${current.support.toFixed(2)}`,
+    );
+
+    // Regression: landing with the collision circle overlapping a wall used to
+    // leave the capsule wedged against it, so movement input did nothing.
+    await pose(1.05, 1.5, 3, 0, -0.4);
+    await sleep(900);
+    current = await state();
+    await shot("28-wall-side-landing");
+    check(
+      "landing beside a wall does not wedge the player",
+      near(current.z, 0, 0.001) &&
+        current.onGround &&
+        current.x >= 1.18,
+      `x=${current.x.toFixed(2)}, alt ${current.z.toFixed(2)} m`,
+    );
+    await press("KeyW");
+    await sleep(600);
+    await release("KeyW");
+    current = await state();
+    check(
+      "walking away from the wall after landing is free",
+      current.x > 1.9,
+      `x=${current.x.toFixed(2)}`,
     );
 
     // M5: per-cell heights. Digits 1-9 build steps and platforms the player can

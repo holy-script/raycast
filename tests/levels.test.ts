@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { LEVELS, levelIndexById } from "../src/content/levels";
 import { createWorld, isSolidAt, supportHeight, tileAt } from "../src/engine/world";
 
-const SPRITES = new Set(["guardian", "scout", "brute"]);
+const SPRITES = new Set(["guardian"]);
 
 describe("level definitions", () => {
   it("indexes levels by id and rejects unknown ids", () => {
