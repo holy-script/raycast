@@ -82,7 +82,10 @@ before `Page.captureScreenshot`; `--virtual-time-budget` alone can leave the HUD
 - Commit in logical slices, e.g. engine, pipeline, docs/CI. Do not commit secrets,
   `node_modules`, `dist`, raw renders, or intermediate frames.
 - CI (`.github/workflows/ci.yml`) runs install, typecheck, tests, and build on every push
-  and PR.
+  and PR. The workflow is authored locally but is not on the remote yet: the stored
+  `holy-script` token lacks the `workflow` scope, so GitHub rejected that file. Add the
+  scope (classic PAT: `repo` + `workflow`; fine-grained PAT: repository **Workflows**
+  read/write) and update the credential helper, then commit and push the file.
 
 ## Known constraints
 

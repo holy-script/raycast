@@ -6,7 +6,7 @@ Last updated: **2026-11-11**
 
 | Area | Milestone | Status |
 | --- | --- | --- |
-| Toolchain, tests, CI, docs | M0 | ✅ Complete |
+| Toolchain, tests, docs | M0 | ✅ Complete (CI workflow pending token scope) |
 | DDA renderer, textures, HUD, minimap | M1 | ✅ Complete |
 | Jump/gravity/fly, Y-shear pitch, depth buffer | M2 | ✅ Complete |
 | 8-way × 3-pitch billboard sprites | M3 | ✅ Complete |
@@ -52,7 +52,10 @@ Browser verification (2026-11-11, Chrome, `http://localhost:5173/?screenshot`):
   packer (768×1728, 96² frames, JSON manifest).
 - Fixed: Blender sun directions, muddy palette, high-angle foot clipping
   (`frameAnchorZ`), sprite lateral sign, and outline flood-fill (immutable alpha mask).
-- Added screenshot mode (`?screenshot`), docs, CI, and Git history.
+- Added screenshot mode (`?screenshot`), docs, Git history, and a CI workflow.
+- Pushed `main` to `https://github.com/holy-script/raycast.git`. The CI workflow is not
+  on the remote yet: GitHub rejected it because the authenticated token lacks the
+  `workflow` scope. The file is ready locally at `.github/workflows/ci.yml`.
 - Verified all tests, typecheck, build, and the browser checks above.
 
 ## Known issues / limitations

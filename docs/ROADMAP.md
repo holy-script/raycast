@@ -6,11 +6,13 @@ is checked and the verification command passes. Update this file and
 
 Current position: **M4 complete — M5 next.**
 
-## M0 — Foundation ✅
+## M0 — Foundation (CI activation pending)
 
 - [x] TypeScript + Vite project with strict typechecking
 - [x] Vitest harness, `npm test`, `npm run build`
-- [x] Repo docs, handoff format, Git remote and CI
+- [x] Repo docs, handoff format, Git remote and initial push
+- [ ] GitHub Actions CI — workflow authored at `.github/workflows/ci.yml`; activation is
+  blocked because the current GitHub token lacks the `workflow` scope
 - [x] Deterministic wall/floor texture generator
 
 **Acceptance:** clean clone runs `npm ci && npm run typecheck && npm test && npm run build`.
