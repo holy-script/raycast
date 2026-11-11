@@ -2,8 +2,9 @@
 
 `npm run playtest:matrix` drives the same headless-Chrome/CDP harness as
 `npm run playtest`, but instead of one happy path it walks the game through 90
-deterministic state, interaction, combat, level, and route scenarios: 490 checks plus 100
-captures (92 canvas frames and 8 full-page UI overlays).
+deterministic state, interaction, combat, level, and route scenarios: 581 checks (490
+assertions plus 91 golden-frame comparisons) and 100 captures (92 canvas frames and 8
+full-page UI overlays).
 
 The point is coverage the owner should not have to repeat by hand — every movement axis,
 vertical state, camera pitch band, collision surface, actor behavior, NPC/pickup/door

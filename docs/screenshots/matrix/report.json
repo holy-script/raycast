@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-11T11:48:05.906Z",
+  "generatedAt": "2026-11-11T11:55:54.840Z",
   "url": "http://127.0.0.1:5201/?screenshot",
-  "durationMs": 7209,
+  "durationMs": 7519,
   "scenarios": [
     "g01-spawn-idle",
     "g02-walk-forward",
@@ -94,7 +94,7 @@
     "l04-reactor-hover",
     "l05-beacon-loop"
   ],
-  "passed": 490,
+  "passed": 581,
   "failed": 0,
   "checks": [
     {
@@ -110,6 +110,13 @@
       "name": "grounded HUD shows walk mode",
       "ok": true,
       "detail": "WALK · ATTRACT"
+    },
+    {
+      "scenario": "g01-spawn-idle",
+      "group": "ground",
+      "name": "g01-spawn-idle matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "g01-spawn-idle",
@@ -149,6 +156,13 @@
     {
       "scenario": "g02-walk-forward",
       "group": "ground",
+      "name": "g02-walk-forward matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "g02-walk-forward",
+      "group": "ground",
       "name": "g02-walk-forward renders content",
       "ok": true,
       "detail": "370 colors, mean luma 53.0"
@@ -180,6 +194,13 @@
       "name": "backward moves along -x",
       "ok": true,
       "detail": "x=2.00, y=1.50"
+    },
+    {
+      "scenario": "g03-walk-backward",
+      "group": "ground",
+      "name": "g03-walk-backward matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "g03-walk-backward",
@@ -219,6 +240,13 @@
     {
       "scenario": "g04-strafe-right",
       "group": "ground",
+      "name": "g04-strafe-right matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "g04-strafe-right",
+      "group": "ground",
       "name": "g04-strafe-right renders content",
       "ok": true,
       "detail": "33 colors, mean luma 65.1"
@@ -250,6 +278,13 @@
       "name": "strafe left moves along -y",
       "ok": true,
       "detail": "x=5.50, y=3.00"
+    },
+    {
+      "scenario": "g05-strafe-left",
+      "group": "ground",
+      "name": "g05-strafe-left matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "g05-strafe-left",
@@ -289,6 +324,13 @@
     {
       "scenario": "g06-sprint-forward",
       "group": "ground",
+      "name": "g06-sprint-forward matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "g06-sprint-forward",
+      "group": "ground",
       "name": "g06-sprint-forward renders content",
       "ok": true,
       "detail": "126 colors, mean luma 47.5"
@@ -320,6 +362,13 @@
       "name": "diagonal input is normalized",
       "ok": true,
       "detail": "dx=1.06, dy=1.06"
+    },
+    {
+      "scenario": "g07-diagonal-walk",
+      "group": "ground",
+      "name": "g07-diagonal-walk matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "g07-diagonal-walk",
@@ -366,6 +415,13 @@
     {
       "scenario": "g08-wall-block",
       "group": "ground",
+      "name": "g08-wall-block matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "g08-wall-block",
+      "group": "ground",
       "name": "g08-wall-block renders content",
       "ok": true,
       "detail": "25 colors, mean luma 73.0"
@@ -401,6 +457,13 @@
     {
       "scenario": "g09-north-wall-slide",
       "group": "ground",
+      "name": "g09-north-wall-slide matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "g09-north-wall-slide",
+      "group": "ground",
       "name": "g09-north-wall-slide renders content",
       "ok": true,
       "detail": "20 colors, mean luma 60.4"
@@ -432,6 +495,13 @@
       "name": "R respawns at the spawn pad",
       "ok": true,
       "detail": "3.50, 1.50 · fuel 1"
+    },
+    {
+      "scenario": "g10-respawn-key",
+      "group": "ground",
+      "name": "g10-respawn-key matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "g10-respawn-key",
@@ -478,6 +548,13 @@
     {
       "scenario": "v01-jump-burst",
       "group": "vertical",
+      "name": "v01-jump-burst matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "v01-jump-burst",
+      "group": "vertical",
       "name": "v01-jump-burst renders content",
       "ok": true,
       "detail": "113 colors, mean luma 37.8"
@@ -516,6 +593,13 @@
       "name": "jet HUD and exhaust glow are active",
       "ok": true,
       "detail": "JETPACK · BURN · glow true"
+    },
+    {
+      "scenario": "v02-jet-burn",
+      "group": "vertical",
+      "name": "v02-jet-burn matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "v02-jet-burn",
@@ -562,6 +646,13 @@
     {
       "scenario": "v03-jet-ceiling",
       "group": "vertical",
+      "name": "v03-jet-ceiling matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "v03-jet-ceiling",
+      "group": "vertical",
       "name": "v03-jet-ceiling renders content",
       "ok": true,
       "detail": "24 colors, mean luma 28.6"
@@ -604,6 +695,13 @@
     {
       "scenario": "v04-jet-empty-fuel",
       "group": "vertical",
+      "name": "v04-jet-empty-fuel matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "v04-jet-empty-fuel",
+      "group": "vertical",
       "name": "v04-jet-empty-fuel renders content",
       "ok": true,
       "detail": "119 colors, mean luma 48.5"
@@ -639,6 +737,13 @@
     {
       "scenario": "v05-fall-land",
       "group": "vertical",
+      "name": "v05-fall-land matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "v05-fall-land",
+      "group": "vertical",
       "name": "v05-fall-land renders content",
       "ok": true,
       "detail": "98 colors, mean luma 55.8"
@@ -670,6 +775,13 @@
       "name": "ground contact refuels over time",
       "ok": true,
       "detail": "fuel 0.70 after 1 s"
+    },
+    {
+      "scenario": "v06-ground-refuel",
+      "group": "vertical",
+      "name": "v06-ground-refuel matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "v06-ground-refuel",
@@ -716,6 +828,13 @@
     {
       "scenario": "v07-freefly-up",
       "group": "vertical",
+      "name": "v07-freefly-up matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "v07-freefly-up",
+      "group": "vertical",
       "name": "v07-freefly-up renders content",
       "ok": true,
       "detail": "163 colors, mean luma 31.7"
@@ -747,6 +866,13 @@
       "name": "freefly descent stops on the crate",
       "ok": true,
       "detail": "alt 0.60 m, support 0.60"
+    },
+    {
+      "scenario": "v08-freefly-descend-crate",
+      "group": "vertical",
+      "name": "v08-freefly-descend-crate matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "v08-freefly-descend-crate",
@@ -786,6 +912,13 @@
     {
       "scenario": "v09-freefly-off-fall",
       "group": "vertical",
+      "name": "v09-freefly-off-fall matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "v09-freefly-off-fall",
+      "group": "vertical",
       "name": "v09-freefly-off-fall renders content",
       "ok": true,
       "detail": "158 colors, mean luma 31.3"
@@ -817,6 +950,13 @@
       "name": "ground look-down clamps at 63 degrees",
       "ok": true,
       "detail": "pitch -63 deg"
+    },
+    {
+      "scenario": "a01-ground-pitch-clamp-down",
+      "group": "aim",
+      "name": "a01-ground-pitch-clamp-down matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a01-ground-pitch-clamp-down",
@@ -856,6 +996,13 @@
     {
       "scenario": "a02-ground-pitch-clamp-up",
       "group": "aim",
+      "name": "a02-ground-pitch-clamp-up matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a02-ground-pitch-clamp-up",
+      "group": "aim",
       "name": "a02-ground-pitch-clamp-up renders content",
       "ok": true,
       "detail": "39 colors, mean luma 29.2"
@@ -887,6 +1034,13 @@
       "name": "airborne pitch reaches the top band",
       "ok": true,
       "detail": "pitch -83 deg, sprite pitch 3"
+    },
+    {
+      "scenario": "a03-air-pitch-top",
+      "group": "aim",
+      "name": "a03-air-pitch-top matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a03-air-pitch-top",
@@ -926,6 +1080,13 @@
     {
       "scenario": "a04-mouse-yaw",
       "group": "aim",
+      "name": "a04-mouse-yaw matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a04-mouse-yaw",
+      "group": "aim",
       "name": "a04-mouse-yaw renders content",
       "ok": true,
       "detail": "144 colors, mean luma 47.7"
@@ -957,6 +1118,13 @@
       "name": "mouse-up tilts the camera up",
       "ok": true,
       "detail": "pitch 38 deg"
+    },
+    {
+      "scenario": "a05-mouse-pitch",
+      "group": "aim",
+      "name": "a05-mouse-pitch matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a05-mouse-pitch",
@@ -996,6 +1164,13 @@
     {
       "scenario": "a06-sector-front",
       "group": "aim",
+      "name": "a06-sector-front matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a06-sector-front",
+      "group": "aim",
       "name": "a06-sector-front renders content",
       "ok": true,
       "detail": "232 colors, mean luma 51.9"
@@ -1027,6 +1202,13 @@
       "name": "camera selects tinker yaw 8",
       "ok": true,
       "detail": "brute yaw 8 pitch 1"
+    },
+    {
+      "scenario": "a07-sector-back",
+      "group": "aim",
+      "name": "a07-sector-back matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a07-sector-back",
@@ -1066,6 +1248,13 @@
     {
       "scenario": "a08-sector-south",
       "group": "aim",
+      "name": "a08-sector-south matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a08-sector-south",
+      "group": "aim",
       "name": "a08-sector-south renders content",
       "ok": true,
       "detail": "248 colors, mean luma 42.6"
@@ -1097,6 +1286,13 @@
       "name": "camera selects tinker yaw 12",
       "ok": true,
       "detail": "brute yaw 12 pitch 1"
+    },
+    {
+      "scenario": "a09-sector-north",
+      "group": "aim",
+      "name": "a09-sector-north matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a09-sector-north",
@@ -1136,6 +1332,13 @@
     {
       "scenario": "a10-sector-ne",
       "group": "aim",
+      "name": "a10-sector-ne matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a10-sector-ne",
+      "group": "aim",
       "name": "a10-sector-ne renders content",
       "ok": true,
       "detail": "43 colors, mean luma 65.3"
@@ -1167,6 +1370,13 @@
       "name": "camera selects tinker yaw 1",
       "ok": true,
       "detail": "brute yaw 1 pitch 2"
+    },
+    {
+      "scenario": "a11-sector-sw",
+      "group": "aim",
+      "name": "a11-sector-sw matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a11-sector-sw",
@@ -1206,6 +1416,13 @@
     {
       "scenario": "a12-sector-se",
       "group": "aim",
+      "name": "a12-sector-se matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a12-sector-se",
+      "group": "aim",
       "name": "a12-sector-se renders content",
       "ok": true,
       "detail": "259 colors, mean luma 41.0"
@@ -1237,6 +1454,13 @@
       "name": "camera selects tinker yaw 11",
       "ok": true,
       "detail": "brute yaw 11 pitch 1"
+    },
+    {
+      "scenario": "a13-sector-nw",
+      "group": "aim",
+      "name": "a13-sector-nw matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a13-sector-nw",
@@ -1276,6 +1500,13 @@
     {
       "scenario": "a14-pitch-band-low",
       "group": "aim",
+      "name": "a14-pitch-band-low matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a14-pitch-band-low",
+      "group": "aim",
       "name": "a14-pitch-band-low renders content",
       "ok": true,
       "detail": "244 colors, mean luma 47.8"
@@ -1307,6 +1538,13 @@
       "name": "a level actor selects the level pitch band",
       "ok": true,
       "detail": "guard pitch 1"
+    },
+    {
+      "scenario": "a15-pitch-band-level",
+      "group": "aim",
+      "name": "a15-pitch-band-level matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a15-pitch-band-level",
@@ -1346,6 +1584,13 @@
     {
       "scenario": "a16-pitch-band-high",
       "group": "aim",
+      "name": "a16-pitch-band-high matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a16-pitch-band-high",
+      "group": "aim",
       "name": "a16-pitch-band-high renders content",
       "ok": true,
       "detail": "124 colors, mean luma 31.0"
@@ -1381,6 +1626,13 @@
     {
       "scenario": "a17-pitch-band-top",
       "group": "aim",
+      "name": "a17-pitch-band-top matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a17-pitch-band-top",
+      "group": "aim",
       "name": "a17-pitch-band-top renders content",
       "ok": true,
       "detail": "307 colors, mean luma 38.3"
@@ -1412,6 +1664,13 @@
       "name": "stairs approach sits on the floor",
       "ok": true,
       "detail": "support 0, y=22.50"
+    },
+    {
+      "scenario": "s01-stairs-approach",
+      "group": "surfaces",
+      "name": "s01-stairs-approach matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "s01-stairs-approach",
@@ -1458,6 +1717,13 @@
     {
       "scenario": "s02-stairs-climb",
       "group": "surfaces",
+      "name": "s02-stairs-climb matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s02-stairs-climb",
+      "group": "surfaces",
       "name": "s02-stairs-climb renders content",
       "ok": true,
       "detail": "344 colors, mean luma 35.1"
@@ -1489,6 +1755,13 @@
       "name": "walking down the treads returns to the floor",
       "ok": true,
       "detail": "alt 0.00 m, y=22.65"
+    },
+    {
+      "scenario": "s03-stairs-descend",
+      "group": "surfaces",
+      "name": "s03-stairs-descend matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "s03-stairs-descend",
@@ -1528,6 +1801,13 @@
     {
       "scenario": "s04-platform-stand",
       "group": "surfaces",
+      "name": "s04-platform-stand matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s04-platform-stand",
+      "group": "surfaces",
       "name": "s04-platform-stand renders content",
       "ok": true,
       "detail": "128 colors, mean luma 42.8"
@@ -1563,6 +1843,13 @@
     {
       "scenario": "s05-crate-block",
       "group": "surfaces",
+      "name": "s05-crate-block matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s05-crate-block",
+      "group": "surfaces",
       "name": "s05-crate-block renders content",
       "ok": true,
       "detail": "33 colors, mean luma 52.5"
@@ -1594,6 +1881,13 @@
       "name": "falling onto the crate stops at 0.6 m",
       "ok": true,
       "detail": "alt 0.60 m, support 0.6000000238418579"
+    },
+    {
+      "scenario": "s06-crate-perch",
+      "group": "surfaces",
+      "name": "s06-crate-perch matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "s06-crate-perch",
@@ -1640,6 +1934,13 @@
     {
       "scenario": "s07-wall-land",
       "group": "surfaces",
+      "name": "s07-wall-land matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s07-wall-land",
+      "group": "surfaces",
       "name": "s07-wall-land renders content",
       "ok": true,
       "detail": "294 colors, mean luma 54.5"
@@ -1671,6 +1972,13 @@
       "name": "stepping off a wall falls to the floor",
       "ok": true,
       "detail": "x=6.80, alt 0.00 m"
+    },
+    {
+      "scenario": "s08-wall-stepoff",
+      "group": "surfaces",
+      "name": "s08-wall-stepoff matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "s08-wall-stepoff",
@@ -1710,6 +2018,13 @@
     {
       "scenario": "s09-wall-perch-down",
       "group": "surfaces",
+      "name": "s09-wall-perch-down matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s09-wall-perch-down",
+      "group": "surfaces",
       "name": "s09-wall-perch-down renders content",
       "ok": true,
       "detail": "64 colors, mean luma 50.7"
@@ -1745,6 +2060,13 @@
     {
       "scenario": "s10-near-wall",
       "group": "surfaces",
+      "name": "s10-near-wall matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s10-near-wall",
+      "group": "surfaces",
       "name": "s10-near-wall renders content",
       "ok": true,
       "detail": "24 colors, mean luma 72.9"
@@ -1776,6 +2098,13 @@
       "name": "a near wall survives a steep look-down",
       "ok": true,
       "detail": "384 cols, 55296 wall px"
+    },
+    {
+      "scenario": "s11-near-wall-lookdown",
+      "group": "surfaces",
+      "name": "s11-near-wall-lookdown matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "s11-near-wall-lookdown",
@@ -1822,6 +2151,13 @@
     {
       "scenario": "c01-watcher-tracks",
       "group": "actors",
+      "name": "c01-watcher-tracks matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "c01-watcher-tracks",
+      "group": "actors",
       "name": "c01-watcher-tracks renders content",
       "ok": true,
       "detail": "437 colors, mean luma 46.1"
@@ -1853,6 +2189,13 @@
       "name": "patrol actor walks along its line",
       "ok": true,
       "detail": "x 10.50 -> 12.70 · walk"
+    },
+    {
+      "scenario": "c02-patrol-advance",
+      "group": "actors",
+      "name": "c02-patrol-advance matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "c02-patrol-advance",
@@ -1892,6 +2235,13 @@
     {
       "scenario": "c03-patrol-reverse",
       "group": "actors",
+      "name": "c03-patrol-reverse matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "c03-patrol-reverse",
+      "group": "actors",
       "name": "c03-patrol-reverse renders content",
       "ok": true,
       "detail": "80 colors, mean luma 53.9"
@@ -1923,6 +2273,13 @@
       "name": "chase actor closes distance and walks",
       "ok": true,
       "detail": "distance 2.83 -> 1.93 · walk"
+    },
+    {
+      "scenario": "c04-chase-approach",
+      "group": "actors",
+      "name": "c04-chase-approach matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "c04-chase-approach",
@@ -1962,6 +2319,13 @@
     {
       "scenario": "c05-hover-bob",
       "group": "actors",
+      "name": "c05-hover-bob matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "c05-hover-bob",
+      "group": "actors",
       "name": "c05-hover-bob renders content",
       "ok": true,
       "detail": "30 colors, mean luma 53.3"
@@ -1993,6 +2357,13 @@
       "name": "idle actor animates between two frames",
       "ok": true,
       "detail": "5.04% of pixels changed"
+    },
+    {
+      "scenario": "c06-idle-animation",
+      "group": "actors",
+      "name": "c06-idle-animation matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "c06-idle-animation",
@@ -2032,6 +2403,13 @@
     {
       "scenario": "c07-occlusion-crate",
       "group": "actors",
+      "name": "c07-occlusion-crate matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "c07-occlusion-crate",
+      "group": "actors",
       "name": "c07-occlusion-crate renders content",
       "ok": true,
       "detail": "141 colors, mean luma 39.4"
@@ -2063,6 +2441,13 @@
       "name": "a full wall hides the actor behind it",
       "ok": true,
       "detail": "0 drawn, 218 occluded px, w=39.4"
+    },
+    {
+      "scenario": "c08-occlusion-wall",
+      "group": "actors",
+      "name": "c08-occlusion-wall matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "c08-occlusion-wall",
@@ -2102,6 +2487,13 @@
     {
       "scenario": "c09-overhead-guard",
       "group": "actors",
+      "name": "c09-overhead-guard matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "c09-overhead-guard",
+      "group": "actors",
       "name": "c09-overhead-guard renders content",
       "ok": true,
       "detail": "272 colors, mean luma 40.9"
@@ -2137,6 +2529,13 @@
     {
       "scenario": "c10-overhead-edge-actor",
       "group": "actors",
+      "name": "c10-overhead-edge-actor matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "c10-overhead-edge-actor",
+      "group": "actors",
       "name": "c10-overhead-edge-actor renders content",
       "ok": true,
       "detail": "171 colors, mean luma 34.3"
@@ -2168,6 +2567,13 @@
       "name": "aerial view projects several actors",
       "ok": true,
       "detail": "14 visible: pickup:fuel, tinker, watcher, marauder, sentinel, stalker, pickup:keycard, warden, exit:lift, patrol, guard, prowler, drone, scholar"
+    },
+    {
+      "scenario": "c11-multi-actor-aerial",
+      "group": "actors",
+      "name": "c11-multi-actor-aerial matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "c11-multi-actor-aerial",
@@ -2312,6 +2718,13 @@
     {
       "scenario": "u04-pause-freeze",
       "group": "ui",
+      "name": "u04-pause-freeze matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "u04-pause-freeze",
+      "group": "ui",
       "name": "u04-pause-freeze renders content",
       "ok": true,
       "detail": "123 colors, mean luma 52.9"
@@ -2342,14 +2755,14 @@
       "group": "ui",
       "name": "resuming advances the simulation",
       "ok": true,
-      "detail": "patrol dx 0.39, 22 frames, paused=false, 3.08% pixels changed"
+      "detail": "patrol dx 0.37, 23 frames, paused=false, 3.06% pixels changed"
     },
     {
       "scenario": "u05-pause-resume",
       "group": "ui",
       "name": "u05-pause-resume renders content",
       "ok": true,
-      "detail": "347 colors, mean luma 51.3"
+      "detail": "350 colors, mean luma 51.3"
     },
     {
       "scenario": "u05-pause-resume",
@@ -2389,6 +2802,13 @@
     {
       "scenario": "u06-hud-values",
       "group": "ui",
+      "name": "u06-hud-values matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "u06-hud-values",
+      "group": "ui",
       "name": "u06-hud-values renders content",
       "ok": true,
       "detail": "294 colors, mean luma 33.5"
@@ -2420,6 +2840,13 @@
       "name": "fuel readout formats the tank",
       "ok": true,
       "detail": "37%"
+    },
+    {
+      "scenario": "u07-fuel-readout",
+      "group": "ui",
+      "name": "u07-fuel-readout matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "u07-fuel-readout",
@@ -2459,6 +2886,13 @@
     {
       "scenario": "r01-jet-over-wall",
       "group": "routes",
+      "name": "r01-jet-over-wall matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "r01-jet-over-wall",
+      "group": "routes",
       "name": "r01-jet-over-wall renders content",
       "ok": true,
       "detail": "302 colors, mean luma 35.2"
@@ -2490,6 +2924,13 @@
       "name": "jetpack plus forward crosses the courtyard airborne",
       "ok": true,
       "detail": "x=14.50, alt 5.41 m"
+    },
+    {
+      "scenario": "r02-jet-forward-climb",
+      "group": "routes",
+      "name": "r02-jet-forward-climb matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "r02-jet-forward-climb",
@@ -2529,6 +2970,13 @@
     {
       "scenario": "r03-aerial-lookdown",
       "group": "routes",
+      "name": "r03-aerial-lookdown matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "r03-aerial-lookdown",
+      "group": "routes",
       "name": "r03-aerial-lookdown renders content",
       "ok": true,
       "detail": "332 colors, mean luma 44.1"
@@ -2564,6 +3012,13 @@
     {
       "scenario": "r04-respawn-midair",
       "group": "routes",
+      "name": "r04-respawn-midair matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "r04-respawn-midair",
+      "group": "routes",
       "name": "r04-respawn-midair renders content",
       "ok": true,
       "detail": "288 colors, mean luma 49.5"
@@ -2595,6 +3050,13 @@
       "name": "sprint route traverses the corridor",
       "ok": true,
       "detail": "dx=4.60 in 1 s"
+    },
+    {
+      "scenario": "r05-sprint-route",
+      "group": "routes",
+      "name": "r05-sprint-route matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "r05-sprint-route",
@@ -2648,6 +3110,13 @@
     {
       "scenario": "i01-keycard-pickup",
       "group": "interaction",
+      "name": "i01-keycard-pickup matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "i01-keycard-pickup",
+      "group": "interaction",
       "name": "i01-keycard-pickup renders content",
       "ok": true,
       "detail": "365 colors, mean luma 54.6"
@@ -2697,6 +3166,13 @@
     {
       "scenario": "i02-door-locked",
       "group": "interaction",
+      "name": "i02-door-locked matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "i02-door-locked",
+      "group": "interaction",
       "name": "i02-door-locked renders content",
       "ok": true,
       "detail": "47 colors, mean luma 66.5"
@@ -2739,9 +3215,23 @@
     {
       "scenario": "i03-door-unlock",
       "group": "interaction",
+      "name": "i03-door-open matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "i03-door-unlock",
+      "group": "interaction",
       "name": "i03-door-open renders content",
       "ok": true,
       "detail": "226 colors, mean luma 51.1"
+    },
+    {
+      "scenario": "i03-door-unlock",
+      "group": "interaction",
+      "name": "i03-door-unlock matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "i03-door-unlock",
@@ -2795,6 +3285,13 @@
     {
       "scenario": "i04-talk-cycle",
       "group": "interaction",
+      "name": "i04-talk-cycle matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "i04-talk-cycle",
+      "group": "interaction",
       "name": "i04-talk-cycle renders content",
       "ok": true,
       "detail": "318 colors, mean luma 54.3"
@@ -2833,6 +3330,13 @@
       "name": "HUD health follows the pickup",
       "ok": true,
       "detail": "80 / 100"
+    },
+    {
+      "scenario": "i05-medkit-heal",
+      "group": "interaction",
+      "name": "i05-medkit-heal matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "i05-medkit-heal",
@@ -2879,6 +3383,13 @@
     {
       "scenario": "i06-fuel-refill",
       "group": "interaction",
+      "name": "i06-fuel-refill matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "i06-fuel-refill",
+      "group": "interaction",
       "name": "i06-fuel-refill renders content",
       "ok": true,
       "detail": "58 colors, mean luma 64.1"
@@ -2917,6 +3428,13 @@
       "name": "no prompt away from interactables",
       "ok": true,
       "detail": "\"\""
+    },
+    {
+      "scenario": "i07-empty-interact",
+      "group": "interaction",
+      "name": "i07-empty-interact matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "i07-empty-interact",
@@ -2963,9 +3481,23 @@
     {
       "scenario": "f01-player-strike",
       "group": "combat",
+      "name": "f01-enemy-hurt matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "f01-player-strike",
+      "group": "combat",
       "name": "f01-enemy-hurt renders content",
       "ok": true,
       "detail": "380 colors, mean luma 46.4"
+    },
+    {
+      "scenario": "f01-player-strike",
+      "group": "combat",
+      "name": "f01-player-strike matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "f01-player-strike",
@@ -3019,9 +3551,23 @@
     {
       "scenario": "f02-player-kill",
       "group": "combat",
+      "name": "f02-enemy-corpse matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "f02-player-kill",
+      "group": "combat",
       "name": "f02-enemy-corpse renders content",
       "ok": true,
       "detail": "390 colors, mean luma 47.1"
+    },
+    {
+      "scenario": "f02-player-kill",
+      "group": "combat",
+      "name": "f02-player-kill matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "f02-player-kill",
@@ -3061,6 +3607,13 @@
     {
       "scenario": "f03-attack-arc",
       "group": "combat",
+      "name": "f03-attack-arc matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "f03-attack-arc",
+      "group": "combat",
       "name": "f03-attack-arc renders content",
       "ok": true,
       "detail": "229 colors, mean luma 51.5"
@@ -3092,6 +3645,13 @@
       "name": "targets beyond 2.3 m are out of reach",
       "ok": true,
       "detail": "hit=false · hp=70"
+    },
+    {
+      "scenario": "f04-attack-range",
+      "group": "combat",
+      "name": "f04-attack-range matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "f04-attack-range",
@@ -3134,6 +3694,13 @@
       "name": "HUD health and damage vignette react",
       "ok": true,
       "detail": "92 / 100 · overlay=0.69"
+    },
+    {
+      "scenario": "f05-hostile-damage",
+      "group": "combat",
+      "name": "f05-hostile-damage matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "f05-hostile-damage",
@@ -3194,6 +3761,13 @@
     {
       "scenario": "f06-death-redeploy",
       "group": "combat",
+      "name": "f06-death-redeploy matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "f06-death-redeploy",
+      "group": "combat",
       "name": "f06-death-redeploy renders content",
       "ok": true,
       "detail": "288 colors, mean luma 49.5"
@@ -3229,6 +3803,13 @@
     {
       "scenario": "f07-attack-cooldown",
       "group": "combat",
+      "name": "f07-attack-cooldown matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "f07-attack-cooldown",
+      "group": "combat",
       "name": "f07-attack-cooldown renders content",
       "ok": true,
       "detail": "380 colors, mean luma 46.4"
@@ -3260,6 +3841,13 @@
       "name": "a hostile in range starts its attack animation",
       "ok": true,
       "detail": "attack"
+    },
+    {
+      "scenario": "f08-enemy-windup",
+      "group": "combat",
+      "name": "f08-enemy-windup matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "f08-enemy-windup",
@@ -3313,16 +3901,30 @@
     {
       "scenario": "l01-transition-reactor",
       "group": "levels",
+      "name": "l01-reactor-spawn matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l01-transition-reactor",
+      "group": "levels",
       "name": "l01-reactor-spawn renders content",
       "ok": true,
-      "detail": "123 colors, mean luma 40.1"
+      "detail": "207 colors, mean luma 40.1"
+    },
+    {
+      "scenario": "l01-transition-reactor",
+      "group": "levels",
+      "name": "l01-transition-reactor matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "l01-transition-reactor",
       "group": "levels",
       "name": "l01-transition-reactor renders content",
       "ok": true,
-      "detail": "123 colors, mean luma 40.1"
+      "detail": "207 colors, mean luma 40.1"
     },
     {
       "scenario": "l01-transition-reactor",
@@ -3369,6 +3971,13 @@
     {
       "scenario": "l02-vault-return",
       "group": "levels",
+      "name": "l02-vault-return matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l02-vault-return",
+      "group": "levels",
       "name": "l02-vault-return renders content",
       "ok": true,
       "detail": "288 colors, mean luma 49.5"
@@ -3404,6 +4013,13 @@
     {
       "scenario": "l03-terrace-climb",
       "group": "levels",
+      "name": "l03-terrace matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l03-terrace-climb",
+      "group": "levels",
       "name": "l03-terrace renders content",
       "ok": true,
       "detail": "282 colors, mean luma 38.3"
@@ -3414,6 +4030,13 @@
       "name": "the terrace tops out and returns to floor level",
       "ok": true,
       "detail": "y=15.90 · alt 0.00 m"
+    },
+    {
+      "scenario": "l03-terrace-climb",
+      "group": "levels",
+      "name": "l03-terrace-climb matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "l03-terrace-climb",
@@ -3453,6 +4076,13 @@
     {
       "scenario": "l04-reactor-hover",
       "group": "levels",
+      "name": "l04-reactor-hover matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l04-reactor-hover",
+      "group": "levels",
       "name": "l04-reactor-hover renders content",
       "ok": true,
       "detail": "158 colors, mean luma 37.3"
@@ -3469,7 +4099,7 @@
       "group": "levels",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "6 rects"
+      "detail": "5 rects"
     },
     {
       "scenario": "l04-reactor-hover",
@@ -3491,6 +4121,13 @@
       "name": "the courtyard objective is restored",
       "ok": true,
       "detail": "ENTERING COURTYARD"
+    },
+    {
+      "scenario": "l05-beacon-loop",
+      "group": "levels",
+      "name": "l05-beacon-loop matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "l05-beacon-loop",
@@ -3532,292 +4169,350 @@
     {
       "name": "g01-spawn-idle",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "g02-walk-forward",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "g03-walk-backward",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "g04-strafe-right",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "g05-strafe-left",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "g06-sprint-forward",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "g07-diagonal-walk",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "g08-wall-block",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "g09-north-wall-slide",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "g10-respawn-key",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "v01-jump-burst",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "v02-jet-burn",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "v03-jet-ceiling",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "v04-jet-empty-fuel",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "v05-fall-land",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "v06-ground-refuel",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "v07-freefly-up",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "v08-freefly-descend-crate",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "v09-freefly-off-fall",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a01-ground-pitch-clamp-down",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a02-ground-pitch-clamp-up",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a03-air-pitch-top",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a04-mouse-yaw",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a05-mouse-pitch",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a06-sector-front",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a07-sector-back",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a08-sector-south",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a09-sector-north",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a10-sector-ne",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a11-sector-sw",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a12-sector-se",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a13-sector-nw",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a14-pitch-band-low",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a15-pitch-band-level",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a16-pitch-band-high",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a17-pitch-band-top",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "s01-stairs-approach",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "s02-stairs-climb",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "s03-stairs-descend",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "s04-platform-stand",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "s05-crate-block",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "s06-crate-perch",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "s07-wall-land",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "s08-wall-stepoff",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "s09-wall-perch-down",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "s10-near-wall",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "s11-near-wall-lookdown",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "c01-watcher-tracks",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "c02-patrol-advance",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "c03-patrol-reverse",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "c04-chase-approach",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "c05-hover-bob",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "c06-idle-animation",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "c07-occlusion-crate",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "c08-occlusion-wall",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "c09-overhead-guard",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "c10-overhead-edge-actor",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "c11-multi-actor-aerial",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "u01-minimap-visible",
@@ -3837,7 +4532,8 @@
     {
       "name": "u04-pause-freeze",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "u05-pause-resume",
@@ -3847,37 +4543,44 @@
     {
       "name": "u06-hud-values",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "u07-fuel-readout",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "r01-jet-over-wall",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "r02-jet-forward-climb",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "r03-aerial-lookdown",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "r04-respawn-midair",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "r05-sprint-route",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "i01-keycard-toast",
@@ -3887,22 +4590,26 @@
     {
       "name": "i01-keycard-pickup",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "i02-door-locked",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "i03-door-open",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "i03-door-unlock",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "i04-talk",
@@ -3912,52 +4619,62 @@
     {
       "name": "i04-talk-cycle",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "i05-medkit-heal",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "i06-fuel-refill",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "i07-empty-interact",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "f01-enemy-hurt",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "f01-player-strike",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "f02-enemy-corpse",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "f02-player-kill",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "f03-attack-arc",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "f04-attack-range",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "f05-player-hit",
@@ -3967,7 +4684,8 @@
     {
       "name": "f05-hostile-damage",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "f06-player-dead",
@@ -3982,52 +4700,62 @@
     {
       "name": "f06-death-redeploy",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "f07-attack-cooldown",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "f08-enemy-windup",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "l01-reactor-spawn",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "l01-transition-reactor",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "l02-vault-return",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "l03-terrace",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "l03-terrace-climb",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "l04-reactor-hover",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "l05-beacon-loop",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     }
   ],
   "consoleErrors": [],

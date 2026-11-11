@@ -23,10 +23,10 @@ Run from a clean checkout:
 ```bash
 npm ci
 npm run typecheck   # passes
-npm test            # 6 files, 43 tests pass
+npm test            # 7 files, 50 tests pass
 npm run build       # tsc + vite build
 npm run playtest    # 29/29 browser checks pass
-npm run playtest:matrix  # 90 scenarios, 490/490 checks, 0 console errors
+npm run playtest:matrix  # 90 scenarios, 581/581 checks, 0 console errors
 npm run assets:verify  # 384-frame atlases; IoU 1.000, mean drift 5.4–6.2
 ```
 
@@ -103,7 +103,8 @@ State-matrix verification (2026-11-11, `npm run playtest:matrix`):
 
 M7 gameplay verification (2026-11-11):
 
-- Matrix grown to **90 scenarios / 490 checks / 90 captures**, all passing with zero
+- Matrix grown to **90 scenarios / 581 checks (490 assertions + 91 goldens) / 100
+  captures**, all passing with zero
   console errors; three consecutive runs were identical after the deterministic level
   load (level time reset, per-actor `animTime = index × 0.37`).
 - Interaction group: keycard pickup with toast, locked-door refusal, unlock (`D` cell
@@ -117,8 +118,12 @@ M7 gameplay verification (2026-11-11):
 - Matrix extension surfaced a real state bug: `placeAtSpawn()` did not reset
   `player.attackCooldown`, so a strike queued in the previous scenario blocked the next
   one. Fixed alongside deterministic actor animation.
-- Happy-path playtest still 29/29; typecheck and 43 unit tests pass; `npm run build`
+- Happy-path playtest still 29/29; typecheck and 50 unit tests pass; `npm run build`
   succeeds (37.6 kB JS, 13.8 kB gzip).
+- Added `tests/levels.test.ts` (7 checks): square maps, walkable spawns, resolvable exit
+  targets, door cells matching `D` + keycard availability, and pickups/actors on open
+  floor. It caught `reactor-scout` spawning inside a terrace block at (4.5, 12.5); moved
+  to the open lane at (2.5, 12.5).
 - Sprite states: the atlases still hold idle/walk until the AI pass finishes, so combat
   screenshots show idle silhouettes; the engine's state fallback keeps the loop working.
 
@@ -142,6 +147,8 @@ M7 gameplay verification (2026-11-11):
   damage/death overlay. Minimap now marks doors, pickups, exits, and hostiles.
 - Blender rig gained attack(4)/hurt(2)/death(4)/talk(3) poses; the packer emits all six
   states and the engine uses state-specific frame clocks (death clamps to its last frame).
+- Added `tests/levels.test.ts` for level invariants; it caught `reactor-scout` spawning
+  inside a terrace block in the reactor map (now at 2.5, 12.5).
 - Added `tools/playtest/m7-check.ts` as a temporary end-to-end probe (27 checks, deleted
   after the matrix absorbed its coverage).
 

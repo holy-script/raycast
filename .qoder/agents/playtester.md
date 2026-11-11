@@ -18,7 +18,7 @@ captured screenshots.
    `window.__raycast.automation`, captures screenshots to
    `docs/screenshots/playtest/`, and writes `report.json`. It exits non-zero on a
    failed check.
-2. Run `npm run playtest:matrix`. It walks 90 deterministic scenarios (490 checks) and
+2. Run `npm run playtest:matrix`. It walks 90 deterministic scenarios (581 checks) and
    writes `docs/screenshots/matrix/` with a labelled `contact-sheet.png` and
    `report.json`. Read the report, then open the contact sheet and any relevant
    full-size frames. The matrix catches movement, vertical, aim, surface, actor, UI,

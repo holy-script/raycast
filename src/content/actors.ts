@@ -199,7 +199,7 @@ export const REACTOR_ACTORS: ActorSpec[] = [
   {
     name: "reactor-scout",
     sprite: "scout",
-    x: 4.5,
+    x: 2.5,
     y: 12.5,
     facing: EAST,
     behavior: "chase",

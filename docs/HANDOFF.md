@@ -11,12 +11,12 @@ npm run typecheck
 npm test
 npm run build
 npm run playtest   # headless Chrome, 29 checks + screenshots
-npm run playtest:matrix  # 90 deterministic state/route scenarios, 490 checks
+npm run playtest:matrix  # 90 deterministic scenarios, 581 checks
 npm run dev        # http://localhost:5173
 ```
 
-Expected: typecheck clean, 43 tests passing across 6 files, Vite build succeeds, playtest
-29/29, matrix 490/490 with zero console errors. Click the canvas, move with WASD, hold
+Expected: typecheck clean, 50 tests passing across 7 files, Vite build succeeds, playtest
+29/29, matrix 581/581 with zero console errors. Click the canvas, move with WASD, hold
 Space to jetpack up to 18 m, and look down to see the top-pitch sprite rows and the
 diorama. Walk up the panel stairs (x=10–13, y=18–21) onto the 0.4 platform, jump the 0.6
 crate at (4.5, 13.5), or land on a wall to perch; walk off to fall back.
@@ -88,7 +88,7 @@ actually drawn.
 
 `?screenshot` hides the intro overlay for headless captures. Prefer the harnesses:
 `npm run playtest` is the happy-path browser check, and `npm run playtest:matrix` walks
-90 deterministic state/route scenarios (490 checks, labelled contact sheet, golden
+90 deterministic state/route scenarios (581 checks, labelled contact sheet, golden
 frames). Both start Vite, drive Chrome over CDP, write screenshots plus `report.json`,
 and exit non-zero on failure; see [PLAYTEST-MATRIX.md](PLAYTEST-MATRIX.md). To verify a
 deployed build instead of the local server:
