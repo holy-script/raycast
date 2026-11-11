@@ -1,0 +1,103 @@
+{
+  "generatedAt": "2026-11-11T04:54:51.427Z",
+  "url": "http://127.0.0.1:5199/?screenshot",
+  "passed": 16,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "three 16-way character atlases load",
+      "ok": true,
+      "detail": "guardian:16x3/288, scout:16x3/288, brute:16x3/288"
+    },
+    {
+      "name": "forward input follows camera yaw",
+      "ok": true,
+      "detail": "moved to 5.30, 1.50"
+    },
+    {
+      "name": "strafe right maps to screen-right",
+      "ok": true,
+      "detail": "moved to 5.50, 5.75"
+    },
+    {
+      "name": "mouse-right turns camera clockwise",
+      "ok": true,
+      "detail": "yaw is 25 deg"
+    },
+    {
+      "name": "wall collision stops the player",
+      "ok": true,
+      "detail": "stopped at x=1.20"
+    },
+    {
+      "name": "jetpack produces sustained lift",
+      "ok": true,
+      "detail": "alt 4.85 m, fuel 0.82"
+    },
+    {
+      "name": "player lands and refuels",
+      "ok": true,
+      "detail": "alt 0.00 m, fuel 1.00"
+    },
+    {
+      "name": "altitude ceiling holds",
+      "ok": true,
+      "detail": "alt 18.00 m"
+    },
+    {
+      "name": "ground pitch is clamped",
+      "ok": true,
+      "detail": "pitch -63 deg"
+    },
+    {
+      "name": "airborne pitch unlocks",
+      "ok": true,
+      "detail": "pitch -53 deg"
+    },
+    {
+      "name": "camera in front selects yaw frame 0",
+      "ok": true,
+      "detail": "guard yaw 0"
+    },
+    {
+      "name": "camera behind selects yaw frame 8",
+      "ok": true,
+      "detail": "guard yaw 8"
+    },
+    {
+      "name": "scout chassis renders at yaw 0",
+      "ok": true,
+      "detail": "sentinel/scout yaw 0"
+    },
+    {
+      "name": "brute chassis renders at yaw 0",
+      "ok": true,
+      "detail": "warden/brute yaw 0"
+    },
+    {
+      "name": "midair altitude registers",
+      "ok": true,
+      "detail": "alt 7.23 m, sprite pitch 2"
+    },
+    {
+      "name": "no page errors",
+      "ok": true,
+      "detail": "0 errors"
+    }
+  ],
+  "consoleErrors": [],
+  "screenshots": [
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/01-ground-spawn.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/02-ground-open.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/03-jetpack-burn.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/04-guard-front.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/05-guard-back.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/11-scout-front.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/12-brute-front.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/06-midair.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/07-aerial-down.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/08-aerial-level.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/09-overview.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/10-aerial-topdown.png"
+  ]
+}

@@ -21,15 +21,20 @@
       <section class="stage" aria-label="Raycasting viewport">
         <canvas id="view" width="384" height="240"></canvas>
         <div class="scanlines" aria-hidden="true"></div>
+        <div id="thrust" aria-hidden="true"></div>
+        <div class="crosshair" aria-hidden="true"></div>
         <header id="brand">
           <span class="mark">RAYCAST</span>
-          <span class="tag">SPRITE LAB / M1</span>
+          <span class="tag">SPRITE LAB / FLIGHT DECK</span>
         </header>
         <div id="hud">
           <div class="row"><span class="k">FPS</span><span id="hud-fps">--</span></div>
           <div class="row detail"><span class="k">POS</span><span id="hud-pos">--</span></div>
+          <div class="row detail"><span class="k">ALT</span><span id="hud-alt">--</span></div>
           <div class="row detail"><span class="k">LOOK</span><span id="hud-look">--</span></div>
           <div class="row detail"><span class="k">MODE</span><span id="hud-mode">--</span></div>
+          <div class="row detail"><span class="k">JET</span><span id="hud-fuel">--</span></div>
+          <div class="fuel detail" aria-hidden="true"><span id="hud-fuel-fill"></span></div>
           <div class="row detail"><span class="k">SPRITE</span><span id="hud-sprite">--</span></div>
         </div>
         <canvas id="minimap" aria-label="Minimap"></canvas>
@@ -42,16 +47,19 @@
           <h1>Raycast<br /><em>Sprite Lab</em></h1>
           <p class="lede">
             A 2.5D courtyard rendered with DDA raycasting and a software depth buffer.
-            Every sentry is one 3D proxy baked into an 8-direction, 3-pitch sprite atlas.
+            Three chassis are baked into 16-direction, 3-pitch sprite atlases, then
+            viewed from the ground or straight down from jetpack altitude.
           </p>
           <ul class="specs">
-            <li><b>8</b> yaw frames</li>
+            <li><b>16</b> yaw frames</li>
             <li><b>3</b> pitch states</li>
-            <li><b>2D</b> depth-tested billboards</li>
+            <li><b>3</b> chassis</li>
+            <li><b>Jet</b> pack flight</li>
           </ul>
           <button id="enter" type="button">Enter courtyard</button>
           <p class="fine">
-            Mouse look is captured on entry. <kbd>Esc</kbd> releases it.
+            <kbd>Space</kbd> ignites the jetpack. Mouse look is captured on entry.
+            <kbd>Esc</kbd> releases it.
           </p>
         </div>
       </div>

@@ -4,16 +4,18 @@ Milestones are ordered. A milestone is complete only when every acceptance crite
 is checked and the verification command passes. Update this file and
 [PROGRESS.md](PROGRESS.md) whenever a milestone starts or finishes.
 
-Current position: **M4 complete — M5 next.**
+Current position: **M4 complete — M5 next.** Jetpack flight, aerial camera, the browser
+playtest harness, 16-way sprites, and three character chassis landed early from M7.
 
-## M0 — Foundation (CI activation pending)
+## M0 — Foundation
 
 - [x] TypeScript + Vite project with strict typechecking
 - [x] Vitest harness, `npm test`, `npm run build`
 - [x] Repo docs, handoff format, Git remote and initial push
-- [ ] GitHub Actions CI — workflow authored at `.github/workflows/ci.yml`; activation is
-  blocked because the current GitHub token lacks the `workflow` scope
+- [ ] GitHub Actions CI — intentionally deferred by owner decision; Vercel builds each
+  push. `.github/workflows/ci.yml` exists but activation needs the `workflow` token scope.
 - [x] Deterministic wall/floor texture generator
+- [x] Headless browser playtest harness (`npm run playtest`)
 
 **Acceptance:** clean clone runs `npm ci && npm run typecheck && npm test && npm run build`.
 
@@ -33,39 +35,44 @@ Current position: **M4 complete — M5 next.**
 
 - [x] Player `z` position, `vz` velocity, gravity, jump
 - [x] Eye height and camera bob
-- [x] Y-shear pitch (`horizon = H/2 + tan(pitch)·focal`) with ±0.45 rad clamp
+- [x] True rotational pitch camera with 63° ground / 53° airborne limits
+- [x] Jetpack thrust, fuel burn/refuel, terminal fall, 18-unit altitude ceiling
+- [x] Altitude-widened FOV (70° → 100°) and wall-top/roof plane rendering
 - [x] Fly debug mode with height clamp
-- [x] Per-pixel depth buffer for walls and floor
+- [x] Per-pixel depth buffer for walls, floor, and wall tops
 - [x] Respawn and pose debug API
 
-**Acceptance:** jump, fly and mouse pitch show no perspective warping inside the pitch
-limit; sprites remain correctly grounded while the camera moves vertically.
+**Acceptance:** jump and jetpack lift/land/refuel work; mouse pitch reaches ~63° without
+perspective warping; sprites remain grounded at every altitude. Verified 2026-11-11 by
+`npm run playtest` (16/16).
 
 ## M3 — Directional sprites ✅
 
 - [x] Billboard transform into camera space
-- [x] 8-way yaw quantization from `atan2(camera − actor) − actor.facing`
+- [x] 16-way yaw quantization from `actor.facing − atan2(camera − actor)`
 - [x] 3 pitch buckets (low / level / high) from elevation angle
 - [x] Per-pixel sprite depth test + alpha blending
 - [x] Ground shadows and per-actor RGB tint
 - [x] Atlas manifest lookup with pitch/state fallbacks
 - [x] Animated idle and walk states
-- [x] Verified all 8 yaw frames resolve to distinct atlas rects in-browser
+- [x] Verified front/back (yaw 0 / 8) selection for guardian, scout, and brute
 
-**Acceptance:** orbiting a stationary actor cycles 8 visually distinct views; raising
+**Acceptance:** orbiting a stationary actor cycles 16 visually distinct views; raising
 the camera switches to the high-angle row. Verified 2026-11-11.
 
 ## M4 — Blender → atlas asset pipeline ✅
 
-- [x] Headless Blender proxy character, orthographic turntable camera
-- [x] 8 yaw × 3 pitch × idle(2) + walk(4) = 144 RGBA renders
+- [x] Headless Blender proxy rig, orthographic turntable camera
+- [x] Three chassis (guardian, scout, brute) with distinct palette and proportions
+- [x] 16 yaw × 3 pitch × idle(2) + walk(4) = 288 renders per character (864 total)
 - [x] Premultiplied 4× downsample to 96×96
 - [x] Saturation/contrast punch, palette quantization, 1 px outline
-- [x] Atlas packer with rects and JSON manifest
+- [x] Atlas packer auto-detects direction/pitch counts; emits per-character manifests
+- [x] Engine loads and selects from multiple atlases per actor
 - [x] Pipeline documented and reproducible via `npm run assets`
 
-**Acceptance:** `npm run assets` regenerates `atlas.png` + `atlas.json`; the game loads
-them without console errors. Verified 2026-11-11.
+**Acceptance:** `npm run assets` regenerates three 1536×1728 atlases; the game loads them
+without console errors and assigns chassis per actor. Verified 2026-11-11.
 
 ## M5 — Variable-height world 🚧
 
@@ -94,14 +101,14 @@ Goal: swap the palette stylizer for a generative pass while keeping the atlas co
 - [ ] Style consistency checks (silhouette IoU, palette drift) in CI or a report
 - [ ] Optional AutoSprite/Gamelabs Studio adapter behind the same interface
 
-**Acceptance:** one command regenerates a stylized 144-frame atlas; the renderer needs
-no code changes; costume edits remain consistent across all 24 view/pitch cells.
+**Acceptance:** one command regenerates a stylized per-character atlas (288 frames); the
+renderer needs no code changes; costume edits remain consistent across all view/pitch cells.
 
-## M7 — Content and gameplay ⬜
+## M7 — Content and gameplay 🚧
 
-- [ ] 16-way direction mode (manifest-driven, engine already index-agnostic)
+- [x] 16-way direction mode (manifest-driven, engine index-agnostic)
+- [x] Multiple characters from one pipeline with shared rig and per-spec materials
 - [ ] Additional states: attack, hurt, death, talk
-- [ ] Multiple characters from one pipeline with shared rig or per-spec materials
 - [ ] Actor interaction (use/talk), simple combat loop
 - [ ] Doors, pickups, level transitions
 - [ ] Second map demonstrating vertical sectors
@@ -115,7 +122,7 @@ object, all assets generated by the pipeline.
 - [ ] Pause/settings menu, sensitivity and FOV controls
 - [ ] Performance pass (typed-array batching, optional resolution scale)
 - [x] Static hosting on Vercel — https://raycast-rosy.vercel.app
-- [ ] CI-triggered deployment from GitHub Actions
+- [x] GitHub → Vercel auto-deploy on `main` (Git integration connected)
 - [ ] Final README with gameplay capture
 
 **Acceptance:** public URL runs the demo; CI deploys on tagged releases; no console

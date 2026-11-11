@@ -5,10 +5,11 @@ dist/
 coverage/
 
 # Blender raw turntable output is reproducible from tools/blender/render-all.sh
+assets-src/characters/*/raw/
 assets-src/character/raw/
 
-# Generated intermediate stylized frames; the packed atlas is committed
-public/assets/sprites/character/frames/
+# Generated intermediate stylized frames; the packed atlases are committed
+public/assets/sprites/*/frames/
 
 # Root-level reference PDFs; the spec is archived in docs/spec/
 /*.pdf

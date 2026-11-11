@@ -86,6 +86,65 @@ body {
   mix-blend-mode: soft-light;
 }
 
+.crosshair {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.crosshair::before,
+.crosshair::after {
+  content: "";
+  position: absolute;
+  background: var(--amber);
+  box-shadow: 0 0 4px rgba(226, 176, 119, 0.7);
+}
+
+.crosshair::before {
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  transform: translateX(-50%);
+}
+
+.crosshair::after {
+  top: 50%;
+  left: 0;
+  height: 1px;
+  width: 100%;
+  transform: translateY(-50%);
+}
+
+#thrust {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease;
+  background:
+    radial-gradient(ellipse at 30% 108%, rgba(111, 211, 216, 0.35), transparent 42%),
+    radial-gradient(ellipse at 70% 108%, rgba(111, 211, 216, 0.35), transparent 42%),
+    radial-gradient(ellipse at 50% 104%, rgba(226, 176, 119, 0.28), transparent 55%);
+  mix-blend-mode: screen;
+}
+
+#thrust.active {
+  opacity: 1;
+  animation: thrust-flicker 90ms steps(2) infinite;
+}
+
+@keyframes thrust-flicker {
+  50% {
+    opacity: 0.68;
+  }
+}
+
 #brand {
   position: absolute;
   top: 14px;
@@ -145,6 +204,22 @@ body {
 
 #hud #hud-fps {
   color: var(--cyan);
+}
+
+#hud .fuel {
+  height: 3px;
+  margin: 1px 0 2px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(57, 67, 84, 0.55);
+  overflow: hidden;
+}
+
+#hud .fuel span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, var(--cyan), var(--amber));
+  transition: width 120ms linear;
 }
 
 #hud.minimal .detail {

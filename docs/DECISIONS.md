@@ -87,3 +87,34 @@ read it, so a 16-way atlas is a data upgrade. Provide level-pitch fallback for m
 
 **Consequences:** 144 frames per character is manageable. A 16-way character requires 288
 frames and a new Blender yaw count (`--yaws 16`). The engine already supports it.
+Superseded by ADR-009 for the shipped build.
+
+## ADR-008 — Rotational pitch and a wall-top plane
+
+**Context:** Y-shear pitch cannot look straight down: geometry compresses into a band and
+sprites disappear, which blocks the aerial view the jetpack made possible.
+
+**Decision:** Rotate the camera basis (forward/right/up) and project every wall, floor,
+roof, and sprite pixel through the same pinhole. Above wall height, skip wall faces and
+draw wall tops with a second plane intersection (`roofT`). Fill wall bodies where an
+overhead ray grazes a top and lands on a farther solid cell.
+
+**Consequences:** Steep downward pitch and true aerial framing work, at the cost of a
+per-pixel 3D ray in the floor pass and a few extra branches. Pitch must stay short of
+vertical so `rayZ < 0`; the limits enforce that. Any future geometry must use the same
+scene depth metric (horizontal forward distance).
+
+## ADR-009 — Three character atlases at 16 directions
+
+**Context:** ADR-005's single tinted atlas made all actors read as recolors, and ADR-007's
+8-way atlas showed visible angular stepping when orbiting.
+
+**Decision:** Render three chassis (guardian, scout, brute) with shared rig geometry but
+distinct palette/proportions, at 16 yaws × 3 pitches × 6 poses. Emit one 1536×1728 atlas
+per character, load all three, and let `ActorSpec.sprite` select. Tints and per-actor scale
+still provide variants within a chassis.
+
+**Consequences:** 864 Blender frames and roughly 1.7 MB per atlas, but actors are
+unmistakably distinct and 22.5° yaw steps look smooth. The packer detects direction counts
+from filenames, so smaller atlases remain valid. Adding a character is a data + spec
+change, not an engine change.

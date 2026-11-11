@@ -1,7 +1,7 @@
 import "./style.css";
 import { loadAtlas, loadTexture } from "./engine/atlas";
 import { Renderer } from "./engine/renderer";
-import { Game } from "./game";
+import { Game, type HudState } from "./game";
 
 const BASE = import.meta.env.BASE_URL;
 const MINIMAP_SIZE = 168;
@@ -23,19 +23,29 @@ async function boot(): Promise<void> {
 
   const hudFps = byId<HTMLSpanElement>("hud-fps");
   const hudPos = byId<HTMLSpanElement>("hud-pos");
+  const hudAlt = byId<HTMLSpanElement>("hud-alt");
   const hudLook = byId<HTMLSpanElement>("hud-look");
   const hudMode = byId<HTMLSpanElement>("hud-mode");
+  const hudFuel = byId<HTMLSpanElement>("hud-fuel");
+  const hudFuelFill = byId<HTMLSpanElement>("hud-fuel-fill");
   const hudSprite = byId<HTMLSpanElement>("hud-sprite");
+  const thrust = byId<HTMLDivElement>("thrust");
 
   let assets;
   try {
-    const [brick, panel, floor, atlas] = await Promise.all([
+    const [brick, panel, floor, guardian, scout, brute] = await Promise.all([
       loadTexture(`${BASE}assets/textures/brick.png`),
       loadTexture(`${BASE}assets/textures/panel.png`),
       loadTexture(`${BASE}assets/textures/floor.png`),
-      loadAtlas(`${BASE}assets/sprites/character/atlas.json`),
+      loadAtlas(`${BASE}assets/sprites/guardian/atlas.json`),
+      loadAtlas(`${BASE}assets/sprites/scout/atlas.json`),
+      loadAtlas(`${BASE}assets/sprites/brute/atlas.json`),
     ]);
-    assets = { textures: { 1: brick, 2: panel }, floor, atlas };
+    assets = {
+      textures: { 1: brick, 2: panel },
+      floor,
+      atlases: { guardian, scout, brute },
+    };
   } catch (error) {
     loading.textContent = `ASSET LOAD FAILED — ${String(error)}`;
     console.error(error);
@@ -92,6 +102,7 @@ async function boot(): Promise<void> {
     game.update(dt);
     game.render();
     game.drawMinimap(mapCtx, MINIMAP_SIZE);
+    thrust.classList.toggle("active", game.isThrusting());
 
     if (elapsed > 0) smoothedFps = smoothedFps * 0.9 + (1 / elapsed) * 0.1;
 
@@ -101,13 +112,22 @@ async function boot(): Promise<void> {
       const state = game.getHudState();
       hudFps.textContent = String(Math.round(smoothedFps));
       hudPos.textContent =
-        `${state.x.toFixed(1)} ${state.y.toFixed(1)} ${state.z.toFixed(2)}`;
+        `${state.x.toFixed(1)} ${state.y.toFixed(1)}`;
+      hudAlt.textContent = `${state.z.toFixed(2)} m · vz ${state.vz.toFixed(1)}`;
       hudLook.textContent = `yaw ${state.yawDeg} · pitch ${state.pitchDeg}`;
-      hudMode.textContent = state.flying ? "FLY" : `WALK · ${started ? "LIVE" : "ATTRACT"}`;
+      hudMode.textContent = state.flying
+        ? "FREEFLY · DEBUG"
+        : state.thrusting
+          ? "JETPACK · BURN"
+          : state.airborne
+            ? "AIRBORNE · FALL"
+            : `WALK · ${started ? "LIVE" : "ATTRACT"}`;
+      hudFuel.textContent = `${Math.round(state.fuel * 100)}%`;
+      hudFuelFill.style.width = `${state.fuel * 100}%`;
       hudSprite.textContent =
         state.nearestYaw < 0
           ? "none"
-          : `${state.nearestName} · yaw ${state.nearestYaw} · ${game.getPitchLabel(state.nearestPitch)}`;
+          : `${state.nearestName} · ${state.nearestSprite} · yaw ${state.nearestYaw} · ${game.getPitchLabel(state.nearestPitch)}`;
       hud.classList.toggle("minimal", !game.hudDetailVisible);
     }
 
@@ -123,6 +143,19 @@ async function boot(): Promise<void> {
       intro.classList.add("hidden");
       resume.classList.add("hidden");
     },
+    automation: {
+      enable: () => {
+        game.input.scripted = true;
+      },
+      disable: () => {
+        game.input.scripted = false;
+        game.input.clearKeys();
+      },
+      press: (code) => game.input.setKey(code, true),
+      release: (code) => game.input.setKey(code, false),
+      look: (dx, dy) => game.input.addLook(dx, dy),
+      state: () => game.getHudState(),
+    },
   };
 }
 
@@ -133,6 +166,14 @@ declare global {
       setPose: (x: number, y: number, z: number, yaw: number, pitch: number) => void;
       setFlying: (value: boolean) => void;
       dismissIntro: () => void;
+      automation: {
+        enable: () => void;
+        disable: () => void;
+        press: (code: string) => void;
+        release: (code: string) => void;
+        look: (dx: number, dy: number) => void;
+        state: () => HudState;
+      };
     };
   }
 }

@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "playtest": "tsx tools/playtest/run.ts",
     "assets:textures": "tsx tools/assets/make-textures.ts",
     "assets:blender": "bash tools/blender/render-all.sh",
     "assets:stylize": "tsx tools/stylize/pixel-art.ts",

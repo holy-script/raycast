@@ -1,16 +1,16 @@
 # Asset pipeline
 
-The renderer consumes one atlas plus three wall/floor textures. Everything is generated
-locally and deterministically except for Blender's renderer, which is deterministic given
-the same version and samples.
+The renderer consumes three character atlases plus three wall/floor textures. Everything
+is generated locally and deterministically except for Blender's renderer, which is
+deterministic given the same version and samples.
 
 ```text
-ASCII map ─┐
-           ├─► engine
-textures ──┤
-atlas ─────┘
+ASCII map ─────────────┐
+                       ├─► engine
+textures ──────────────┤
+3 × atlas.{png,json} ──┘
 
-Blender proxy ─► 144 RGBA renders ─► 96² pixel-art frames ─► 768×1728 atlas + JSON
+Blender chassis ─► 864 RGBA renders ─► 288 frames per character ─► 3 × 1536×1728 atlases
 ```
 
 ## Commands
@@ -27,13 +27,16 @@ npm run assets            # all four, in order
 
 ```bash
 npm run assets:blender -- --yaws 16 --samples 32
-npm run assets:blender -- --only idle:0:1:0 --resolution 128
+npm run assets:blender -- --character scout --only idle:0:1:0 --resolution 128
 BLENDER_BIN=/Applications/Blender.app/Contents/MacOS/Blender npm run assets:blender
 ```
 
-Tested with Blender 5.2.2 and Node 24. Raw renders take roughly 1.2 s/frame at 24 samples
-on Apple Silicon (~3 minutes for 144 frames). Raw renders and stylized intermediate frames
-are gitignored; only the packed atlas, manifest, and textures are committed.
+The stylizer and packer default to guardian, scout, and brute; pass names to limit them:
+`npm run assets:stylize -- scout` and `npm run assets:atlas -- scout`.
+
+Tested with Blender 5.2.2 and Node 24. The full 864-frame render takes roughly two minutes
+at 384² / 16 samples on Apple Silicon. Raw renders and stylized intermediate frames are
+gitignored; only the packed atlases, manifests, and textures are committed.
 
 ## Stage 1 — textures (`tools/assets/make-textures.ts`)
 
@@ -51,17 +54,25 @@ Textures are 64×64, tiled by the renderer. Rerunning the script gives identical
 
 `render_turntable.py` builds a boxy robot from primitives (helmet, face plate, emissive
 visor, antenna, backpack, tanks, shoulder pads), lights it with three suns, and renders
-each frame with an orthographic camera and transparent film.
+each frame with an orthographic camera and transparent film. Three chassis share the rig
+with different materials and proportions:
 
-- Cycles, 384×384, 24 samples, Standard view transform.
+| Character | Palette | Silhouette |
+| --- | --- | --- |
+| `guardian` | Rust jacket, teal pants, bright teal visor | Standard bulk, antenna, twin tanks |
+| `scout` | Teal jacket, dark trousers, pale visor | Slim (0.84 bulk), small helmet, long antenna, no tanks |
+| `brute` | Dark rust/charcoal, orange visor | Wide (1.3 bulk), large helmet, shoulder plates, no antenna |
+
+- Cycles, 384×384, 16 samples, Standard view transform.
 - Ortho scale 1.15 world units, camera aimed at `(0, 0, 0.5)`.
-- Yaw: camera orbits with `azimuth = yaw / yaws × 2π`.
+- Yaw: camera orbits with `azimuth = yaw / yaws × 2π`, 16 yaws by default.
 - Pitch: camera elevation `z = 0.5 + sin(pitch) × R`, with `PITCH_ANGLES = [-0.31, 0, 0.49]`
   (low, level, high).
 - States: `idle` (2 frames), `walk` (4 frames, hip/arm swing).
 - Frame filenames: `{state}_f{frame}_p{pitch}_y{yaw}.png`.
 
-Output: `assets-src/character/raw/` — 144 files, RGBA with transparent background.
+Output: `assets-src/characters/<character>/raw/` — 288 files per character, RGBA with a
+transparent background.
 
 ### Adding a state
 
@@ -72,14 +83,16 @@ Output: `assets-src/character/raw/` — 144 files, RGBA with transparent backgro
 
 ### Adding a character
 
-The current pipeline is hardcoded to one proxy. To add another:
+1. Add an entry to `CHARACTERS` in `render_turntable.py` (palette, bulk, helmet scale,
+   visor emission, tanks/antenna/shoulder plates, pack size).
+2. Add the name to `CHARACTERS` in `tools/blender/render-all.sh` and to
+   `DEFAULT_CHARACTERS` in both `tools/stylize/pixel-art.ts` and `tools/atlas/pack.ts`.
+3. Load the new atlas in `src/main.ts` and add its id to `SpriteId` in
+   `src/content/actors.ts`; assign `sprite` per actor.
+4. Run `npm run assets`. The packer detects the direction/pitch counts from filenames.
 
-1. Parameterize or fork `render_turntable.py` with a `--variant` material set.
-2. Render into `assets-src/<name>/raw/`.
-3. Point the stylizer and packer at those directories (both use constants at the top).
-4. Emit `public/assets/sprites/<name>/atlas.{png,json}` and load it in `main.ts`.
-
-Tint variants of the same body do not need new renders: set `tint` in `src/content/actors.ts`.
+Tint variants of the same chassis do not need new renders: set `tint` and `scale` in
+`src/content/actors.ts`.
 
 ## Stage 3 — stylize (`tools/stylize/pixel-art.ts`)
 
@@ -93,31 +106,35 @@ Turns 384² renders into crisp 96² pixel art:
 5. **1 px outline** in near-black, drawn only where an opaque pixel touches transparency.
    The alpha mask is captured before outlining so the outline cannot flood the background.
 
-Output: `public/assets/sprites/character/frames/{state}_f{frame}_p{pitch}_y{yaw}.png`.
+Output: `public/assets/sprites/<character>/frames/{state}_f{frame}_p{pitch}_y{yaw}.png`.
 
 The outline pass is order-dependent and uses an immutable `solid` mask. Do not replace it
 with an in-place neighbor test; that bug produced opaque black rectangles.
 
 ## Stage 4 — atlas (`tools/atlas/pack.ts`)
 
-Packs frames row-major into a uniform grid and writes a manifest.
+Packs frames row-major into a uniform grid and writes a manifest. Direction and pitch
+counts are detected from the frame filenames, so 8-way and 16-way atlases use the same
+code.
 
 - Frame size: 96×96.
-- Grid: 8 columns (yaw) × 18 rows (state × frame × pitch) = 768×1728.
+- Grid: 16 columns (yaw) × 18 rows (state × frame × pitch) = 1536×1728 per character.
 - `frameWorldSize = 1.15`, `frameAnchorZ = -0.075`.
 - Row order: for each state, for each frame, for each pitch (low, level, high), then yaw.
+- Output: `public/assets/sprites/<character>/atlas.{png,json}`.
 
 Manifest shape (`atlas.json`):
 
 ```json
 {
   "version": 1,
+  "name": "guardian",
   "image": "atlas.png",
   "frameWidth": 96,
   "frameHeight": 96,
   "frameWorldSize": 1.15,
   "frameAnchorZ": -0.075,
-  "directions": 8,
+  "directions": 16,
   "pitches": 3,
   "pitchOrder": ["low", "level", "high"],
   "states": {
@@ -131,8 +148,8 @@ Manifest shape (`atlas.json`):
 ```
 
 Lookup order: exact `(state, pitch, yaw, frame)` → level pitch → `idle/level/yaw/0`.
-Yaw and frame indices wrap, so 16-way mode can read a slightly rotated entry from an
-8-way atlas if no 16-way atlas is present.
+Yaw and frame indices wrap, so a smaller fallback atlas still renders if a character
+atlas is incomplete.
 
 `anchorZ` shifts the frame bottom relative to the actor's feet. It exists because the
 high-angle orthographic frames leave empty space below the feet; without it, feet clip

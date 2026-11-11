@@ -11,8 +11,14 @@ const PREVENT_DEFAULT = new Set([
 
 export class InputController {
   locked = false;
+  /** Lets automated playtests drive the controller without pointer lock. */
+  scripted = false;
   onLockChange?: (locked: boolean) => void;
   onAction?: (action: InputAction) => void;
+
+  get active(): boolean {
+    return this.locked || this.scripted;
+  }
 
   private readonly keys = new Set<string>();
   private lookX = 0;
@@ -56,6 +62,20 @@ export class InputController {
 
   isDown(code: string): boolean {
     return this.keys.has(code);
+  }
+
+  setKey(code: string, down: boolean): void {
+    if (down) this.keys.add(code);
+    else this.keys.delete(code);
+  }
+
+  addLook(deltaX: number, deltaY: number): void {
+    this.lookX += deltaX;
+    this.lookY += deltaY;
+  }
+
+  clearKeys(): void {
+    this.keys.clear();
   }
 
   consumeLook(): { x: number; y: number } {

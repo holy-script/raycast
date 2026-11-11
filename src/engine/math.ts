@@ -22,6 +22,19 @@ export function quantizeDirection(relativeAngle: number, directions: number): nu
   return ((Math.round(relativeAngle / step) % directions) + directions) % directions;
 }
 
+/**
+ * Selects an atlas yaw frame for a camera at `angleToCamera` viewing an actor
+ * facing `facing`. Atlas yaw frames orbit opposite the world angle because the
+ * map is y-down, so the camera-to-actor angle is negated before quantization.
+ */
+export function spriteYawIndex(
+  angleToCamera: number,
+  facing: number,
+  directions: number,
+): number {
+  return quantizeDirection(facing - angleToCamera, directions);
+}
+
 export type PitchIndex = 0 | 1 | 2;
 
 /**

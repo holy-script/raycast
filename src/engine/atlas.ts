@@ -14,6 +14,7 @@ export interface AtlasFrameEntry {
 
 export interface AtlasManifest {
   version: number;
+  name?: string;
   image: string;
   frameWidth: number;
   frameHeight: number;

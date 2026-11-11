@@ -4,6 +4,7 @@ import {
   quantizeDirection,
   quantizePitch,
   shortestAngleDelta,
+  spriteYawIndex,
   TAU,
   wrapAngle,
 } from "../src/engine/math";
@@ -27,6 +28,15 @@ describe("directional quantization", () => {
   it("supports 16-way indexing", () => {
     expect(quantizeDirection(TAU / 16, 16)).toBe(1);
     expect(quantizeDirection(-TAU / 16, 16)).toBe(15);
+  });
+
+  it("selects the right-side atlas frame when the camera is to the actor's right", () => {
+    // Actor faces east; camera south is on its right. Atlas frames orbit the
+    // opposite way, so that view lives at index 6 (not 2).
+    expect(spriteYawIndex(Math.PI / 2, 0, 8)).toBe(6);
+    expect(spriteYawIndex(-Math.PI / 2, 0, 8)).toBe(2);
+    expect(spriteYawIndex(Math.PI, 0, 8)).toBe(4);
+    expect(spriteYawIndex(Math.PI / 2, 0, 16)).toBe(12);
   });
 });
 

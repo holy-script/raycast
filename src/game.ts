@@ -4,9 +4,9 @@ import {
   clamp,
   elevationAngle,
   lerp,
-  quantizeDirection,
   quantizePitch,
   shortestAngleDelta,
+  spriteYawIndex,
   wrapAngle,
 } from "./engine/math";
 import {
@@ -20,6 +20,7 @@ import { DEMO_ACTORS, type ActorSpec } from "./content/actors";
 import { DEMO_MAP, DEMO_SPAWN } from "./content/demo-map";
 
 export const FOV = (70 * Math.PI) / 180;
+const HIGH_ALTITUDE_FOV = (100 * Math.PI) / 180;
 const EYE_HEIGHT = 0.55;
 const PLAYER_RADIUS = 0.19;
 const WALK_SPEED = 3.0;
@@ -27,12 +28,18 @@ const SPRINT_SPEED = 4.6;
 const FLY_SPEED = 4.0;
 const GRAVITY = 18;
 const JUMP_SPEED = 3.0;
+const JET_THRUST = 34;
+const JET_MAX_UP = 5.6;
+const TERMINAL_FALL = 15;
+const JET_FUEL_SECONDS = 5.0;
+const JET_REFUEL_RATE = 0.5;
 const MOUSE_SENSITIVITY = 0.0022;
-const MAX_PITCH = 0.45;
-const MAX_FLY_HEIGHT = 3.2;
+const GROUND_PITCH_LIMIT = 1.1;
+const AIR_PITCH_LIMIT = 0.92;
+const MAX_ALTITUDE = 18;
 
 export interface GameAssets {
-  atlas: SpriteAtlas;
+  atlases: Record<string, SpriteAtlas>;
   textures: Record<number, Texture>;
   floor: Texture;
 }
@@ -47,6 +54,8 @@ interface Player {
   onGround: boolean;
   bobPhase: number;
   eyeBob: number;
+  fuel: number;
+  thrusting: boolean;
 }
 
 interface Actor {
@@ -64,10 +73,15 @@ export interface HudState {
   x: number;
   y: number;
   z: number;
+  vz: number;
   yawDeg: number;
   pitchDeg: number;
   flying: boolean;
+  airborne: boolean;
+  thrusting: boolean;
+  fuel: number;
   nearestName: string;
+  nearestSprite: string;
   nearestDistance: number;
   nearestYaw: number;
   nearestPitch: number;
@@ -103,6 +117,8 @@ export class Game {
       onGround: true,
       bobPhase: 0,
       eyeBob: 0,
+      fuel: 1,
+      thrusting: false,
     };
 
     this.actors = DEMO_ACTORS.map((spec) => ({
@@ -126,15 +142,12 @@ export class Game {
 
   update(dt: number): void {
     this.updateActors(dt);
-    if (!this.input.locked) return;
+    if (!this.input.active) return;
 
     const look = this.input.consumeLook();
-    this.player.yaw = wrapAngle(this.player.yaw - look.x * MOUSE_SENSITIVITY);
-    this.player.pitch = clamp(
-      this.player.pitch - look.y * MOUSE_SENSITIVITY,
-      -MAX_PITCH,
-      MAX_PITCH,
-    );
+    this.player.yaw = wrapAngle(this.player.yaw + look.x * MOUSE_SENSITIVITY);
+    this.player.pitch -= look.y * MOUSE_SENSITIVITY;
+    this.settlePitch(dt);
 
     const forward =
       (this.input.isDown("KeyW") ? 1 : 0) - (this.input.isDown("KeyS") ? 1 : 0);
@@ -143,8 +156,8 @@ export class Game {
 
     const dirX = Math.cos(this.player.yaw);
     const dirY = Math.sin(this.player.yaw);
-    let moveX = dirX * forward + dirY * strafe;
-    let moveY = dirY * forward - dirX * strafe;
+    let moveX = dirX * forward - dirY * strafe;
+    let moveY = dirY * forward + dirX * strafe;
     const length = Math.hypot(moveX, moveY);
     if (length > 0) {
       moveX /= length;
@@ -182,21 +195,44 @@ export class Game {
       this.player.z = clamp(
         this.player.z + vertical * FLY_SPEED * dt,
         0,
-        MAX_FLY_HEIGHT,
+        MAX_ALTITUDE,
       );
       this.player.vz = 0;
       this.player.onGround = this.player.z <= 0.001;
+      this.player.thrusting = false;
     } else {
-      if (this.input.isDown("Space") && this.player.onGround) {
-        this.player.vz = JUMP_SPEED;
+      const wantsThrust =
+        this.input.isDown("Space") && this.player.fuel > 0.001;
+      this.player.thrusting = wantsThrust;
+
+      if (wantsThrust) {
+        if (this.player.onGround) {
+          this.player.vz = Math.max(this.player.vz, JUMP_SPEED);
+        }
+        this.player.vz += JET_THRUST * dt;
+        this.player.fuel = Math.max(0, this.player.fuel - dt / JET_FUEL_SECONDS);
         this.player.onGround = false;
       }
-      this.player.vz -= GRAVITY * dt;
+
+      this.player.vz = clamp(
+        this.player.vz - GRAVITY * dt,
+        -TERMINAL_FALL,
+        JET_MAX_UP,
+      );
       this.player.z += this.player.vz * dt;
+
+      if (this.player.z >= MAX_ALTITUDE) {
+        this.player.z = MAX_ALTITUDE;
+        this.player.vz = this.player.thrusting ? 0 : Math.min(this.player.vz, 0);
+      }
+
       if (this.player.z <= 0) {
         this.player.z = 0;
         this.player.vz = 0;
         this.player.onGround = true;
+        this.player.fuel = Math.min(1, this.player.fuel + JET_REFUEL_RATE * dt);
+      } else {
+        this.player.onGround = false;
       }
     }
 
@@ -207,6 +243,21 @@ export class Game {
       this.player.bobPhase += dt * (sprint ? 13 : 9.5);
     }
     this.player.eyeBob = lerp(this.player.eyeBob, bobTarget, Math.min(1, dt * 12));
+  }
+
+  private pitchLimit(): number {
+    return this.player.z > 0.04 || this.flying
+      ? AIR_PITCH_LIMIT
+      : GROUND_PITCH_LIMIT;
+  }
+
+  private settlePitch(dt: number): void {
+    const limit = this.pitchLimit();
+    const excess = Math.abs(this.player.pitch) - limit;
+    if (excess <= 0) return;
+    const decay = Math.max(0, 1 - dt * 5);
+    this.player.pitch =
+      Math.sign(this.player.pitch) * (limit + excess * decay);
   }
 
   private updateActors(dt: number): void {
@@ -251,39 +302,49 @@ export class Game {
   }
 
   private cameraState(): CameraState {
-    const tanHalf = Math.tan(FOV / 2);
+    const altitudeT = clamp((this.player.z - 1) / 10, 0, 1);
+    const fov = FOV + (HIGH_ALTITUDE_FOV - FOV) * altitudeT;
+    const tanHalf = Math.tan(fov / 2);
     const dirX = Math.cos(this.player.yaw);
     const dirY = Math.sin(this.player.yaw);
     const focal = this.renderer.width / 2 / tanHalf;
+    const eyeZ = this.player.z + EYE_HEIGHT + this.player.eyeBob;
     return {
       x: this.player.x,
       y: this.player.y,
-      eyeZ: this.player.z + EYE_HEIGHT + this.player.eyeBob,
+      eyeZ,
       yaw: this.player.yaw,
       pitch: this.player.pitch,
       dirX,
       dirY,
-      planeX: dirY * tanHalf,
-      planeY: -dirX * tanHalf,
+      planeX: -dirY * tanHalf,
+      planeY: dirX * tanHalf,
       tanHalf,
       focal,
-      horizon: this.renderer.height / 2 + Math.tan(this.player.pitch) * focal,
+      fogScale: clamp(1 - (eyeZ - 1.5) / 24, 0.35, 1),
     };
   }
 
+  private atlasFor(spec: ActorSpec): SpriteAtlas {
+    return this.assets.atlases[spec.sprite] ?? this.assets.atlases.guardian;
+  }
+
   private buildSprites(camera: CameraState): SpriteDraw[] {
-    const { atlas } = this.assets;
-    const manifest = atlas.manifest;
     const draws: SpriteDraw[] = [];
 
     for (const actor of this.actors) {
+      const atlas = this.atlasFor(actor.spec);
+      const manifest = atlas.manifest;
       const dx = camera.x - actor.x;
       const dy = camera.y - actor.y;
       const distance = Math.hypot(dx, dy);
       if (distance < 0.001) continue;
 
-      const relative = wrapAngle(Math.atan2(dy, dx) - actor.facing);
-      const yawIndex = quantizeDirection(relative, manifest.directions);
+      const yawIndex = spriteYawIndex(
+        Math.atan2(dy, dx),
+        actor.facing,
+        manifest.directions,
+      );
       const worldSize = manifest.frameWorldSize * (actor.spec.scale ?? 1);
       const centerZ =
         actor.z +
@@ -330,13 +391,12 @@ export class Game {
     let nearestYaw = -1;
     let nearestPitch = -1;
     if (nearest) {
-      nearestYaw = quantizeDirection(
-        wrapAngle(
-          Math.atan2(camera.y - nearest.y, camera.x - nearest.x) - nearest.facing,
-        ),
-        this.assets.atlas.manifest.directions,
+      const manifest = this.atlasFor(nearest.spec).manifest;
+      nearestYaw = spriteYawIndex(
+        Math.atan2(camera.y - nearest.y, camera.x - nearest.x),
+        nearest.facing,
+        manifest.directions,
       );
-      const manifest = this.assets.atlas.manifest;
       nearestPitch = quantizePitch(
         elevationAngle(
           camera.eyeZ,
@@ -351,10 +411,15 @@ export class Game {
       x: this.player.x,
       y: this.player.y,
       z: this.player.z,
+      vz: this.player.vz,
       yawDeg: Math.round((wrapAngle(this.player.yaw) * 180) / Math.PI),
       pitchDeg: Math.round((this.player.pitch * 180) / Math.PI),
       flying: this.flying,
+      airborne: this.player.z > 0.04,
+      thrusting: this.player.thrusting,
+      fuel: this.player.fuel,
       nearestName: nearest?.spec.name ?? "none",
+      nearestSprite: nearest?.spec.sprite ?? "none",
       nearestDistance: best,
       nearestYaw,
       nearestPitch,
@@ -392,7 +457,7 @@ export class Game {
       ctx.strokeStyle = "#66c7cd";
       ctx.beginPath();
       ctx.moveTo(ax, ay);
-      ctx.lineTo(ax + Math.cos(actor.facing) * 5, ay - Math.sin(actor.facing) * 5);
+      ctx.lineTo(ax + Math.cos(actor.facing) * 5, ay + Math.sin(actor.facing) * 5);
       ctx.stroke();
     }
 
@@ -404,12 +469,12 @@ export class Game {
     ctx.moveTo(px, py);
     ctx.lineTo(
       px + Math.cos(this.player.yaw - FOV / 2) * 26,
-      py - Math.sin(this.player.yaw - FOV / 2) * 26,
+      py + Math.sin(this.player.yaw - FOV / 2) * 26,
     );
     ctx.moveTo(px, py);
     ctx.lineTo(
       px + Math.cos(this.player.yaw + FOV / 2) * 26,
-      py - Math.sin(this.player.yaw + FOV / 2) * 26,
+      py + Math.sin(this.player.yaw + FOV / 2) * 26,
     );
     ctx.stroke();
 
@@ -420,7 +485,7 @@ export class Game {
     ctx.strokeStyle = "#ffd28a";
     ctx.beginPath();
     ctx.moveTo(px, py);
-    ctx.lineTo(px + Math.cos(this.player.yaw) * 7, py - Math.sin(this.player.yaw) * 7);
+    ctx.lineTo(px + Math.cos(this.player.yaw) * 7, py + Math.sin(this.player.yaw) * 7);
     ctx.stroke();
 
     ctx.strokeStyle = "#3a4152";
@@ -434,6 +499,9 @@ export class Game {
     this.player.vz = 0;
     this.player.yaw = 0;
     this.player.pitch = 0;
+    this.player.fuel = 1;
+    this.player.thrusting = false;
+    this.player.onGround = true;
     this.flying = false;
   }
 
@@ -441,11 +509,18 @@ export class Game {
     this.player.x = x;
     this.player.y = y;
     this.player.z = z;
+    this.player.vz = 0;
+    this.player.onGround = z <= 0.001;
     this.player.yaw = wrapAngle(yaw);
-    this.player.pitch = clamp(pitch, -MAX_PITCH, MAX_PITCH);
+    const limit = this.pitchLimit();
+    this.player.pitch = clamp(pitch, -limit, limit);
   }
 
   setFlying(value: boolean): void {
     this.flying = value;
+  }
+
+  isThrusting(): boolean {
+    return this.player.thrusting;
   }
 }

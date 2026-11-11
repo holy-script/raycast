@@ -2,10 +2,23 @@ import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
 import { PNG } from "pngjs";
 
-const RAW_DIR = resolve("assets-src/character/raw");
-const OUT_DIR = resolve("public/assets/sprites/character/frames");
 const SCALE = 4;
 const ALPHA_CUTOFF = 0.5;
+const DEFAULT_CHARACTERS = ["guardian", "scout", "brute"];
+
+interface CharacterDirs {
+  name: string;
+  raw: string;
+  out: string;
+}
+
+function characterDirs(name: string): CharacterDirs {
+  return {
+    name,
+    raw: resolve(`assets-src/characters/${name}/raw`),
+    out: resolve(`public/assets/sprites/${name}/frames`),
+  };
+}
 
 const PALETTE: Array<[number, number, number]> = [
   [7, 9, 13],
@@ -156,19 +169,30 @@ function stylize(raw: PNG): PNG {
   return out;
 }
 
-function main(): void {
-  mkdirSync(OUT_DIR, { recursive: true });
-  const files = readdirSync(RAW_DIR).filter((file) => file.endsWith(".png"));
+function stylizeCharacter(dirs: CharacterDirs): number {
+  mkdirSync(dirs.out, { recursive: true });
+  const files = readdirSync(dirs.raw).filter((file) => file.endsWith(".png"));
   if (files.length === 0) {
-    throw new Error(`No raw renders found in ${RAW_DIR}. Run npm run assets:blender first.`);
+    throw new Error(`No raw renders found in ${dirs.raw}. Run npm run assets:blender first.`);
   }
 
   for (const file of files) {
-    const raw = PNG.sync.read(readFileSync(join(RAW_DIR, file)));
+    const raw = PNG.sync.read(readFileSync(join(dirs.raw, file)));
     const stylized = stylize(raw);
-    writeFileSync(join(OUT_DIR, basename(file)), PNG.sync.write(stylized));
-    console.log(`stylized ${file} -> ${stylized.width}x${stylized.height}`);
+    writeFileSync(join(dirs.out, basename(file)), PNG.sync.write(stylized));
   }
+  console.log(`stylized ${dirs.name}: ${files.length} frames -> ${dirs.out}`);
+  return files.length;
+}
+
+function main(): void {
+  const characters = process.argv.slice(2);
+  const names = characters.length > 0 ? characters : DEFAULT_CHARACTERS;
+  let total = 0;
+  for (const name of names) {
+    total += stylizeCharacter(characterDirs(name));
+  }
+  console.log(`stylized ${total} frames across ${names.length} character(s)`);
 }
 
 main();
