@@ -329,6 +329,9 @@ M7 gameplay verification (2026-11-11):
   engine falls back to idle for those states. AutoSprite/Gamelabs is not implemented.
 - Sprites are still masked to the Blender silhouette, so AI cannot invent limbs outside
   the render; a reference-image lock for costume details is also not implemented.
+- Each six-state atlas is 1536×7296 (~45 MB decoded), so the three characters cost
+  ~134 MB of texture memory. Splitting atlases per state (or per state/pitch) is the
+  obvious optimization if load time or mobile memory becomes a problem.
 
 ## Immediate next steps
 
