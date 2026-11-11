@@ -31,14 +31,15 @@ npm run assets            # textures → Blender → palette stylize → atlas
 ```bash
 npm run assets:blender -- --yaws 16 --samples 32
 npm run assets:blender -- --pitches 4
-npm run assets:blender -- --character scout --only idle:0:1:0 --resolution 128
+npm run assets:blender -- --character guardian --only idle:0:1:0 --resolution 128
 npm run assets:blender -- --no-controls          # skip depth/normal passes
 BLENDER_BIN=/Applications/Blender.app/Contents/MacOS/Blender npm run assets:blender
 ```
 
-The stylizer, verifier, and packer default to guardian, scout, and brute; pass names to
-limit them: `npm run assets:stylize -- scout`, `npm run assets:comfy -- scout`,
-`npm run assets:verify -- scout`, `npm run assets:atlas -- scout`.
+The stylizer, verifier, and packer default to guardian, the only shipped chassis; pass
+`guardian` explicitly if you want to be verbose: `npm run assets:stylize -- guardian`,
+`npm run assets:comfy -- guardian`, `npm run assets:verify -- guardian`,
+`npm run assets:atlas -- guardian`.
 
 Tested with Blender 5.2.2, Node 24, and ComfyUI's `/prompt` HTTP API. The full 1,216-frame
 render per character takes roughly 3–4 minutes at 384² / 16 samples on Apple Silicon,
@@ -67,8 +68,9 @@ with different materials and proportions:
 | Character | Palette | Silhouette |
 | --- | --- | --- |
 | `guardian` | Rust jacket, teal pants, bright teal visor | Standard bulk, antenna, twin tanks |
-| `scout` | Teal jacket, dark trousers, pale visor | Slim (0.84 bulk), small helmet, long antenna, no tanks |
-| `brute` | Dark rust/charcoal, orange visor | Wide (1.3 bulk), large helmet, shoulder plates, no antenna |
+
+The scout and brute specs were retired from shipping assets after the M9 content pass;
+every actor renders through the guardian atlas.
 
 - Cycles, 384×384, 16 samples, Standard view transform.
 - Ortho scale 1.15 world units, camera aimed at `(0, 0, 0.5)`. The near-overhead pitch
@@ -250,10 +252,8 @@ npm run assets:comfy -- guardian --only idle:0:1:0 \
 ```
 
 Measured on M-series / 36 GB: ~22 s for the first frame (model load) and ~8–11 s per warm
-frame at 512² with 20 steps. A full 384-frame character took ~55 min (guardian, scout,
-brute: 13:31, 14:27, 15:20 finish times), ~2.7 h for all three including verification.
-The M7 pass adds attack/hurt/death/talk: 832 frames per character, roughly 2–2.5 h each.
-Run one character at a time with `--fallback` and verify after each.
+frame at 512² with 20 steps. The full six-state guardian pass (1,216 frames) runs in
+roughly 2–2.5 h. Use `--resume` so an interrupted pass continues, and verify afterward.
 
 ### Workflow
 
@@ -308,15 +308,15 @@ If ComfyUI is unreachable or a frame fails, `--fallback` (also used by the MCP s
 default) reruns that frame through the palette stylizer. `--palette` skips ComfyUI
 entirely. `npm run assets:comfy:dry` never writes and lists missing controls.
 
-The prompt is character-aware (guardian/scout/brute descriptors), and one fixed seed is
+The prompt is character-aware (guardian descriptor), and one fixed seed is
 shared by every view to reduce view-to-view drift. There is no reference-image lock yet;
 the depth pass plus img2img keeps geometry, while the verifier catches colour drift.
 
 ## Stage 6 — style verification (`tools/verify/style.ts`)
 
 ```bash
-npm run assets:verify                       # all characters
-npm run assets:verify -- scout              # one character
+npm run assets:verify                       # guardian (the only shipped chassis)
+npm run assets:verify -- guardian           # explicit name
 npm run assets:verify -- --min-iou 0.97 --max-drift 10
 ```
 
@@ -332,11 +332,10 @@ Writes `artifacts/style-report.json` (gitignored) and prints a per-character tab
   so walk poses and pitch bands are compared only to their peers.
 - Missing raw renders, non-square frames, low IoU, or high mean drift fail the command.
 
-Baseline for the palette stylizer (384 frames × 3 characters): IoU 1.000 at 1 px
-tolerance; mean drift 4.6 (guardian/scout), 5.1 (brute); worst single frame 27.5–30.1.
-The SD1.5 + ControlNet M6 pass measured IoU 1.000 and mean drift 6.2 / 6.1 / 5.4. The M7
-repack expands the report to 1,216 frames per character; review the per-state numbers
-before changing thresholds. Thresholds default to `0.98` IoU and `12` mean drift. Tune
+Baseline for the shipped guardian atlas (1,216 frames): IoU 1.000 at 1 px tolerance and
+mean neighbour-yaw palette drift under 7 (threshold is mean ≤ 12). The M7 repack expanded
+the report from 384 to 1,216 frames; review the per-state numbers before changing
+thresholds. Thresholds default to `0.98` IoU and `12` mean drift. Tune
 `--max-drift` only when a deliberate style preset shifts the palette consistently across
 all views.
 

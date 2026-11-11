@@ -10,19 +10,18 @@ npm ci
 npm run typecheck
 npm test
 npm run build
-npm run playtest   # headless Chrome, 29 checks + screenshots
-npm run playtest:matrix  # 90 deterministic scenarios, 581 checks
-npm run playtest:states  # 98 state checks, 43 paused-state captures
+npm run playtest   # headless Chrome, 40 checks + screenshots
+npm run playtest:matrix  # 97 deterministic scenarios, 625 checks
+npm run playtest:states  # 42 state checks, 21 paused-state captures
 npm run dev        # http://localhost:5173
 ```
 
-Expected: typecheck clean, 52 tests passing across 8 files, Vite build succeeds, playtest
-29/29, matrix 581/581, state gallery 98/98 with zero console errors. Until scout and
-brute repack, playtest reports 28/29 (the atlas-completeness check); that is the only
-expected failure. Click the canvas, move with WASD, hold
-Space to jetpack up to 18 m, and look down to see the top-pitch sprite rows and the
-diorama. Walk up the panel stairs (x=10–13, y=18–21) onto the 0.4 platform, jump the 0.6
-crate at (4.5, 13.5), or land on a wall to perch; walk off to fall back.
+Expected: typecheck clean, 57 tests passing across 8 files, Vite build succeeds, playtest
+40/40, matrix 625/625, state gallery 42/42 with zero console errors. Click the canvas,
+move with WASD, hold Space to jetpack up to 18 m, and look down to see the top-pitch
+sprite rows and the diorama. Walk up the panel stairs (x=10–13, y=18–21) onto the 0.4
+platform, jump the 0.6 crate at (4.5, 13.5), or land on a wall to perch; walk off to fall
+back. The plasma projector in the lower-right idles and swings when you strike.
 
 M7 loop: pick up the keycard near the courtyard spawn, open the door at (9, 11), step on
 the beacon to reach the reactor map, climb the terraces, unlock/open the vault door at
@@ -92,9 +91,9 @@ actually drawn.
 
 `?screenshot` hides the intro overlay for headless captures. Prefer the harnesses:
 `npm run playtest` is the happy-path browser check, `npm run playtest:matrix` walks
-90 deterministic state/route scenarios (581 checks, labelled contact sheet, golden
-frames), and `npm run playtest:states` pauses the sim in every player/chassis body state
-for 43 gallery captures (98 checks). All start Vite, drive Chrome over CDP, write
+97 deterministic state/route scenarios (625 checks, labelled contact sheet, golden
+frames), and `npm run playtest:states` pauses the sim in every player/guardian body state
+for 21 gallery captures (42 checks). All start Vite, drive Chrome over CDP, write
 screenshots plus `report.json`, and exit non-zero on failure; see
 [PLAYTEST-MATRIX.md](PLAYTEST-MATRIX.md). To verify a deployed build instead of the local
 server:
@@ -135,6 +134,16 @@ leave HUD values at `--`.
   is what keeps overhead actors readable; changing it reintroduces the 1D collapse.
 - **Sprite anchor:** frame bottoms sit at `actor.z + frameAnchorZ`; shadows use `actor.z`,
   not the frame bottom.
+- **Pitch-scale compensation:** `manifest.pitchWorldScale` scales the billboard only, not
+  `centerZ`, the shadow, or the actor position. Dropping it makes top-down actors look
+  oversized; applying it to `centerZ` shifts their pitch band.
+- **Fixed FOV:** projection FOV is constant at every altitude. Do not reintroduce an
+  altitude boost; it stretches geometry near the screen edges.
+- **Viewmodel overlay:** drawn last, no depth test, with integer draw coordinates.
+  Fractional write offsets silently drop pixels from a `Uint8ClampedArray`.
+- **Wall depenetration:** `resolveFootprint` pushes out with a `radius + 1e-4` gap and
+  clamps to the map edge on every iteration; an exact wall-plane result re-wedges the
+  capsule on the next landing.
 - **Outline pass:** read from an immutable alpha mask. Never mutate the output during the
   neighbor scan.
 - **Atlas fallback:** exact pitch → level pitch → idle level. Keep this so partial
@@ -215,9 +224,11 @@ leave HUD values at `--`.
 - Levels reload from their definitions on every transition, which resets pickups, doors,
   and the keycard. The demo loop is therefore one-way per visit: after the courtyard
   beacon return you can re-collect the keycard and run it again.
-- Guardian's six-state atlas is shipped (1,216 frames, 1536×7296). Scout and brute still
-  hold the idle/walk atlas, so their attack/hurt/death/talk states fall back to idle
-  silhouettes (mechanics and timing are already correct).
+- The guardian six-state atlas is the only shipped atlas (1,216 frames, 1536×7296).
+  Scout/brute packed assets and tooling defaults were removed; every actor renders through
+  the guardian atlas with per-actor tint and scale.
+- The viewmodel is a flat 256×208 overlay with no depth test and no per-altitude or
+  per-FOV variants. Muzzle-flash frames can cover part of the weapon receiver.
 - Intro overlay can stick on a cold Vite start if HMR interrupts boot; reload fixes it.
 - Pointer-lock release now pauses the simulation and opens the settings panel. Scripted
   automation bypasses that path, so matrix timing is unaffected.
@@ -226,33 +237,24 @@ leave HUD values at `--`.
   (`raycast.settings.v1`) and fail open when storage is blocked.
 - No license file yet.
 
-## Next task: finish scout and brute sprite-state atlases
+## Next task: M9 owner playtest and optional polish
 
-M7 gameplay is complete and deployed: combat, interaction, doors/pickups, transitions,
-and the reactor map are covered by the 90-scenario matrix. The owner should playtest the
-loop and report feel/balance issues.
+M9 is complete and deployed: the first-person viewmodel, fixed FOV, pitch-scale
+compensation, wall-side depenetration, and guardian-only content are covered by
+`playtest` (40), `playtest:matrix` (625), and `playtest:states` (42). The owner should
+playtest the viewmodel and M7 loop and report feel/balance issues.
 
-The art pass is one-third done: guardian is complete and packed, so its six states render
-from real AI frames. Scout and brute still need their new-state frames.
-
-1. Restart ComfyUI (`cd ~/Desktop/projects/ComfyUI && .venv/bin/python main.py --listen
-   127.0.0.1 --port 8188 --disable-auto-launch`), then run `assets:comfy` for scout and
-   brute (`--only attack,hurt,death,talk --resume`). `--resume` skips frames that already
-   exist, so an interrupted pass continues where it stopped. Finish with
-   `npm run assets:atlas`. Expect 1,216 frames and 76 atlas rows per character
-   (1536×7296 per atlas).
-2. Run `npm run assets:verify` and review `artifacts/style-report.json` for state-to-state
-   drift; adjust `--max-drift` only for a deliberate style change.
-3. Until all three atlases repack, `npm run playtest` reports 28/29 because the
-   atlas-completeness check expects 1,216 frames on every character; the matrix still
-   passes 490/490. After the repack, rerun `npm run playtest:matrix -- --update-golden`
-   so combat/talk captures show the new poses, then playtest/build/typecheck/tests,
-   commit the asset slice, and check Vercel.
-4. M8 is complete: audio and pause/settings are shipped, the renderer is profiled (no
-   change needed), the README has a current gameplay capture, and a five-minute
-   production session ran with no application errors (the only entry was a favicon 404,
-   now fixed and re-verified). The only remaining work is the scout/brute atlas repack
-   and the owner's playtest feedback; both can change priorities.
+1. If the weapon swing or muzzle flash needs another pass, edit the poses in
+   `tools/blender/render_viewmodel.py` and regenerate with `npm run assets:blender`
+   (or run only that script); the game reads the five committed pose PNGs directly.
+2. If a new visual change lands, rerun `npm run playtest:matrix -- --update-golden`,
+   inspect the first mismatching run before committing, then run typecheck/tests/build,
+   both playtests, and check Vercel.
+3. Optional deferred work: true stacked-slice actor rendering behind a feature flag,
+   keeping the turntable atlas as the fallback; additional chassis art only if the
+   guardian look and gameplay are confirmed.
+4. Audio/pause/settings and the profiled renderer are complete; a five-minute production
+   session ran with no application errors (a favicon 404 was fixed and re-verified).
 
 If a design choice could go either way, record it in [DECISIONS.md](DECISIONS.md) with the
 tradeoff, then proceed.

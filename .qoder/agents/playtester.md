@@ -18,18 +18,19 @@ captured screenshots.
    `window.__raycast.automation`, captures screenshots to
    `docs/screenshots/playtest/`, and writes `report.json`. It exits non-zero on a
    failed check.
-2. Run `npm run playtest:matrix`. It walks 90 deterministic scenarios (581 checks) and
+2. Run `npm run playtest:matrix`. It walks 97 deterministic scenarios (625 checks) and
    writes `docs/screenshots/matrix/` with a labelled `contact-sheet.png` and
    `report.json`. Read the report, then open the contact sheet and any relevant
-   full-size frames. The matrix catches movement, vertical, aim, surface, actor, UI,
-   interaction, combat, level, and route states the happy-path run does not.
+   full-size frames. The matrix catches movement, vertical, aim, surface, actor,
+   viewmodel, UI, interaction, combat, level, and route states the happy-path run does
+   not.
 3. Run `npm run playtest:states`. It pauses and steps the simulation until the player
-   and each character chassis (guardian, scout, brute) are held in every animation
-   state — idle, walk, jump, jet, aerial, talk early/late, attack wind-up/impact, hurt,
-   death early/mid, corpse, redeploy — and captures each one to
-   `docs/screenshots/states/` (98 checks, 43 captures, labelled
-   `contact-sheet.png` + `report.json`). Unlike the matrix, it asserts sprite-pixel
-   coverage per body state, so a missing or fallback atlas state fails loudly.
+   and the guardian chassis are held in every animation state — idle, walk, jump, jet,
+   aerial, talk early/late, attack wind-up/impact, hurt, death early/mid, corpse,
+   redeploy — and captures each one to `docs/screenshots/states/` (42 checks,
+   21 captures, labelled `contact-sheet.png` + `report.json`). Unlike the matrix, it
+   asserts sprite-pixel coverage per body state, so a missing or fallback atlas state
+   fails loudly.
 4. Read all three `report.json` files. List every failed check with its measured detail.
 5. Open the screenshots with the Read tool and review them as images. In the state
    gallery, critique each chassis state-by-state: silhouette readable and distinct from
@@ -42,14 +43,18 @@ captured screenshots.
    - Walls are vertical, textured, and meet the floor without gaps; wall faces remain
      solid at every altitude, and wall tops close cleanly when airborne.
    - A wall pressed against the camera fills the view without fisheye stretching or
-     disappearing, including at a steep look-down.
+     disappearing, including at a steep look-down, and the FOV stays fixed at altitude.
+   - Landing with the collision capsule overlapping a wall or corner pushes clear, and
+     walking away afterwards is not blocked.
    - Overhead actors keep a readable silhouette (not a 1D sliver) and remain near their
      projected screen position instead of sliding off the map; actors near map edges stay
      visible.
    - Standing actors face the camera correctly at yaw 0 and yaw 8 (front/back), and
      moving actors point along their travel direction.
-   - Guardian, scout, and brute silhouettes are visually distinct and grounded
-     (shadows under feet, no floating or clipping).
+   - The guardian silhouette stays grounded across every state (no floating or
+     clipping) and the six-state animation reads clearly.
+   - The first-person viewmodel stays anchored to the lower-right, shows both gauntlets
+     and the plasma projector, and swings with a readable muzzle flash on attack.
    - Jetpack burn shows exhaust, altitude/fuel HUD changes, and the aerial top-down
      shot reveals the full courtyard with solid wall tops and visible actors.
    - Landing on a wall shows `PERCH · WALL 1.4 m` and a stable overhead view; stepping
@@ -78,12 +83,12 @@ captured screenshots.
 
 ```bash
 npm run playtest     # happy-path browser verification against the local dev server
-npm run playtest:matrix  # 90 deterministic state/interaction/combat/level scenarios
-npm run playtest:states  # paused sprite-state gallery (98 checks, 43 captures)
+npm run playtest:matrix  # 97 deterministic state/interaction/combat/level scenarios
+npm run playtest:states  # paused sprite-state gallery (42 checks, 21 captures)
 PLAYTEST_OUT=/tmp/rc-prod-check npm run playtest -- --url https://raycast-rosy.vercel.app/
 npm test             # unit tests (not a substitute for the playtest)
 npm run typecheck
-npm run assets       # regenerate textures + 3 characters + atlases (slow, needs Blender)
+npm run assets       # regenerate textures + guardian atlas + viewmodel (slow, needs Blender)
 ```
 
 Use `--url` after a deployment and compare the result with the local run. `PLAYTEST_OUT`

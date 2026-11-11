@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-11-11T15:27:18.024Z",
+  "generatedAt": "2026-11-11T16:38:31.268Z",
   "url": "http://127.0.0.1:5204/?screenshot",
-  "durationMs": 2941,
-  "passed": 98,
+  "durationMs": 2145,
+  "passed": 42,
   "failed": 0,
   "checks": [
     {
@@ -15,13 +15,13 @@
       "state": "player",
       "name": "player-idle renders content",
       "ok": true,
-      "detail": "301 colors, mean luma 49.4"
+      "detail": "512 colors, mean luma 51.6"
     },
     {
       "state": "player",
       "name": "player-walk renders content",
       "ok": true,
-      "detail": "358 colors, mean luma 49.5"
+      "detail": "512 colors, mean luma 51.7"
     },
     {
       "state": "player",
@@ -33,7 +33,7 @@
       "state": "player",
       "name": "player-jump renders content",
       "ok": true,
-      "detail": "359 colors, mean luma 40.4"
+      "detail": "512 colors, mean luma 42.3"
     },
     {
       "state": "player",
@@ -51,13 +51,13 @@
       "state": "player",
       "name": "player-jet renders content",
       "ok": true,
-      "detail": "392 colors, mean luma 46.2"
+      "detail": "512 colors, mean luma 46.5"
     },
     {
       "state": "player",
       "name": "player-aerial renders content",
       "ok": true,
-      "detail": "294 colors, mean luma 42.9"
+      "detail": "512 colors, mean luma 45.3"
     },
     {
       "state": "player",
@@ -87,13 +87,13 @@
       "state": "player",
       "name": "player-redeployed renders content",
       "ok": true,
-      "detail": "301 colors, mean luma 49.4"
+      "detail": "512 colors, mean luma 51.6"
     },
     {
       "state": "guardian",
       "name": "guardian-idle renders content",
       "ok": true,
-      "detail": "325 colors, mean luma 50.1"
+      "detail": "512 colors, mean luma 52.3"
     },
     {
       "state": "guardian",
@@ -117,7 +117,7 @@
       "state": "guardian",
       "name": "guardian-talk-early renders content",
       "ok": true,
-      "detail": "386 colors, mean luma 51.1"
+      "detail": "512 colors, mean luma 53.2"
     },
     {
       "state": "guardian",
@@ -129,7 +129,7 @@
       "state": "guardian",
       "name": "guardian-talk-late renders content",
       "ok": true,
-      "detail": "425 colors, mean luma 50.9"
+      "detail": "512 colors, mean luma 53.1"
     },
     {
       "state": "guardian",
@@ -153,7 +153,7 @@
       "state": "guardian",
       "name": "guardian-walk renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 53.2"
+      "detail": "512 colors, mean luma 55.3"
     },
     {
       "state": "guardian",
@@ -171,7 +171,7 @@
       "state": "guardian",
       "name": "guardian-attack-windup renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 54.6"
+      "detail": "512 colors, mean luma 56.6"
     },
     {
       "state": "guardian",
@@ -183,7 +183,7 @@
       "state": "guardian",
       "name": "guardian-attack-impact renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 54.0"
+      "detail": "512 colors, mean luma 56.0"
     },
     {
       "state": "guardian",
@@ -201,7 +201,7 @@
       "state": "guardian",
       "name": "guardian-hurt renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 52.8"
+      "detail": "512 colors, mean luma 55.3"
     },
     {
       "state": "guardian",
@@ -219,7 +219,7 @@
       "state": "guardian",
       "name": "guardian-death-early renders content",
       "ok": true,
-      "detail": "477 colors, mean luma 52.6"
+      "detail": "512 colors, mean luma 55.2"
     },
     {
       "state": "guardian",
@@ -231,7 +231,7 @@
       "state": "guardian",
       "name": "guardian-death-mid renders content",
       "ok": true,
-      "detail": "346 colors, mean luma 52.7"
+      "detail": "512 colors, mean luma 54.7"
     },
     {
       "state": "guardian",
@@ -243,7 +243,7 @@
       "state": "guardian",
       "name": "guardian-corpse renders content",
       "ok": true,
-      "detail": "428 colors, mean luma 52.2"
+      "detail": "512 colors, mean luma 54.3"
     },
     {
       "state": "guardian",
@@ -256,362 +256,26 @@
       "name": "guardian corpse remains rendered",
       "ok": true,
       "detail": "alive=false px=3860"
-    },
-    {
-      "state": "scout",
-      "name": "scout-idle renders content",
-      "ok": true,
-      "detail": "338 colors, mean luma 45.0"
-    },
-    {
-      "state": "scout",
-      "name": "scout-idle shows scholar",
-      "ok": true,
-      "detail": "2176 px"
-    },
-    {
-      "state": "scout",
-      "name": "scout NPC is idle",
-      "ok": true,
-      "detail": "idle"
-    },
-    {
-      "state": "scout",
-      "name": "scout interaction starts talk",
-      "ok": true,
-      "detail": "result=talk state=talk"
-    },
-    {
-      "state": "scout",
-      "name": "scout-talk-early renders content",
-      "ok": true,
-      "detail": "403 colors, mean luma 45.9"
-    },
-    {
-      "state": "scout",
-      "name": "scout-talk-early shows scholar",
-      "ok": true,
-      "detail": "3289 px"
-    },
-    {
-      "state": "scout",
-      "name": "scout-talk-late renders content",
-      "ok": true,
-      "detail": "399 colors, mean luma 45.9"
-    },
-    {
-      "state": "scout",
-      "name": "scout-talk-late shows scholar",
-      "ok": true,
-      "detail": "3289 px"
-    },
-    {
-      "state": "scout",
-      "name": "scout talk shows a subtitle",
-      "ok": true,
-      "detail": "SCHOLAR · Three chassis, sixteen views each. The"
-    },
-    {
-      "state": "scout",
-      "name": "scout hostile closes in",
-      "ok": true,
-      "detail": "walk"
-    },
-    {
-      "state": "scout",
-      "name": "scout-walk renders content",
-      "ok": true,
-      "detail": "445 colors, mean luma 46.2"
-    },
-    {
-      "state": "scout",
-      "name": "scout-walk shows stalker",
-      "ok": true,
-      "detail": "4582 px"
-    },
-    {
-      "state": "scout",
-      "name": "scout hostile winds up",
-      "ok": true,
-      "detail": "attack"
-    },
-    {
-      "state": "scout",
-      "name": "scout-attack-windup renders content",
-      "ok": true,
-      "detail": "391 colors, mean luma 47.9"
-    },
-    {
-      "state": "scout",
-      "name": "scout-attack-windup shows stalker",
-      "ok": true,
-      "detail": "8818 px"
-    },
-    {
-      "state": "scout",
-      "name": "scout-attack-impact renders content",
-      "ok": true,
-      "detail": "391 colors, mean luma 47.9"
-    },
-    {
-      "state": "scout",
-      "name": "scout-attack-impact shows stalker",
-      "ok": true,
-      "detail": "8818 px"
-    },
-    {
-      "state": "scout",
-      "name": "scout strike lands and staggers",
-      "ok": true,
-      "detail": "hit=true state=hurt"
-    },
-    {
-      "state": "scout",
-      "name": "scout-hurt renders content",
-      "ok": true,
-      "detail": "378 colors, mean luma 46.2"
-    },
-    {
-      "state": "scout",
-      "name": "scout-hurt shows stalker",
-      "ok": true,
-      "detail": "3647 px"
-    },
-    {
-      "state": "scout",
-      "name": "scout dies after repeated strikes",
-      "ok": true,
-      "detail": "2 strikes, 0 hp left"
-    },
-    {
-      "state": "scout",
-      "name": "scout-death-early renders content",
-      "ok": true,
-      "detail": "374 colors, mean luma 46.8"
-    },
-    {
-      "state": "scout",
-      "name": "scout-death-early shows stalker",
-      "ok": true,
-      "detail": "5050 px"
-    },
-    {
-      "state": "scout",
-      "name": "scout-death-mid renders content",
-      "ok": true,
-      "detail": "374 colors, mean luma 46.8"
-    },
-    {
-      "state": "scout",
-      "name": "scout-death-mid shows stalker",
-      "ok": true,
-      "detail": "5050 px"
-    },
-    {
-      "state": "scout",
-      "name": "scout-corpse renders content",
-      "ok": true,
-      "detail": "374 colors, mean luma 46.8"
-    },
-    {
-      "state": "scout",
-      "name": "scout-corpse shows stalker",
-      "ok": true,
-      "detail": "5050 px"
-    },
-    {
-      "state": "scout",
-      "name": "scout corpse remains rendered",
-      "ok": true,
-      "detail": "alive=false px=5050"
-    },
-    {
-      "state": "brute",
-      "name": "brute-idle renders content",
-      "ok": true,
-      "detail": "310 colors, mean luma 46.0"
-    },
-    {
-      "state": "brute",
-      "name": "brute-idle shows tinker",
-      "ok": true,
-      "detail": "7481 px"
-    },
-    {
-      "state": "brute",
-      "name": "brute NPC is idle",
-      "ok": true,
-      "detail": "idle"
-    },
-    {
-      "state": "brute",
-      "name": "brute interaction starts talk",
-      "ok": true,
-      "detail": "result=talk state=talk"
-    },
-    {
-      "state": "brute",
-      "name": "brute-talk-early renders content",
-      "ok": true,
-      "detail": "310 colors, mean luma 46.0"
-    },
-    {
-      "state": "brute",
-      "name": "brute-talk-early shows tinker",
-      "ok": true,
-      "detail": "7481 px"
-    },
-    {
-      "state": "brute",
-      "name": "brute-talk-late renders content",
-      "ok": true,
-      "detail": "310 colors, mean luma 46.0"
-    },
-    {
-      "state": "brute",
-      "name": "brute-talk-late shows tinker",
-      "ok": true,
-      "detail": "7481 px"
-    },
-    {
-      "state": "brute",
-      "name": "brute talk shows a subtitle",
-      "ok": true,
-      "detail": "TINKER · I keep the lift honest. You keep the dr"
-    },
-    {
-      "state": "brute",
-      "name": "brute hostile closes in",
-      "ok": true,
-      "detail": "walk"
-    },
-    {
-      "state": "brute",
-      "name": "brute-walk renders content",
-      "ok": true,
-      "detail": "400 colors, mean luma 40.8"
-    },
-    {
-      "state": "brute",
-      "name": "brute-walk shows reactor-brute",
-      "ok": true,
-      "detail": "9264 px"
-    },
-    {
-      "state": "brute",
-      "name": "brute hostile winds up",
-      "ok": true,
-      "detail": "attack"
-    },
-    {
-      "state": "brute",
-      "name": "brute-attack-windup renders content",
-      "ok": true,
-      "detail": "315 colors, mean luma 42.7"
-    },
-    {
-      "state": "brute",
-      "name": "brute-attack-windup shows reactor-brute",
-      "ok": true,
-      "detail": "16137 px"
-    },
-    {
-      "state": "brute",
-      "name": "brute-attack-impact renders content",
-      "ok": true,
-      "detail": "315 colors, mean luma 42.7"
-    },
-    {
-      "state": "brute",
-      "name": "brute-attack-impact shows reactor-brute",
-      "ok": true,
-      "detail": "16137 px"
-    },
-    {
-      "state": "brute",
-      "name": "brute strike lands and staggers",
-      "ok": true,
-      "detail": "hit=true state=hurt"
-    },
-    {
-      "state": "brute",
-      "name": "brute-hurt renders content",
-      "ok": true,
-      "detail": "309 colors, mean luma 40.9"
-    },
-    {
-      "state": "brute",
-      "name": "brute-hurt shows reactor-brute",
-      "ok": true,
-      "detail": "7563 px"
-    },
-    {
-      "state": "brute",
-      "name": "brute dies after repeated strikes",
-      "ok": true,
-      "detail": "4 strikes, 0 hp left"
-    },
-    {
-      "state": "brute",
-      "name": "brute-death-early renders content",
-      "ok": true,
-      "detail": "312 colors, mean luma 41.4"
-    },
-    {
-      "state": "brute",
-      "name": "brute-death-early shows reactor-brute",
-      "ok": true,
-      "detail": "10343 px"
-    },
-    {
-      "state": "brute",
-      "name": "brute-death-mid renders content",
-      "ok": true,
-      "detail": "312 colors, mean luma 41.4"
-    },
-    {
-      "state": "brute",
-      "name": "brute-death-mid shows reactor-brute",
-      "ok": true,
-      "detail": "10343 px"
-    },
-    {
-      "state": "brute",
-      "name": "brute-corpse renders content",
-      "ok": true,
-      "detail": "312 colors, mean luma 41.4"
-    },
-    {
-      "state": "brute",
-      "name": "brute-corpse shows reactor-brute",
-      "ok": true,
-      "detail": "10343 px"
-    },
-    {
-      "state": "brute",
-      "name": "brute corpse remains rendered",
-      "ok": true,
-      "detail": "alive=false px=10343"
     }
   ],
   "shots": [
     {
       "name": "player-idle",
       "kind": "canvas",
-      "colors": 301,
-      "meanLuma": 49.4
+      "colors": 512,
+      "meanLuma": 51.6
     },
     {
       "name": "player-walk",
       "kind": "canvas",
-      "colors": 358,
-      "meanLuma": 49.5
+      "colors": 512,
+      "meanLuma": 51.7
     },
     {
       "name": "player-jump",
       "kind": "canvas",
-      "colors": 359,
-      "meanLuma": 40.4
+      "colors": 512,
+      "meanLuma": 42.3
     },
     {
       "name": "player-jump-page",
@@ -620,8 +284,8 @@
     {
       "name": "player-jet",
       "kind": "canvas",
-      "colors": 392,
-      "meanLuma": 46.2
+      "colors": 512,
+      "meanLuma": 46.5
     },
     {
       "name": "player-jet-page",
@@ -630,8 +294,8 @@
     {
       "name": "player-aerial",
       "kind": "canvas",
-      "colors": 294,
-      "meanLuma": 42.9
+      "colors": 512,
+      "meanLuma": 45.3
     },
     {
       "name": "player-hurt-page",
@@ -644,8 +308,8 @@
     {
       "name": "player-redeployed",
       "kind": "canvas",
-      "colors": 301,
-      "meanLuma": 49.4
+      "colors": 512,
+      "meanLuma": 51.6
     },
     {
       "name": "guardian-idle",
@@ -653,8 +317,8 @@
       "actor": "guard",
       "expected": "idle",
       "observed": "idle",
-      "colors": 325,
-      "meanLuma": 50.1
+      "colors": 512,
+      "meanLuma": 52.3
     },
     {
       "name": "guardian-talk-early",
@@ -662,8 +326,8 @@
       "actor": "guard",
       "expected": "talk",
       "observed": "talk",
-      "colors": 386,
-      "meanLuma": 51.1
+      "colors": 512,
+      "meanLuma": 53.2
     },
     {
       "name": "guardian-talk-late",
@@ -671,8 +335,8 @@
       "actor": "guard",
       "expected": "talk",
       "observed": "talk",
-      "colors": 425,
-      "meanLuma": 50.9
+      "colors": 512,
+      "meanLuma": 53.1
     },
     {
       "name": "guardian-talk-page",
@@ -685,7 +349,7 @@
       "expected": "walk",
       "observed": "walk",
       "colors": 512,
-      "meanLuma": 53.2
+      "meanLuma": 55.3
     },
     {
       "name": "guardian-attack-windup",
@@ -694,7 +358,7 @@
       "expected": "attack",
       "observed": "attack",
       "colors": 512,
-      "meanLuma": 54.6
+      "meanLuma": 56.6
     },
     {
       "name": "guardian-attack-impact",
@@ -703,7 +367,7 @@
       "expected": "attack",
       "observed": "attack",
       "colors": 512,
-      "meanLuma": 54
+      "meanLuma": 56
     },
     {
       "name": "guardian-hurt",
@@ -712,7 +376,7 @@
       "expected": "hurt",
       "observed": "hurt",
       "colors": 512,
-      "meanLuma": 52.8
+      "meanLuma": 55.3
     },
     {
       "name": "guardian-death-early",
@@ -720,8 +384,8 @@
       "actor": "marauder",
       "expected": "death",
       "observed": "death",
-      "colors": 477,
-      "meanLuma": 52.6
+      "colors": 512,
+      "meanLuma": 55.2
     },
     {
       "name": "guardian-death-mid",
@@ -729,8 +393,8 @@
       "actor": "marauder",
       "expected": "death",
       "observed": "death",
-      "colors": 346,
-      "meanLuma": 52.7
+      "colors": 512,
+      "meanLuma": 54.7
     },
     {
       "name": "guardian-corpse",
@@ -738,196 +402,8 @@
       "actor": "marauder",
       "expected": "death",
       "observed": "death",
-      "colors": 428,
-      "meanLuma": 52.2
-    },
-    {
-      "name": "scout-idle",
-      "kind": "canvas",
-      "actor": "scholar",
-      "expected": "idle",
-      "observed": "idle",
-      "colors": 338,
-      "meanLuma": 45
-    },
-    {
-      "name": "scout-talk-early",
-      "kind": "canvas",
-      "actor": "scholar",
-      "expected": "talk",
-      "observed": "talk",
-      "colors": 403,
-      "meanLuma": 45.9
-    },
-    {
-      "name": "scout-talk-late",
-      "kind": "canvas",
-      "actor": "scholar",
-      "expected": "talk",
-      "observed": "talk",
-      "colors": 399,
-      "meanLuma": 45.9
-    },
-    {
-      "name": "scout-talk-page",
-      "kind": "page"
-    },
-    {
-      "name": "scout-walk",
-      "kind": "canvas",
-      "actor": "stalker",
-      "expected": "walk",
-      "observed": "walk",
-      "colors": 445,
-      "meanLuma": 46.2
-    },
-    {
-      "name": "scout-attack-windup",
-      "kind": "canvas",
-      "actor": "stalker",
-      "expected": "attack",
-      "observed": "attack",
-      "colors": 391,
-      "meanLuma": 47.9
-    },
-    {
-      "name": "scout-attack-impact",
-      "kind": "canvas",
-      "actor": "stalker",
-      "expected": "attack",
-      "observed": "attack",
-      "colors": 391,
-      "meanLuma": 47.9
-    },
-    {
-      "name": "scout-hurt",
-      "kind": "canvas",
-      "actor": "stalker",
-      "expected": "hurt",
-      "observed": "hurt",
-      "colors": 378,
-      "meanLuma": 46.2
-    },
-    {
-      "name": "scout-death-early",
-      "kind": "canvas",
-      "actor": "stalker",
-      "expected": "death",
-      "observed": "death",
-      "colors": 374,
-      "meanLuma": 46.8
-    },
-    {
-      "name": "scout-death-mid",
-      "kind": "canvas",
-      "actor": "stalker",
-      "expected": "death",
-      "observed": "death",
-      "colors": 374,
-      "meanLuma": 46.8
-    },
-    {
-      "name": "scout-corpse",
-      "kind": "canvas",
-      "actor": "stalker",
-      "expected": "death",
-      "observed": "death",
-      "colors": 374,
-      "meanLuma": 46.8
-    },
-    {
-      "name": "brute-idle",
-      "kind": "canvas",
-      "actor": "tinker",
-      "expected": "idle",
-      "observed": "idle",
-      "colors": 310,
-      "meanLuma": 46
-    },
-    {
-      "name": "brute-talk-early",
-      "kind": "canvas",
-      "actor": "tinker",
-      "expected": "talk",
-      "observed": "talk",
-      "colors": 310,
-      "meanLuma": 46
-    },
-    {
-      "name": "brute-talk-late",
-      "kind": "canvas",
-      "actor": "tinker",
-      "expected": "talk",
-      "observed": "talk",
-      "colors": 310,
-      "meanLuma": 46
-    },
-    {
-      "name": "brute-talk-page",
-      "kind": "page"
-    },
-    {
-      "name": "brute-walk",
-      "kind": "canvas",
-      "actor": "reactor-brute",
-      "expected": "walk",
-      "observed": "walk",
-      "colors": 400,
-      "meanLuma": 40.8
-    },
-    {
-      "name": "brute-attack-windup",
-      "kind": "canvas",
-      "actor": "reactor-brute",
-      "expected": "attack",
-      "observed": "attack",
-      "colors": 315,
-      "meanLuma": 42.7
-    },
-    {
-      "name": "brute-attack-impact",
-      "kind": "canvas",
-      "actor": "reactor-brute",
-      "expected": "attack",
-      "observed": "attack",
-      "colors": 315,
-      "meanLuma": 42.7
-    },
-    {
-      "name": "brute-hurt",
-      "kind": "canvas",
-      "actor": "reactor-brute",
-      "expected": "hurt",
-      "observed": "hurt",
-      "colors": 309,
-      "meanLuma": 40.9
-    },
-    {
-      "name": "brute-death-early",
-      "kind": "canvas",
-      "actor": "reactor-brute",
-      "expected": "death",
-      "observed": "death",
-      "colors": 312,
-      "meanLuma": 41.4
-    },
-    {
-      "name": "brute-death-mid",
-      "kind": "canvas",
-      "actor": "reactor-brute",
-      "expected": "death",
-      "observed": "death",
-      "colors": 312,
-      "meanLuma": 41.4
-    },
-    {
-      "name": "brute-corpse",
-      "kind": "canvas",
-      "actor": "reactor-brute",
-      "expected": "death",
-      "observed": "death",
-      "colors": 312,
-      "meanLuma": 41.4
+      "colors": 512,
+      "meanLuma": 54.3
     }
   ],
   "sheet": "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/states/contact-sheet.png"

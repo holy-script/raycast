@@ -201,9 +201,15 @@ state began for `attack`/`hurt`/`death`/`talk`. `death` clamps to its final fram
 `-0.155 → level`, otherwise low. A three-pitch atlas keeps the earlier ±0.1 bands, so
 manifest-driven atlases of either size work.
 
-`ActorSpec.sprite` selects one of the loaded atlases (`guardian`, `scout`, `brute`).
+`ActorSpec.sprite` selects the loaded atlas (`guardian` is the only shipped chassis).
 `SpriteAtlas.getFrame(state, pitch, yaw, frame)` resolves exact entries, falls back to the
 level row, then to `idle/level/yaw/0`, so partially generated atlases still render.
+
+The near-overhead turntable row is rendered through a tighter orthographic frame, which
+would make distant actors look large when the camera rises. The manifest therefore carries
+`pitchWorldScale` ([1, 1, 1, 0.678] for guardian), and `spriteSelection` multiplies the
+billboard size by the pitch-lerped factor. This keeps apparent actor size stable at every
+elevation; it is applied to the billboard only, not the actor's world position or shadow.
 
 Tint is an RGB multiplier; one atlas can therefore serve several color variants without
 new renders.
@@ -285,6 +291,28 @@ keycard required`, …) and a transient toast for outcomes.
 Prop billboards (pickups, beacon) share the sprite renderer with `worldSize` and a fixed
 z offset; the beacon pulses and the pickups bob so they read as interactive objects.
 
+## First-person viewmodel
+
+`Renderer.render(...)` accepts an optional `ViewmodelDraw` and composites it after all
+world sprites, before `putImageData`. The overlay has no depth test by design: it is the
+player's own weapon, so world geometry must not clip it. `public/assets/sprites/player/`
+holds five 256×208 RGBA frames rendered in Blender with a perspective 35 mm camera
+(`tools/blender/render_viewmodel.py`): `idle0`, `idle1`, `windup`, `strike`, `recover`.
+
+`Game.viewmodelState()` maps the attack cooldown to a pose and returns a bob offset:
+
+| Elapsed since strike | Pose |
+| --- | --- |
+| < 0.09 s | `windup` |
+| < 0.22 s | `strike` (muzzle flash) |
+| < 0.36 s | `recover` |
+| otherwise | `idle0` / `idle1`, alternating every 0.9 s |
+
+Walking adds a sine bob from `player.bobPhase`; a dead player pushes the overlay down.
+The draw origin is rounded to whole pixels because fractional indices on a
+`Uint8ClampedArray` are silently ignored — the overlay rendered nothing at bob offsets
+until this was fixed.
+
 ## Render loop
 
 `main.ts` runs `game.update(dt)` → `game.render()` → `game.drawMinimap(...)` inside
@@ -294,8 +322,9 @@ smoothed with a 90/10 exponential average. The framebuffer is scaled with CSS
 
 ## Asset generation and AI stylization
 
-The runtime only consumes `public/assets/sprites/<character>/atlas.{png,json}`; every
-stage before that is offline tooling, so the renderer has no ComfyUI dependency.
+The runtime consumes `public/assets/sprites/guardian/atlas.{png,json}` and the committed
+viewmodel frames; every stage before that is offline tooling, so the renderer has no
+ComfyUI dependency. Tool defaults are guardian-only.
 
 1. `tools/blender/render_turntable.py` renders each pose/yaw/pitch cell three times:
    RGBA colour, normalized depth (3.2–5.0 → white–black), and encoded normals (black
@@ -324,9 +353,9 @@ lock). It also reads `window.__raycast.debug()`, which returns the camera, playe
 screen rects, and renderer stats (`wallColumns`, `wallPixels`, per-sprite opaque `pixels`
 and width/height of the visible silhouette).
 
-The 29 checks cover movement, collision, jetpack lift/landing/refuel, altitude ceiling,
-pitch clamps, front/back frame indices for all three chassis, atlas dimensions, and page
-errors, plus these regressions:
+The 40 checks cover movement, collision, jetpack lift/landing/refuel, altitude ceiling,
+pitch clamps, front/back frame indices, guardian atlas completeness, viewmodel pose and
+coverage, fixed FOV, and page errors, plus these regressions:
 
 | Check | Assertion |
 | --- | --- |
@@ -336,8 +365,13 @@ errors, plus these regressions:
 | Overhead sprite keeps a silhouette | visible `contentW ≥ 4`, `contentH ≥ 6`, `pixels ≥ 24` |
 | Overhead sprite stays centred | projected centre within 48 px of screen centre |
 | Overhead edge actor stays in view | actor near the map edge still visible and centred |
+| Top-down actor scale | top pitch uses the 0.78 m compensated billboard |
+| FOV stays fixed with altitude | identical `fovDegrees`/`tanHalf` at ground and 16 m |
+| Viewmodel renders and animates | > 2,000 overlay px; idle → strike → idle poses |
 | Player lands on a wall top | `z ≈ 1.4`, `support ≈ 1.4`, `onGround` |
 | Stepping off drops to the floor | `z ≤ 0.001`, `support ≤ 0.001` |
+| Wall-side landing does not wedge | dropped at x=1.05, ejected to x ≥ 1.18, walks away |
+| Atlas has no missing frames | `atlasReport().guardian.missing.length = 0` |
 | Walking up steps reaches the 0.4 platform | `support ≈ 0.4`, `z ≈ 0.4`, `onGround` |
 | Stepped blocks render top surfaces | `topPixels > 500` from the stair approach |
 | A 0.6 crate blocks walking | stopped at `y > 14.1`, support 0 |
@@ -364,6 +398,7 @@ courtyard's 17 actors and 384 wall columns:
 
 The simulation and render together use well under a sixth of a 60 FPS frame, so no
 resolution scale or typed-array batching is needed at this target. The dominant memory
-cost is the three decoded six-state atlases (~45 MB each); it is documented under known
-issues in [PROGRESS.md](PROGRESS.md) and only matters if more characters are added.
+cost is the decoded six-state guardian atlas (~45 MB), plus ~1 MB of viewmodel frames; it
+is documented under known issues in [PROGRESS.md](PROGRESS.md) and only matters if more
+characters are added.
 

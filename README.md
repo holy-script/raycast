@@ -6,36 +6,37 @@ reproducible pipeline for multi-angle character sprites, based on
 
 **Live demo:** https://raycast-rosy.vercel.app
 
-> **Status:** combat, interaction, doors, and transitions are live, and M8 polish has
-> landed procedural audio plus a pause/settings menu (mouse sensitivity, FOV, mute).
-> Guardian's six-state atlas (idle/walk/attack/hurt/death/talk) is shipped; scout and
-> brute still use the idle/walk atlas and fall back to idle for the new states until
-> their AI passes finish.
+> **Status:** combat, interaction, doors, and transitions are live, M8 polish has landed
+> procedural audio plus a pause/settings menu (mouse sensitivity, FOV, mute), and M9 adds
+> a first-person viewmodel with attack animation. The guardian is the only shipped
+> chassis, so every actor renders through its six-state atlas
+> (idle/walk/attack/hurt/death/talk).
 
 ![Courtyard gameplay](docs/screenshots/gameplay.png)
 
-*A guardian at close range with a scout down the corridor. The same courtyard from jetpack
-altitude, where wall tops and the full actor set are visible, is in
-[docs/screenshots/courtyard.png](docs/screenshots/courtyard.png).*
+*A guardian at close range, with the plasma projector viewmodel in the lower-right. The
+same courtyard from jetpack altitude, where wall tops and the full actor set are visible,
+is in [docs/screenshots/courtyard.png](docs/screenshots/courtyard.png).*
 
 The engine renders a 384×240 framebuffer to Canvas 2D: DDA grid traversal, textured
 walls, floors and per-cell tops, a true rotational pitch camera, per-pixel depth, and
 jetpack flight up to 18 m. Walls are solid 1.4-unit blocks you can land on; map digits
-build walkable 0.2/0.4 stairs and a 0.6 crate. Three Blender chassis (guardian, scout,
-brute) are each rendered from 16 yaw angles × 4 pitch angles × 19 poses (1,216 frames
-across idle, walk, attack, hurt, death, and talk), stylized to 96×96 pixel art by SD1.5 +
-depth ControlNet (deterministic palette stylizer as fallback), and packed into one atlas
-per character. Height and pitch drive frame selection, including a dedicated
-near-overhead row, so looking down from altitude picks the correct view for every actor.
+build walkable 0.2/0.4 stairs and a 0.6 crate. The guardian Blender chassis is rendered
+from 16 yaw angles × 4 pitch angles × 19 poses (1,216 frames across idle, walk, attack,
+hurt, death, and talk), stylized to 96×96 pixel art by SD1.5 + depth ControlNet
+(deterministic palette stylizer as fallback), and packed into one atlas. Height and pitch
+drive frame selection, including a dedicated near-overhead row with a compensating
+billboard scale, so actors keep a stable apparent size from the floor to the ceiling. A
+Blender-rendered first-person viewmodel (both gauntlets plus a plasma projector) animates
+through idle, wind-up, strike, and recovery, and bob follows the walk cycle.
 
 **Status:** playable build with two levels, combat with hurt/death states, NPC dialogue,
 doors, keycard/medkit/fuel pickups, level transitions, synthesized audio, and a
-pause/settings menu. Verification runs a 90-scenario deterministic matrix (581 checks)
-plus a 98-check paused-state gallery capturing every body state. The M6 AI stylization
-infrastructure (Blender depth/normal controls, ComfyUI img2img + ControlNet,
-silhouette/palette verification, MCP studio server) remains the asset path; the
-attack/hurt/death/talk AI frames and atlas repack for scout/brute are the last M7
-deliverable. See the [roadmap](docs/ROADMAP.md), [pipeline](docs/PIPELINE.md), and
+pause/settings menu. Verification runs a 97-scenario deterministic matrix (625 checks),
+a 40-check happy-path browser run, and a 42-check paused-state gallery capturing every
+body state. The M6 AI stylization infrastructure (Blender depth/normal controls, ComfyUI
+img2img + ControlNet, silhouette/palette verification, MCP studio server) remains the
+asset path. See the [roadmap](docs/ROADMAP.md), [pipeline](docs/PIPELINE.md), and
 [progress log](docs/PROGRESS.md).
 
 ## Quick start
@@ -48,9 +49,9 @@ npm run dev        # http://localhost:5173
 npm test           # unit tests
 npm run typecheck
 npm run build      # static build in dist/
-npm run playtest   # headless Chrome: input, physics, atlas + screenshot checks
-npm run playtest:matrix  # 90 deterministic state/interaction/combat/level checks
-npm run playtest:states  # paused-state gallery: 98 checks, 43 captures
+npm run playtest   # headless Chrome: input, physics, atlas, viewmodel, screenshot checks
+npm run playtest:matrix  # 97 deterministic state/interaction/combat/level scenarios
+npm run playtest:states  # paused-state gallery: 42 checks, 21 captures
 ```
 
 ## Controls
@@ -99,11 +100,11 @@ stylized frames are reproducible and gitignored; the packed atlas is committed.
 | `npm run assets:stylize` | 96×96 palette frames per character |
 | `npm run assets:comfy` | 96×96 AI frames (or `--fallback`/`--palette`) |
 | `npm run assets:verify` | `artifacts/style-report.json` (gitignored) |
-| `npm run assets:atlas` | three `atlas.png` (1536×7296) + `atlas.json` pairs |
+| `npm run assets:atlas` | `atlas.png` (1536×7296) + `atlas.json` |
 | `npm run mcp:studio` | stdio MCP tools for atlas generation/repair |
 
-Both `assets:stylize`, `assets:comfy`, `assets:verify`, and `assets:atlas` accept character
-names (`npm run assets:atlas -- guardian`) and default to guardian, scout, and brute.
+The character commands default to guardian; pass a name only if another chassis has raw
+renders and a stylized frame set.
 
 ## Repository map
 
@@ -113,7 +114,7 @@ src/content/      courtyard + reactor level definitions, actors, props
 src/game.ts       player physics, jetpack, camera, animation, minimap, HUD
 src/main.ts       asset boot, render loop, pointer lock, debug API
 tools/assets/     deterministic wall/floor texture generator
-tools/blender/    headless turntable: raw, depth, and normal passes for three chassis
+tools/blender/    headless turntable + viewmodel: raw, depth, and normal passes
 tools/stylize/    palette stylizer, shared downsample, ComfyUI CLI wrapper
 tools/comfy/      API-format workflow + placeholder validation + HTTP client
 tools/verify/     silhouette IoU and palette-drift metrics/report

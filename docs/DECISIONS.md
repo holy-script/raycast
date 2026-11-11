@@ -119,7 +119,8 @@ still provide variants within a chassis.
 unmistakably distinct and 22.5° yaw steps look smooth. The packer detects direction counts
 from filenames, so smaller atlases remain valid. Adding a character is a data + spec
 change, not an engine change. Superseded in counts by ADR-010 (4 pitches, 1152 frames,
-1536×2304).
+1536×2304). Superseded in scope by M9: scout and brute were retired from shipping assets,
+so the guardian is the only chassis until a new art pass exists.
 
 ## ADR-010 — Camera-space billboards, wall faces at altitude, and a top pitch
 

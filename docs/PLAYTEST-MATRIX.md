@@ -1,9 +1,9 @@
 # Playtest matrix
 
 `npm run playtest:matrix` drives the same headless-Chrome/CDP harness as
-`npm run playtest`, but instead of one happy path it walks the game through 90
-deterministic state, interaction, combat, level, and route scenarios: 581 checks (490
-assertions plus 91 golden-frame comparisons) and 100 captures (92 canvas frames and 8
+`npm run playtest`, but instead of one happy path it walks the game through 97
+deterministic state, interaction, combat, level, route, and viewmodel scenarios: 625
+checks (assertions plus golden-frame comparisons) and 107 captures (canvas frames plus
 full-page UI overlays).
 
 The point is coverage the owner should not have to repeat by hand — every movement axis,
@@ -63,9 +63,10 @@ Two harness details matter when extending it:
 | --- | --- | --- |
 | Ground movement | `g01`–`g10` | Spawn, forward/back/strafe speeds, sprint, normalized diagonal, wall block/slide, `R` respawn. |
 | Vertical | `v01`–`v09` | Jump burst, jet burn + fuel drain + exhaust glow, 18 m ceiling, empty tank, fall/land, ground refuel, freefly up/down/off-fall. |
-| Aim & sprites | `a01`–`a17` | Ground/air pitch clamps, mouse yaw/pitch, 8 camera sectors around the brute, 4 sprite pitch bands (low/level/high/top). |
-| Surfaces | `s01`–`s11` | Stairs up/down, platform stand, crate block/perch, wall land/step-off/perch look-down, near-wall and near-wall look-down. |
+| Aim & sprites | `a01`–`a19` | Ground/air pitch clamps, mouse yaw/pitch, 8 camera sectors, 4 sprite pitch bands (low/level/high/top), fixed FOV from ground to ceiling, top-down billboard scale. |
+| Surfaces | `s01`–`s13` | Stairs up/down, platform stand, crate block/perch, wall land/step-off/perch look-down, near-wall and near-wall look-down, wall-side and corner landing depenetration. |
 | Actors | `c01`–`c11` | Watcher tracking, patrol advance/reverse, chase approach, hover bob, idle animation, crate/wall occlusion, overhead guard, edge actor, multi-actor aerial. |
+| Viewmodel | `w01`–`w03` | Overlay coverage and idle pose, strike pose during the swing, idle recovery after cooldown. |
 | UI | `u01`–`u07` | Minimap toggle, HUD minimal mode, pause freeze, pause/resume, HUD values, fuel readout. |
 | Routes | `r01`–`r05` | Jet over a wall, jet forward climb, aerial look-down, mid-air respawn, sprint route. |
 | Interaction | `i01`–`i07` | Keycard pickup + toast, locked door refusal, door unlock (tile cleared), talk-line cycle, medkit heal, fuel refill, empty interact. |
@@ -81,10 +82,10 @@ golden-pixel comparison against the previous run and zero console/page errors.
 `npm run playtest:states` is the companion to the matrix: instead of one frame per
 scenario, it holds the game still in every body state and captures each one. It walks
 the player through idle, walk, jump, jetpack, aerial, hurt, death, and redeploy, then
-walks each character chassis (guardian, scout, brute) through talk early/late, walk,
-attack wind-up/impact, hurt, death early/mid, and corpse. 98 checks, 43 captures
-(including full-page HUD/TALK/PAUSED overlays) land in `docs/screenshots/states/` with a
-labelled `contact-sheet.png` and `report.json`.
+walks the guardian chassis through talk early/late, walk, attack wind-up/impact, hurt,
+death early/mid, and corpse. 42 checks, 21 captures (including full-page HUD/TALK/PAUSED
+overlays) land in `docs/screenshots/states/` with a labelled `contact-sheet.png` and
+`report.json`.
 
 ```bash
 npm run playtest:states                 # local dev server on :5204
@@ -94,8 +95,7 @@ STATES_OUT=/tmp/rc-states npm run playtest:states
 The harness asserts, per state, that the actor reports the expected animation state,
 that the sprite actually drew more than ~200 pixels, and that the corpse leaves a body
 on the floor. A missing state in the atlas fails loudly instead of silently falling
-back to idle — that is how the scout/brute gap is tracked until their atlases are
-repacked. It also serves as the visual-critique gallery: pass the captures to the
+back to idle. It also serves as the visual-critique gallery: pass the captures to the
 playtester agent and review silhouette, grounding, pose readability, attachment of
 limbs/antenna, and framing.
 
@@ -142,9 +142,8 @@ capture/test defects:
 
 Two determinism fixes were required before goldens could be trusted: level loads now set
 `time = 0` and per-actor `animTime = index × 0.37` (instead of `Math.random()`), and every
-scenario starts from a full courtyard reload. The combat screenshots still show idle
-silhouettes until the new-state atlases are repacked; that is expected and documented in
-[PROGRESS.md](PROGRESS.md).
+scenario starts from a full courtyard reload. A later M9 pass retired the scout/brute
+chassis, and the guardian's six-state atlas now backs every combat and talk capture.
 
 ## Extending it
 

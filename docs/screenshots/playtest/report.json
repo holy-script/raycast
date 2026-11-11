@@ -1,13 +1,48 @@
 {
-  "generatedAt": "2026-11-11T14:58:40.066Z",
+  "generatedAt": "2026-11-11T16:38:17.080Z",
   "url": "http://127.0.0.1:5199/?screenshot",
-  "passed": 28,
-  "failed": 1,
+  "passed": 40,
+  "failed": 0,
   "checks": [
     {
-      "name": "three 16-way character atlases load",
-      "ok": false,
-      "detail": "guardian:16x4/1216, scout:16x4/384, brute:16x4/384"
+      "name": "guardian atlas loads with full 16-way coverage",
+      "ok": true,
+      "detail": "guardian:16x4/1216"
+    },
+    {
+      "name": "top-down billboard scale is compensated",
+      "ok": true,
+      "detail": "1.00, 1.00, 1.00, 0.68"
+    },
+    {
+      "name": "guardian atlas has no missing animation frames",
+      "ok": true,
+      "detail": "0 missing frames"
+    },
+    {
+      "name": "retired character atlases are not loaded",
+      "ok": true,
+      "detail": "guardian"
+    },
+    {
+      "name": "first-person viewmodel renders over the scene",
+      "ok": true,
+      "detail": "6145 viewmodel px"
+    },
+    {
+      "name": "viewmodel rests in an idle pose on the ground",
+      "ok": true,
+      "detail": "idle0 at 1.1,0.9"
+    },
+    {
+      "name": "attacking swings the viewmodel into the strike pose",
+      "ok": true,
+      "detail": "strike, 4803 px"
+    },
+    {
+      "name": "viewmodel settles back to idle after the swing",
+      "ok": true,
+      "detail": "idle1"
     },
     {
       "name": "forward input follows camera yaw",
@@ -27,7 +62,7 @@
     {
       "name": "wall collision stops the player",
       "ok": true,
-      "detail": "stopped at x=1.20"
+      "detail": "stopped at x=1.19"
     },
     {
       "name": "jetpack produces sustained lift",
@@ -65,24 +100,29 @@
       "detail": "guard yaw 8"
     },
     {
-      "name": "scout chassis renders at yaw 0",
+      "name": "sentinel renders with the guardian atlas at yaw 0",
       "ok": true,
-      "detail": "sentinel/scout yaw 0"
+      "detail": "sentinel/guardian yaw 0"
     },
     {
-      "name": "brute chassis renders at yaw 0",
+      "name": "warden renders with the guardian atlas at yaw 0",
       "ok": true,
-      "detail": "warden/brute yaw 0"
+      "detail": "warden/guardian yaw 0"
     },
     {
       "name": "midair altitude registers",
       "ok": true,
-      "detail": "alt 7.05 m, sprite pitch 3"
+      "detail": "alt 7.23 m, sprite pitch 3"
+    },
+    {
+      "name": "FOV stays fixed from the ground to the ceiling",
+      "ok": true,
+      "detail": "70.0 deg ground, 70.0 deg at 16 m"
     },
     {
       "name": "wall faces stay opaque while airborne",
       "ok": true,
-      "detail": "384 cols, 46943 wall px"
+      "detail": "384 cols, 47559 wall px"
     },
     {
       "name": "close wall fills the screen instead of vanishing",
@@ -97,17 +137,22 @@
     {
       "name": "overhead sprite keeps a readable 2D silhouette",
       "ok": true,
-      "detail": "silhouette 6x6 px, 26 opaque px in a 13.6px frame"
+      "detail": "silhouette 7x6 px, 28 opaque px in a 15.5px frame"
     },
     {
       "name": "overhead sprite stays centred instead of sliding off-screen",
       "ok": true,
-      "detail": "x=191.1"
+      "detail": "x=190.4"
+    },
+    {
+      "name": "top-down actors use the compensated billboard scale",
+      "ok": true,
+      "detail": "pitch 3 · size 0.780 m"
     },
     {
       "name": "overhead actor near the map edge stays in view",
       "ok": true,
-      "detail": "x=191.0, visible=true"
+      "detail": "x=190.4, visible=true"
     },
     {
       "name": "player lands on a wall top",
@@ -120,6 +165,16 @@
       "detail": "alt 0.00 m, support 0.00"
     },
     {
+      "name": "landing beside a wall does not wedge the player",
+      "ok": true,
+      "detail": "x=1.19, alt 0.00 m"
+    },
+    {
+      "name": "walking away from the wall after landing is free",
+      "ok": true,
+      "detail": "x=2.99"
+    },
+    {
       "name": "walking up two steps lands on the 0.4 platform",
       "ok": true,
       "detail": "alt 0.40 m, support 0.40, y=19.35"
@@ -127,17 +182,17 @@
     {
       "name": "stepped blocks render their top surfaces",
       "ok": true,
-      "detail": "46424 top px, 39568 wall px"
+      "detail": "47331 top px, 39061 wall px"
     },
     {
       "name": "a 0.6 crate blocks walking without a jump",
       "ok": true,
-      "detail": "stopped at y=14.20, support 0.00"
+      "detail": "stopped at y=14.19, support 0.00"
     },
     {
       "name": "the crate occludes the scholar behind it",
       "ok": true,
-      "detail": "252 drawn, 1722 occluded px"
+      "detail": "274 drawn, 1993 occluded px"
     },
     {
       "name": "landing on the crate stops at its 0.6 surface",
@@ -153,12 +208,13 @@
   "consoleErrors": [],
   "screenshots": [
     "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/01-ground-spawn.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/27-viewmodel-strike.png",
     "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/02-ground-open.png",
     "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/03-jetpack-burn.png",
     "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/04-guard-front.png",
     "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/05-guard-back.png",
-    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/11-scout-front.png",
-    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/12-brute-front.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/11-sentinel-front.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/12-warden-front.png",
     "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/06-midair.png",
     "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/07-aerial-down.png",
     "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/08-aerial-level.png",
@@ -171,6 +227,7 @@
     "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/17-overhead-edge-actor.png",
     "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/18-wall-landing.png",
     "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/19-wall-stepoff.png",
+    "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/28-wall-side-landing.png",
     "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/20-stairs-approach.png",
     "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/21-stairs-climbed.png",
     "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/playtest/22-stairs-from-ground.png",

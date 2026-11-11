@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-11T14:57:01.137Z",
+  "generatedAt": "2026-11-11T16:38:25.984Z",
   "url": "http://127.0.0.1:5201/?screenshot",
-  "durationMs": 6130,
+  "durationMs": 6654,
   "scenarios": [
     "g01-spawn-idle",
     "g02-walk-forward",
@@ -39,6 +39,8 @@
     "a15-pitch-band-level",
     "a16-pitch-band-high",
     "a17-pitch-band-top",
+    "a18-fov-stable-altitude",
+    "a19-topdown-scale",
     "s01-stairs-approach",
     "s02-stairs-climb",
     "s03-stairs-descend",
@@ -50,6 +52,8 @@
     "s09-wall-perch-down",
     "s10-near-wall",
     "s11-near-wall-lookdown",
+    "s12-wall-side-landing",
+    "s13-corner-landing",
     "c01-watcher-tracks",
     "c02-patrol-advance",
     "c03-patrol-reverse",
@@ -61,6 +65,9 @@
     "c09-overhead-guard",
     "c10-overhead-edge-actor",
     "c11-multi-actor-aerial",
+    "w01-idle-overlay",
+    "w02-attack-swing",
+    "w03-swing-recovery",
     "u01-minimap-visible",
     "u02-minimap-hidden",
     "u03-hud-minimal",
@@ -94,7 +101,7 @@
     "l04-reactor-hover",
     "l05-beacon-loop"
   ],
-  "passed": 490,
+  "passed": 625,
   "failed": 0,
   "checks": [
     {
@@ -114,9 +121,16 @@
     {
       "scenario": "g01-spawn-idle",
       "group": "ground",
+      "name": "g01-spawn-idle matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "g01-spawn-idle",
+      "group": "ground",
       "name": "g01-spawn-idle renders content",
       "ok": true,
-      "detail": "301 colors, mean luma 49.4"
+      "detail": "512 colors, mean luma 51.6"
     },
     {
       "scenario": "g01-spawn-idle",
@@ -149,9 +163,16 @@
     {
       "scenario": "g02-walk-forward",
       "group": "ground",
+      "name": "g02-walk-forward matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "g02-walk-forward",
+      "group": "ground",
       "name": "g02-walk-forward renders content",
       "ok": true,
-      "detail": "370 colors, mean luma 53.0"
+      "detail": "512 colors, mean luma 55.1"
     },
     {
       "scenario": "g02-walk-forward",
@@ -184,9 +205,16 @@
     {
       "scenario": "g03-walk-backward",
       "group": "ground",
+      "name": "g03-walk-backward matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "g03-walk-backward",
+      "group": "ground",
       "name": "g03-walk-backward renders content",
       "ok": true,
-      "detail": "245 colors, mean luma 51.9"
+      "detail": "512 colors, mean luma 53.9"
     },
     {
       "scenario": "g03-walk-backward",
@@ -219,9 +247,16 @@
     {
       "scenario": "g04-strafe-right",
       "group": "ground",
+      "name": "g04-strafe-right matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "g04-strafe-right",
+      "group": "ground",
       "name": "g04-strafe-right renders content",
       "ok": true,
-      "detail": "33 colors, mean luma 65.1"
+      "detail": "512 colors, mean luma 67.1"
     },
     {
       "scenario": "g04-strafe-right",
@@ -254,9 +289,16 @@
     {
       "scenario": "g05-strafe-left",
       "group": "ground",
+      "name": "g05-strafe-left matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "g05-strafe-left",
+      "group": "ground",
       "name": "g05-strafe-left renders content",
       "ok": true,
-      "detail": "166 colors, mean luma 63.2"
+      "detail": "512 colors, mean luma 64.6"
     },
     {
       "scenario": "g05-strafe-left",
@@ -289,9 +331,16 @@
     {
       "scenario": "g06-sprint-forward",
       "group": "ground",
+      "name": "g06-sprint-forward matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "g06-sprint-forward",
+      "group": "ground",
       "name": "g06-sprint-forward renders content",
       "ok": true,
-      "detail": "126 colors, mean luma 47.5"
+      "detail": "512 colors, mean luma 49.7"
     },
     {
       "scenario": "g06-sprint-forward",
@@ -324,9 +373,16 @@
     {
       "scenario": "g07-diagonal-walk",
       "group": "ground",
+      "name": "g07-diagonal-walk matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "g07-diagonal-walk",
+      "group": "ground",
       "name": "g07-diagonal-walk renders content",
       "ok": true,
-      "detail": "129 colors, mean luma 49.8"
+      "detail": "512 colors, mean luma 51.7"
     },
     {
       "scenario": "g07-diagonal-walk",
@@ -354,7 +410,7 @@
       "group": "ground",
       "name": "walking into a wall stops at the radius",
       "ok": true,
-      "detail": "stopped at x=1.20"
+      "detail": "stopped at x=1.19"
     },
     {
       "scenario": "g08-wall-block",
@@ -366,16 +422,23 @@
     {
       "scenario": "g08-wall-block",
       "group": "ground",
+      "name": "g08-wall-block matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "g08-wall-block",
+      "group": "ground",
       "name": "g08-wall-block renders content",
       "ok": true,
-      "detail": "25 colors, mean luma 73.0"
+      "detail": "512 colors, mean luma 73.0"
     },
     {
       "scenario": "g08-wall-block",
       "group": "ground",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "1.20, 1.50, 0.00, 1.00, 384.00, 92160.00, 0.00"
+      "detail": "1.19, 1.50, 0.00, 1.00, 384.00, 92160.00, 0.00"
     },
     {
       "scenario": "g08-wall-block",
@@ -396,21 +459,28 @@
       "group": "ground",
       "name": "north wall blocks without leaving the map",
       "ok": true,
-      "detail": "x=5.50, y=1.20"
+      "detail": "x=5.50, y=1.19"
+    },
+    {
+      "scenario": "g09-north-wall-slide",
+      "group": "ground",
+      "name": "g09-north-wall-slide matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "g09-north-wall-slide",
       "group": "ground",
       "name": "g09-north-wall-slide renders content",
       "ok": true,
-      "detail": "20 colors, mean luma 60.4"
+      "detail": "512 colors, mean luma 61.4"
     },
     {
       "scenario": "g09-north-wall-slide",
       "group": "ground",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 1.20, 0.00, 1.00, 384.00, 92160.00, 0.00"
+      "detail": "5.50, 1.19, 0.00, 1.00, 384.00, 92160.00, 0.00"
     },
     {
       "scenario": "g09-north-wall-slide",
@@ -436,9 +506,16 @@
     {
       "scenario": "g10-respawn-key",
       "group": "ground",
+      "name": "g10-respawn-key matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "g10-respawn-key",
+      "group": "ground",
       "name": "g10-respawn-key renders content",
       "ok": true,
-      "detail": "300 colors, mean luma 49.4"
+      "detail": "512 colors, mean luma 51.5"
     },
     {
       "scenario": "g10-respawn-key",
@@ -478,9 +555,16 @@
     {
       "scenario": "v01-jump-burst",
       "group": "vertical",
+      "name": "v01-jump-burst matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "v01-jump-burst",
+      "group": "vertical",
       "name": "v01-jump-burst renders content",
       "ok": true,
-      "detail": "113 colors, mean luma 37.8"
+      "detail": "512 colors, mean luma 40.3"
     },
     {
       "scenario": "v01-jump-burst",
@@ -520,9 +604,16 @@
     {
       "scenario": "v02-jet-burn",
       "group": "vertical",
+      "name": "v02-jet-burn matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "v02-jet-burn",
+      "group": "vertical",
       "name": "v02-jet-burn renders content",
       "ok": true,
-      "detail": "152 colors, mean luma 31.1"
+      "detail": "512 colors, mean luma 33.5"
     },
     {
       "scenario": "v02-jet-burn",
@@ -536,7 +627,7 @@
       "group": "vertical",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 4.50, 6.14, 0.80, 293.00, 7206.00, 5014.00"
+      "detail": "5.50, 4.50, 6.14, 0.80, 293.00, 6198.00, 3040.00"
     },
     {
       "scenario": "v02-jet-burn",
@@ -562,9 +653,16 @@
     {
       "scenario": "v03-jet-ceiling",
       "group": "vertical",
+      "name": "v03-jet-ceiling matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "v03-jet-ceiling",
+      "group": "vertical",
       "name": "v03-jet-ceiling renders content",
       "ok": true,
-      "detail": "24 colors, mean luma 28.6"
+      "detail": "512 colors, mean luma 32.2"
     },
     {
       "scenario": "v03-jet-ceiling",
@@ -604,9 +702,16 @@
     {
       "scenario": "v04-jet-empty-fuel",
       "group": "vertical",
+      "name": "v04-jet-empty-fuel matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "v04-jet-empty-fuel",
+      "group": "vertical",
       "name": "v04-jet-empty-fuel renders content",
       "ok": true,
-      "detail": "119 colors, mean luma 48.5"
+      "detail": "512 colors, mean luma 51.0"
     },
     {
       "scenario": "v04-jet-empty-fuel",
@@ -639,9 +744,16 @@
     {
       "scenario": "v05-fall-land",
       "group": "vertical",
+      "name": "v05-fall-land matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "v05-fall-land",
+      "group": "vertical",
       "name": "v05-fall-land renders content",
       "ok": true,
-      "detail": "98 colors, mean luma 55.8"
+      "detail": "512 colors, mean luma 58.0"
     },
     {
       "scenario": "v05-fall-land",
@@ -674,9 +786,16 @@
     {
       "scenario": "v06-ground-refuel",
       "group": "vertical",
+      "name": "v06-ground-refuel matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "v06-ground-refuel",
+      "group": "vertical",
       "name": "v06-ground-refuel renders content",
       "ok": true,
-      "detail": "123 colors, mean luma 52.9"
+      "detail": "512 colors, mean luma 55.0"
     },
     {
       "scenario": "v06-ground-refuel",
@@ -716,16 +835,23 @@
     {
       "scenario": "v07-freefly-up",
       "group": "vertical",
+      "name": "v07-freefly-up matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "v07-freefly-up",
+      "group": "vertical",
       "name": "v07-freefly-up renders content",
       "ok": true,
-      "detail": "163 colors, mean luma 31.7"
+      "detail": "512 colors, mean luma 34.3"
     },
     {
       "scenario": "v07-freefly-up",
       "group": "vertical",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 4.50, 4.00, 1.00, 361.00, 15148.00, 6035.00"
+      "detail": "5.50, 4.50, 4.00, 1.00, 361.00, 12972.00, 6853.00"
     },
     {
       "scenario": "v07-freefly-up",
@@ -751,9 +877,16 @@
     {
       "scenario": "v08-freefly-descend-crate",
       "group": "vertical",
+      "name": "v08-freefly-descend-crate matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "v08-freefly-descend-crate",
+      "group": "vertical",
       "name": "v08-freefly-descend-crate renders content",
       "ok": true,
-      "detail": "217 colors, mean luma 36.5"
+      "detail": "512 colors, mean luma 39.2"
     },
     {
       "scenario": "v08-freefly-descend-crate",
@@ -786,16 +919,23 @@
     {
       "scenario": "v09-freefly-off-fall",
       "group": "vertical",
+      "name": "v09-freefly-off-fall matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "v09-freefly-off-fall",
+      "group": "vertical",
       "name": "v09-freefly-off-fall renders content",
       "ok": true,
-      "detail": "158 colors, mean luma 31.3"
+      "detail": "512 colors, mean luma 33.7"
     },
     {
       "scenario": "v09-freefly-off-fall",
       "group": "vertical",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 4.50, 5.15, 1.00, 316.00, 9275.00, 6572.00"
+      "detail": "5.50, 4.50, 5.15, 1.00, 316.00, 8606.00, 4538.00"
     },
     {
       "scenario": "v09-freefly-off-fall",
@@ -821,9 +961,16 @@
     {
       "scenario": "a01-ground-pitch-clamp-down",
       "group": "aim",
+      "name": "a01-ground-pitch-clamp-down matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a01-ground-pitch-clamp-down",
+      "group": "aim",
       "name": "a01-ground-pitch-clamp-down renders content",
       "ok": true,
-      "detail": "29 colors, mean luma 58.4"
+      "detail": "512 colors, mean luma 59.9"
     },
     {
       "scenario": "a01-ground-pitch-clamp-down",
@@ -856,9 +1003,16 @@
     {
       "scenario": "a02-ground-pitch-clamp-up",
       "group": "aim",
+      "name": "a02-ground-pitch-clamp-up matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a02-ground-pitch-clamp-up",
+      "group": "aim",
       "name": "a02-ground-pitch-clamp-up renders content",
       "ok": true,
-      "detail": "39 colors, mean luma 29.2"
+      "detail": "512 colors, mean luma 32.7"
     },
     {
       "scenario": "a02-ground-pitch-clamp-up",
@@ -891,16 +1045,23 @@
     {
       "scenario": "a03-air-pitch-top",
       "group": "aim",
+      "name": "a03-air-pitch-top matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a03-air-pitch-top",
+      "group": "aim",
       "name": "a03-air-pitch-top renders content",
       "ok": true,
-      "detail": "272 colors, mean luma 40.9"
+      "detail": "512 colors, mean luma 45.6"
     },
     {
       "scenario": "a03-air-pitch-top",
       "group": "aim",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "7.50, 1.58, 14.00, 1.00, 372.00, 3009.00, 9764.00"
+      "detail": "7.50, 1.58, 14.00, 1.00, 352.00, 2637.00, 13564.00"
     },
     {
       "scenario": "a03-air-pitch-top",
@@ -926,9 +1087,16 @@
     {
       "scenario": "a04-mouse-yaw",
       "group": "aim",
+      "name": "a04-mouse-yaw matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a04-mouse-yaw",
+      "group": "aim",
       "name": "a04-mouse-yaw renders content",
       "ok": true,
-      "detail": "144 colors, mean luma 47.7"
+      "detail": "512 colors, mean luma 50.1"
     },
     {
       "scenario": "a04-mouse-yaw",
@@ -961,9 +1129,16 @@
     {
       "scenario": "a05-mouse-pitch",
       "group": "aim",
+      "name": "a05-mouse-pitch matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a05-mouse-pitch",
+      "group": "aim",
       "name": "a05-mouse-pitch renders content",
       "ok": true,
-      "detail": "74 colors, mean luma 35.2"
+      "detail": "512 colors, mean luma 37.6"
     },
     {
       "scenario": "a05-mouse-pitch",
@@ -991,14 +1166,21 @@
       "group": "aim",
       "name": "camera selects tinker yaw 0",
       "ok": true,
-      "detail": "brute yaw 0 pitch 1"
+      "detail": "guardian yaw 0 pitch 1"
+    },
+    {
+      "scenario": "a06-sector-front",
+      "group": "aim",
+      "name": "a06-sector-front matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a06-sector-front",
       "group": "aim",
       "name": "a06-sector-front renders content",
       "ok": true,
-      "detail": "232 colors, mean luma 51.9"
+      "detail": "512 colors, mean luma 54.1"
     },
     {
       "scenario": "a06-sector-front",
@@ -1026,14 +1208,21 @@
       "group": "aim",
       "name": "camera selects tinker yaw 8",
       "ok": true,
-      "detail": "brute yaw 8 pitch 1"
+      "detail": "guardian yaw 8 pitch 1"
+    },
+    {
+      "scenario": "a07-sector-back",
+      "group": "aim",
+      "name": "a07-sector-back matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a07-sector-back",
       "group": "aim",
       "name": "a07-sector-back renders content",
       "ok": true,
-      "detail": "265 colors, mean luma 47.2"
+      "detail": "512 colors, mean luma 49.6"
     },
     {
       "scenario": "a07-sector-back",
@@ -1061,14 +1250,21 @@
       "group": "aim",
       "name": "camera selects tinker yaw 4",
       "ok": true,
-      "detail": "brute yaw 4 pitch 1"
+      "detail": "guardian yaw 4 pitch 1"
+    },
+    {
+      "scenario": "a08-sector-south",
+      "group": "aim",
+      "name": "a08-sector-south matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a08-sector-south",
       "group": "aim",
       "name": "a08-sector-south renders content",
       "ok": true,
-      "detail": "248 colors, mean luma 42.6"
+      "detail": "512 colors, mean luma 45.1"
     },
     {
       "scenario": "a08-sector-south",
@@ -1096,14 +1292,21 @@
       "group": "aim",
       "name": "camera selects tinker yaw 12",
       "ok": true,
-      "detail": "brute yaw 12 pitch 1"
+      "detail": "guardian yaw 12 pitch 1"
+    },
+    {
+      "scenario": "a09-sector-north",
+      "group": "aim",
+      "name": "a09-sector-north matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a09-sector-north",
       "group": "aim",
       "name": "a09-sector-north renders content",
       "ok": true,
-      "detail": "433 colors, mean luma 41.2"
+      "detail": "512 colors, mean luma 43.7"
     },
     {
       "scenario": "a09-sector-north",
@@ -1131,14 +1334,21 @@
       "group": "aim",
       "name": "camera selects tinker yaw 15",
       "ok": true,
-      "detail": "brute yaw 15 pitch 1"
+      "detail": "guardian yaw 15 pitch 1"
+    },
+    {
+      "scenario": "a10-sector-ne",
+      "group": "aim",
+      "name": "a10-sector-ne matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a10-sector-ne",
       "group": "aim",
       "name": "a10-sector-ne renders content",
       "ok": true,
-      "detail": "43 colors, mean luma 65.3"
+      "detail": "512 colors, mean luma 67.3"
     },
     {
       "scenario": "a10-sector-ne",
@@ -1166,21 +1376,28 @@
       "group": "aim",
       "name": "camera selects tinker yaw 1",
       "ok": true,
-      "detail": "brute yaw 1 pitch 2"
+      "detail": "guardian yaw 1 pitch 1"
+    },
+    {
+      "scenario": "a11-sector-sw",
+      "group": "aim",
+      "name": "a11-sector-sw matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a11-sector-sw",
       "group": "aim",
       "name": "a11-sector-sw renders content",
       "ok": true,
-      "detail": "391 colors, mean luma 34.6"
+      "detail": "512 colors, mean luma 36.7"
     },
     {
       "scenario": "a11-sector-sw",
       "group": "aim",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "17.50, 6.50, 1.40, 1.00, 384.00, 27028.00, 2726.00"
+      "detail": "17.50, 6.50, 1.40, 1.00, 384.00, 27257.00, 2857.00"
     },
     {
       "scenario": "a11-sector-sw",
@@ -1201,14 +1418,21 @@
       "group": "aim",
       "name": "camera selects tinker yaw 5",
       "ok": true,
-      "detail": "brute yaw 5 pitch 1"
+      "detail": "guardian yaw 5 pitch 1"
+    },
+    {
+      "scenario": "a12-sector-se",
+      "group": "aim",
+      "name": "a12-sector-se matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a12-sector-se",
       "group": "aim",
       "name": "a12-sector-se renders content",
       "ok": true,
-      "detail": "259 colors, mean luma 41.0"
+      "detail": "512 colors, mean luma 43.7"
     },
     {
       "scenario": "a12-sector-se",
@@ -1236,14 +1460,21 @@
       "group": "aim",
       "name": "camera selects tinker yaw 11",
       "ok": true,
-      "detail": "brute yaw 11 pitch 1"
+      "detail": "guardian yaw 11 pitch 1"
+    },
+    {
+      "scenario": "a13-sector-nw",
+      "group": "aim",
+      "name": "a13-sector-nw matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "a13-sector-nw",
       "group": "aim",
       "name": "a13-sector-nw renders content",
       "ok": true,
-      "detail": "406 colors, mean luma 39.2"
+      "detail": "512 colors, mean luma 41.6"
     },
     {
       "scenario": "a13-sector-nw",
@@ -1276,9 +1507,16 @@
     {
       "scenario": "a14-pitch-band-low",
       "group": "aim",
+      "name": "a14-pitch-band-low matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a14-pitch-band-low",
+      "group": "aim",
       "name": "a14-pitch-band-low renders content",
       "ok": true,
-      "detail": "244 colors, mean luma 47.8"
+      "detail": "512 colors, mean luma 50.0"
     },
     {
       "scenario": "a14-pitch-band-low",
@@ -1311,9 +1549,16 @@
     {
       "scenario": "a15-pitch-band-level",
       "group": "aim",
+      "name": "a15-pitch-band-level matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a15-pitch-band-level",
+      "group": "aim",
       "name": "a15-pitch-band-level renders content",
       "ok": true,
-      "detail": "362 colors, mean luma 52.6"
+      "detail": "512 colors, mean luma 54.7"
     },
     {
       "scenario": "a15-pitch-band-level",
@@ -1346,16 +1591,23 @@
     {
       "scenario": "a16-pitch-band-high",
       "group": "aim",
+      "name": "a16-pitch-band-high matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a16-pitch-band-high",
+      "group": "aim",
       "name": "a16-pitch-band-high renders content",
       "ok": true,
-      "detail": "124 colors, mean luma 31.0"
+      "detail": "512 colors, mean luma 33.6"
     },
     {
       "scenario": "a16-pitch-band-high",
       "group": "aim",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "4.50, 1.50, 3.00, 1.00, 275.00, 11076.00, 5027.00"
+      "detail": "4.50, 1.50, 3.00, 1.00, 275.00, 11536.00, 5052.00"
     },
     {
       "scenario": "a16-pitch-band-high",
@@ -1381,16 +1633,23 @@
     {
       "scenario": "a17-pitch-band-top",
       "group": "aim",
+      "name": "a17-pitch-band-top matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a17-pitch-band-top",
+      "group": "aim",
       "name": "a17-pitch-band-top renders content",
       "ok": true,
-      "detail": "307 colors, mean luma 38.3"
+      "detail": "512 colors, mean luma 43.1"
     },
     {
       "scenario": "a17-pitch-band-top",
       "group": "aim",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "4.50, 1.50, 12.00, 1.00, 384.00, 7258.00, 14054.00"
+      "detail": "4.50, 1.50, 12.00, 1.00, 384.00, 8044.00, 25135.00"
     },
     {
       "scenario": "a17-pitch-band-top",
@@ -1407,6 +1666,90 @@
       "detail": "AIRBORNE · FALL · fuel 100%"
     },
     {
+      "scenario": "a18-fov-stable-altitude",
+      "group": "aim",
+      "name": "projection FOV does not widen while climbing",
+      "ok": true,
+      "detail": "70.0 deg ground, 70.0 deg at 16 m"
+    },
+    {
+      "scenario": "a18-fov-stable-altitude",
+      "group": "aim",
+      "name": "a18-fov-stable-altitude matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a18-fov-stable-altitude",
+      "group": "aim",
+      "name": "a18-fov-stable-altitude renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 42.8"
+    },
+    {
+      "scenario": "a18-fov-stable-altitude",
+      "group": "aim",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 4.50, 16.00, 1.00, 384.00, 8818.00, 21180.00"
+    },
+    {
+      "scenario": "a18-fov-stable-altitude",
+      "group": "aim",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "17 rects"
+    },
+    {
+      "scenario": "a18-fov-stable-altitude",
+      "group": "aim",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "a19-topdown-scale",
+      "group": "aim",
+      "name": "top-down billboards shrink by the ortho compensation factor",
+      "ok": true,
+      "detail": "pitch 3 · size 0.780 m"
+    },
+    {
+      "scenario": "a19-topdown-scale",
+      "group": "aim",
+      "name": "a19-topdown-scale matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "a19-topdown-scale",
+      "group": "aim",
+      "name": "a19-topdown-scale renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 45.6"
+    },
+    {
+      "scenario": "a19-topdown-scale",
+      "group": "aim",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "7.50, 1.58, 14.00, 1.00, 352.00, 2637.00, 13564.00"
+    },
+    {
+      "scenario": "a19-topdown-scale",
+      "group": "aim",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "17 rects"
+    },
+    {
+      "scenario": "a19-topdown-scale",
+      "group": "aim",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "AIRBORNE · FALL · fuel 100%"
+    },
+    {
       "scenario": "s01-stairs-approach",
       "group": "surfaces",
       "name": "stairs approach sits on the floor",
@@ -1416,16 +1759,23 @@
     {
       "scenario": "s01-stairs-approach",
       "group": "surfaces",
+      "name": "s01-stairs-approach matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s01-stairs-approach",
+      "group": "surfaces",
       "name": "s01-stairs-approach renders content",
       "ok": true,
-      "detail": "194 colors, mean luma 40.8"
+      "detail": "512 colors, mean luma 42.0"
     },
     {
       "scenario": "s01-stairs-approach",
       "group": "surfaces",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "11.50, 22.50, 0.00, 1.00, 384.00, 33606.00, 26459.00"
+      "detail": "11.50, 22.50, 0.00, 1.00, 384.00, 32795.00, 27314.00"
     },
     {
       "scenario": "s01-stairs-approach",
@@ -1458,9 +1808,16 @@
     {
       "scenario": "s02-stairs-climb",
       "group": "surfaces",
+      "name": "s02-stairs-climb matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s02-stairs-climb",
+      "group": "surfaces",
       "name": "s02-stairs-climb renders content",
       "ok": true,
-      "detail": "344 colors, mean luma 35.1"
+      "detail": "512 colors, mean luma 37.8"
     },
     {
       "scenario": "s02-stairs-climb",
@@ -1493,9 +1850,16 @@
     {
       "scenario": "s03-stairs-descend",
       "group": "surfaces",
+      "name": "s03-stairs-descend matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s03-stairs-descend",
+      "group": "surfaces",
       "name": "s03-stairs-descend renders content",
       "ok": true,
-      "detail": "25 colors, mean luma 56.0"
+      "detail": "512 colors, mean luma 57.6"
     },
     {
       "scenario": "s03-stairs-descend",
@@ -1528,16 +1892,23 @@
     {
       "scenario": "s04-platform-stand",
       "group": "surfaces",
+      "name": "s04-platform-stand matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s04-platform-stand",
+      "group": "surfaces",
       "name": "s04-platform-stand renders content",
       "ok": true,
-      "detail": "128 colors, mean luma 42.8"
+      "detail": "512 colors, mean luma 44.3"
     },
     {
       "scenario": "s04-platform-stand",
       "group": "surfaces",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "11.50, 19.50, 0.40, 1.00, 384.00, 37516.00, 19500.00"
+      "detail": "11.50, 19.50, 0.40, 1.00, 384.00, 37491.00, 19525.00"
     },
     {
       "scenario": "s04-platform-stand",
@@ -1558,21 +1929,28 @@
       "group": "surfaces",
       "name": "a 0.6 crate blocks walking",
       "ok": true,
-      "detail": "stopped at y=14.20, support 0"
+      "detail": "stopped at y=14.19, support 0"
+    },
+    {
+      "scenario": "s05-crate-block",
+      "group": "surfaces",
+      "name": "s05-crate-block matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "s05-crate-block",
       "group": "surfaces",
       "name": "s05-crate-block renders content",
       "ok": true,
-      "detail": "33 colors, mean luma 52.5"
+      "detail": "512 colors, mean luma 54.6"
     },
     {
       "scenario": "s05-crate-block",
       "group": "surfaces",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "4.50, 14.20, 0.00, 1.00, 384.00, 81789.00, 0.00"
+      "detail": "4.50, 14.19, 0.00, 1.00, 384.00, 82228.00, 0.00"
     },
     {
       "scenario": "s05-crate-block",
@@ -1598,9 +1976,16 @@
     {
       "scenario": "s06-crate-perch",
       "group": "surfaces",
+      "name": "s06-crate-perch matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s06-crate-perch",
+      "group": "surfaces",
       "name": "s06-crate-perch renders content",
       "ok": true,
-      "detail": "46 colors, mean luma 57.9"
+      "detail": "512 colors, mean luma 55.8"
     },
     {
       "scenario": "s06-crate-perch",
@@ -1640,16 +2025,23 @@
     {
       "scenario": "s07-wall-land",
       "group": "surfaces",
+      "name": "s07-wall-land matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s07-wall-land",
+      "group": "surfaces",
       "name": "s07-wall-land renders content",
       "ok": true,
-      "detail": "294 colors, mean luma 54.5"
+      "detail": "512 colors, mean luma 51.7"
     },
     {
       "scenario": "s07-wall-land",
       "group": "surfaces",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "3.50, 2.50, 1.40, 1.00, 384.00, 30545.00, 51379.00"
+      "detail": "3.50, 2.50, 1.40, 1.00, 384.00, 30884.00, 51990.00"
     },
     {
       "scenario": "s07-wall-land",
@@ -1675,9 +2067,16 @@
     {
       "scenario": "s08-wall-stepoff",
       "group": "surfaces",
+      "name": "s08-wall-stepoff matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s08-wall-stepoff",
+      "group": "surfaces",
       "name": "s08-wall-stepoff renders content",
       "ok": true,
-      "detail": "24 colors, mean luma 72.1"
+      "detail": "512 colors, mean luma 72.5"
     },
     {
       "scenario": "s08-wall-stepoff",
@@ -1710,9 +2109,16 @@
     {
       "scenario": "s09-wall-perch-down",
       "group": "surfaces",
+      "name": "s09-wall-perch-down matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s09-wall-perch-down",
+      "group": "surfaces",
       "name": "s09-wall-perch-down renders content",
       "ok": true,
-      "detail": "64 colors, mean luma 50.7"
+      "detail": "512 colors, mean luma 54.8"
     },
     {
       "scenario": "s09-wall-perch-down",
@@ -1745,9 +2151,16 @@
     {
       "scenario": "s10-near-wall",
       "group": "surfaces",
+      "name": "s10-near-wall matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s10-near-wall",
+      "group": "surfaces",
       "name": "s10-near-wall renders content",
       "ok": true,
-      "detail": "24 colors, mean luma 72.9"
+      "detail": "512 colors, mean luma 73.3"
     },
     {
       "scenario": "s10-near-wall",
@@ -1780,9 +2193,16 @@
     {
       "scenario": "s11-near-wall-lookdown",
       "group": "surfaces",
+      "name": "s11-near-wall-lookdown matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s11-near-wall-lookdown",
+      "group": "surfaces",
       "name": "s11-near-wall-lookdown renders content",
       "ok": true,
-      "detail": "55 colors, mean luma 67.1"
+      "detail": "512 colors, mean luma 68.6"
     },
     {
       "scenario": "s11-near-wall-lookdown",
@@ -1806,6 +2226,104 @@
       "detail": "WALK · ATTRACT · fuel 100%"
     },
     {
+      "scenario": "s12-wall-side-landing",
+      "group": "surfaces",
+      "name": "landing with the capsule overlapping a wall pushes clear",
+      "ok": true,
+      "detail": "x=1.190, alt 0.00 m"
+    },
+    {
+      "scenario": "s12-wall-side-landing",
+      "group": "surfaces",
+      "name": "movement stays free after a wall-side landing",
+      "ok": true,
+      "detail": "x=2.99"
+    },
+    {
+      "scenario": "s12-wall-side-landing",
+      "group": "surfaces",
+      "name": "s12-wall-side-landing matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s12-wall-side-landing",
+      "group": "surfaces",
+      "name": "s12-wall-side-landing renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 55.3"
+    },
+    {
+      "scenario": "s12-wall-side-landing",
+      "group": "surfaces",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "2.99, 1.50, 0.00, 1.00, 384.00, 40330.00, 0.00"
+    },
+    {
+      "scenario": "s12-wall-side-landing",
+      "group": "surfaces",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "14 rects"
+    },
+    {
+      "scenario": "s12-wall-side-landing",
+      "group": "surfaces",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "s13-corner-landing",
+      "group": "surfaces",
+      "name": "a wall-corner landing ejects inward on both axes",
+      "ok": true,
+      "detail": "x=1.190, y=1.190"
+    },
+    {
+      "scenario": "s13-corner-landing",
+      "group": "surfaces",
+      "name": "strafing out of the corner is not blocked",
+      "ok": true,
+      "detail": "y=2.99"
+    },
+    {
+      "scenario": "s13-corner-landing",
+      "group": "surfaces",
+      "name": "s13-corner-landing matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "s13-corner-landing",
+      "group": "surfaces",
+      "name": "s13-corner-landing renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 60.2"
+    },
+    {
+      "scenario": "s13-corner-landing",
+      "group": "surfaces",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "1.19, 2.99, 0.00, 1.00, 384.00, 31870.00, 0.00"
+    },
+    {
+      "scenario": "s13-corner-landing",
+      "group": "surfaces",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "17 rects"
+    },
+    {
+      "scenario": "s13-corner-landing",
+      "group": "surfaces",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
       "scenario": "c01-watcher-tracks",
       "group": "actors",
       "name": "watcher turns toward the player from the east",
@@ -1822,9 +2340,16 @@
     {
       "scenario": "c01-watcher-tracks",
       "group": "actors",
+      "name": "c01-watcher-tracks matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "c01-watcher-tracks",
+      "group": "actors",
       "name": "c01-watcher-tracks renders content",
       "ok": true,
-      "detail": "437 colors, mean luma 46.1"
+      "detail": "512 colors, mean luma 48.4"
     },
     {
       "scenario": "c01-watcher-tracks",
@@ -1857,9 +2382,16 @@
     {
       "scenario": "c02-patrol-advance",
       "group": "actors",
+      "name": "c02-patrol-advance matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "c02-patrol-advance",
+      "group": "actors",
       "name": "c02-patrol-advance renders content",
       "ok": true,
-      "detail": "80 colors, mean luma 53.9"
+      "detail": "512 colors, mean luma 56.0"
     },
     {
       "scenario": "c02-patrol-advance",
@@ -1892,9 +2424,16 @@
     {
       "scenario": "c03-patrol-reverse",
       "group": "actors",
+      "name": "c03-patrol-reverse matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "c03-patrol-reverse",
+      "group": "actors",
       "name": "c03-patrol-reverse renders content",
       "ok": true,
-      "detail": "80 colors, mean luma 53.9"
+      "detail": "512 colors, mean luma 56.0"
     },
     {
       "scenario": "c03-patrol-reverse",
@@ -1927,9 +2466,16 @@
     {
       "scenario": "c04-chase-approach",
       "group": "actors",
+      "name": "c04-chase-approach matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "c04-chase-approach",
+      "group": "actors",
       "name": "c04-chase-approach renders content",
       "ok": true,
-      "detail": "90 colors, mean luma 45.0"
+      "detail": "512 colors, mean luma 47.4"
     },
     {
       "scenario": "c04-chase-approach",
@@ -1962,9 +2508,16 @@
     {
       "scenario": "c05-hover-bob",
       "group": "actors",
+      "name": "c05-hover-bob matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "c05-hover-bob",
+      "group": "actors",
       "name": "c05-hover-bob renders content",
       "ok": true,
-      "detail": "30 colors, mean luma 53.3"
+      "detail": "512 colors, mean luma 55.5"
     },
     {
       "scenario": "c05-hover-bob",
@@ -1992,14 +2545,21 @@
       "group": "actors",
       "name": "idle actor animates between two frames",
       "ok": true,
-      "detail": "5.04% of pixels changed"
+      "detail": "8.38% of pixels changed"
+    },
+    {
+      "scenario": "c06-idle-animation",
+      "group": "actors",
+      "name": "c06-idle-animation matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "c06-idle-animation",
       "group": "actors",
       "name": "c06-idle-animation renders content",
       "ok": true,
-      "detail": "380 colors, mean luma 52.5"
+      "detail": "512 colors, mean luma 54.6"
     },
     {
       "scenario": "c06-idle-animation",
@@ -2027,14 +2587,21 @@
       "group": "actors",
       "name": "the crate occludes the scholar behind it",
       "ok": true,
-      "detail": "252 drawn, 1722 occluded px"
+      "detail": "274 drawn, 2008 occluded px"
+    },
+    {
+      "scenario": "c07-occlusion-crate",
+      "group": "actors",
+      "name": "c07-occlusion-crate matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "c07-occlusion-crate",
       "group": "actors",
       "name": "c07-occlusion-crate renders content",
       "ok": true,
-      "detail": "141 colors, mean luma 39.4"
+      "detail": "512 colors, mean luma 42.0"
     },
     {
       "scenario": "c07-occlusion-crate",
@@ -2067,9 +2634,16 @@
     {
       "scenario": "c08-occlusion-wall",
       "group": "actors",
+      "name": "c08-occlusion-wall matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "c08-occlusion-wall",
+      "group": "actors",
       "name": "c08-occlusion-wall renders content",
       "ok": true,
-      "detail": "30 colors, mean luma 53.3"
+      "detail": "512 colors, mean luma 55.5"
     },
     {
       "scenario": "c08-occlusion-wall",
@@ -2097,21 +2671,28 @@
       "group": "actors",
       "name": "overhead actor keeps a readable silhouette",
       "ok": true,
-      "detail": "6x6 px, 25 opaque px, x=191.1"
+      "detail": "7x6 px, 28 opaque px, x=190.4"
+    },
+    {
+      "scenario": "c09-overhead-guard",
+      "group": "actors",
+      "name": "c09-overhead-guard matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "c09-overhead-guard",
       "group": "actors",
       "name": "c09-overhead-guard renders content",
       "ok": true,
-      "detail": "272 colors, mean luma 40.9"
+      "detail": "512 colors, mean luma 45.6"
     },
     {
       "scenario": "c09-overhead-guard",
       "group": "actors",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "7.50, 1.58, 14.00, 1.00, 372.00, 3009.00, 9764.00"
+      "detail": "7.50, 1.58, 14.00, 1.00, 352.00, 2637.00, 13564.00"
     },
     {
       "scenario": "c09-overhead-guard",
@@ -2132,21 +2713,28 @@
       "group": "actors",
       "name": "an overhead actor near the map edge stays in view",
       "ok": true,
-      "detail": "x=191.1, visible=true"
+      "detail": "x=190.4, visible=true"
+    },
+    {
+      "scenario": "c10-overhead-edge-actor",
+      "group": "actors",
+      "name": "c10-overhead-edge-actor matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "c10-overhead-edge-actor",
       "group": "actors",
       "name": "c10-overhead-edge-actor renders content",
       "ok": true,
-      "detail": "171 colors, mean luma 34.3"
+      "detail": "512 colors, mean luma 38.6"
     },
     {
       "scenario": "c10-overhead-edge-actor",
       "group": "actors",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "21.50, 4.58, 14.00, 1.00, 384.00, 414.00, 4113.00"
+      "detail": "21.50, 4.58, 14.00, 1.00, 384.00, 1152.00, 7680.00"
     },
     {
       "scenario": "c10-overhead-edge-actor",
@@ -2167,21 +2755,28 @@
       "group": "actors",
       "name": "aerial view projects several actors",
       "ok": true,
-      "detail": "14 visible: pickup:fuel, tinker, watcher, marauder, sentinel, stalker, pickup:keycard, warden, exit:lift, patrol, guard, prowler, drone, scholar"
+      "detail": "7 visible: sentinel, stalker, pickup:keycard, warden, patrol, exit:lift, drone"
+    },
+    {
+      "scenario": "c11-multi-actor-aerial",
+      "group": "actors",
+      "name": "c11-multi-actor-aerial matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "c11-multi-actor-aerial",
       "group": "actors",
       "name": "c11-multi-actor-aerial renders content",
       "ok": true,
-      "detail": "346 colors, mean luma 46.8"
+      "detail": "512 colors, mean luma 51.1"
     },
     {
       "scenario": "c11-multi-actor-aerial",
       "group": "actors",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "11.50, 12.50, 14.00, 1.00, 384.00, 7849.00, 14807.00"
+      "detail": "11.50, 12.50, 14.00, 1.00, 384.00, 3979.00, 15171.00"
     },
     {
       "scenario": "c11-multi-actor-aerial",
@@ -2196,6 +2791,132 @@
       "name": "HUD is populated",
       "ok": true,
       "detail": "AIRBORNE · FALL · fuel 100%"
+    },
+    {
+      "scenario": "w01-idle-overlay",
+      "group": "viewmodel",
+      "name": "the first-person viewmodel covers the lower-right frame",
+      "ok": true,
+      "detail": "6231 px"
+    },
+    {
+      "scenario": "w01-idle-overlay",
+      "group": "viewmodel",
+      "name": "the viewmodel idles when standing still",
+      "ok": true,
+      "detail": "idle0"
+    },
+    {
+      "scenario": "w01-idle-overlay",
+      "group": "viewmodel",
+      "name": "w01-idle-viewmodel renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 55.0"
+    },
+    {
+      "scenario": "w01-idle-overlay",
+      "group": "viewmodel",
+      "name": "w01-idle-overlay renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 55.0"
+    },
+    {
+      "scenario": "w01-idle-overlay",
+      "group": "viewmodel",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 4.50, 0.00, 1.00, 384.00, 67900.00, 0.00"
+    },
+    {
+      "scenario": "w01-idle-overlay",
+      "group": "viewmodel",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "13 rects"
+    },
+    {
+      "scenario": "w01-idle-overlay",
+      "group": "viewmodel",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "w02-attack-swing",
+      "group": "viewmodel",
+      "name": "the attack drives the viewmodel into its strike pose",
+      "ok": true,
+      "detail": "strike · 4881 px"
+    },
+    {
+      "scenario": "w02-attack-swing",
+      "group": "viewmodel",
+      "name": "w02-strike-viewmodel renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 55.3"
+    },
+    {
+      "scenario": "w02-attack-swing",
+      "group": "viewmodel",
+      "name": "w02-attack-swing renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 55.3"
+    },
+    {
+      "scenario": "w02-attack-swing",
+      "group": "viewmodel",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 4.50, 0.00, 1.00, 384.00, 67900.00, 0.00"
+    },
+    {
+      "scenario": "w02-attack-swing",
+      "group": "viewmodel",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "13 rects"
+    },
+    {
+      "scenario": "w02-attack-swing",
+      "group": "viewmodel",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "w03-swing-recovery",
+      "group": "viewmodel",
+      "name": "the viewmodel settles back to idle after the cooldown",
+      "ok": true,
+      "detail": "idle0"
+    },
+    {
+      "scenario": "w03-swing-recovery",
+      "group": "viewmodel",
+      "name": "w03-swing-recovery renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 54.9"
+    },
+    {
+      "scenario": "w03-swing-recovery",
+      "group": "viewmodel",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 4.50, 0.00, 1.00, 384.00, 67900.00, 0.00"
+    },
+    {
+      "scenario": "w03-swing-recovery",
+      "group": "viewmodel",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "13 rects"
+    },
+    {
+      "scenario": "w03-swing-recovery",
+      "group": "viewmodel",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
     },
     {
       "scenario": "u01-minimap-visible",
@@ -2312,9 +3033,16 @@
     {
       "scenario": "u04-pause-freeze",
       "group": "ui",
+      "name": "u04-pause-freeze matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "u04-pause-freeze",
+      "group": "ui",
       "name": "u04-pause-freeze renders content",
       "ok": true,
-      "detail": "123 colors, mean luma 52.9"
+      "detail": "512 colors, mean luma 55.0"
     },
     {
       "scenario": "u04-pause-freeze",
@@ -2342,14 +3070,14 @@
       "group": "ui",
       "name": "resuming advances the simulation",
       "ok": true,
-      "detail": "patrol dx 0.37, 22 frames, paused=false, 3.06% pixels changed"
+      "detail": "patrol dx 0.38, 23 frames, paused=false, 6.43% pixels changed"
     },
     {
       "scenario": "u05-pause-resume",
       "group": "ui",
       "name": "u05-pause-resume renders content",
       "ok": true,
-      "detail": "353 colors, mean luma 51.3"
+      "detail": "512 colors, mean luma 53.5"
     },
     {
       "scenario": "u05-pause-resume",
@@ -2389,16 +3117,23 @@
     {
       "scenario": "u06-hud-values",
       "group": "ui",
+      "name": "u06-hud-values matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "u06-hud-values",
+      "group": "ui",
       "name": "u06-hud-values renders content",
       "ok": true,
-      "detail": "294 colors, mean luma 33.5"
+      "detail": "512 colors, mean luma 35.3"
     },
     {
       "scenario": "u06-hud-values",
       "group": "ui",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "11.50, 12.50, 8.00, 1.00, 384.00, 11488.00, 10836.00"
+      "detail": "11.50, 12.50, 8.00, 1.00, 384.00, 12140.00, 9893.00"
     },
     {
       "scenario": "u06-hud-values",
@@ -2424,9 +3159,16 @@
     {
       "scenario": "u07-fuel-readout",
       "group": "ui",
+      "name": "u07-fuel-readout matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "u07-fuel-readout",
+      "group": "ui",
       "name": "u07-fuel-readout renders content",
       "ok": true,
-      "detail": "288 colors, mean luma 49.5"
+      "detail": "512 colors, mean luma 51.6"
     },
     {
       "scenario": "u07-fuel-readout",
@@ -2459,16 +3201,23 @@
     {
       "scenario": "r01-jet-over-wall",
       "group": "routes",
+      "name": "r01-jet-over-wall matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "r01-jet-over-wall",
+      "group": "routes",
       "name": "r01-jet-over-wall renders content",
       "ok": true,
-      "detail": "302 colors, mean luma 35.2"
+      "detail": "512 colors, mean luma 36.6"
     },
     {
       "scenario": "r01-jet-over-wall",
       "group": "routes",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "3.55, 2.50, 1.40, 1.00, 384.00, 28640.00, 10387.00"
+      "detail": "3.55, 2.50, 1.40, 1.00, 384.00, 29367.00, 9626.00"
     },
     {
       "scenario": "r01-jet-over-wall",
@@ -2494,16 +3243,23 @@
     {
       "scenario": "r02-jet-forward-climb",
       "group": "routes",
+      "name": "r02-jet-forward-climb matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "r02-jet-forward-climb",
+      "group": "routes",
       "name": "r02-jet-forward-climb renders content",
       "ok": true,
-      "detail": "69 colors, mean luma 29.9"
+      "detail": "512 colors, mean luma 32.2"
     },
     {
       "scenario": "r02-jet-forward-climb",
       "group": "routes",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "14.50, 12.50, 5.41, 0.80, 384.00, 1536.00, 4512.00"
+      "detail": "14.50, 12.50, 5.41, 0.80, 0.00, 0.00, 0.00"
     },
     {
       "scenario": "r02-jet-forward-climb",
@@ -2529,16 +3285,23 @@
     {
       "scenario": "r03-aerial-lookdown",
       "group": "routes",
+      "name": "r03-aerial-lookdown matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "r03-aerial-lookdown",
+      "group": "routes",
       "name": "r03-aerial-lookdown renders content",
       "ok": true,
-      "detail": "332 colors, mean luma 44.1"
+      "detail": "512 colors, mean luma 51.0"
     },
     {
       "scenario": "r03-aerial-lookdown",
       "group": "routes",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "11.50, 12.50, 16.00, 1.00, 384.00, 5991.00, 13655.00"
+      "detail": "11.50, 12.50, 16.00, 1.00, 384.00, 3061.00, 14656.00"
     },
     {
       "scenario": "r03-aerial-lookdown",
@@ -2564,9 +3327,16 @@
     {
       "scenario": "r04-respawn-midair",
       "group": "routes",
+      "name": "r04-respawn-midair matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "r04-respawn-midair",
+      "group": "routes",
       "name": "r04-respawn-midair renders content",
       "ok": true,
-      "detail": "288 colors, mean luma 49.5"
+      "detail": "512 colors, mean luma 51.6"
     },
     {
       "scenario": "r04-respawn-midair",
@@ -2599,16 +3369,23 @@
     {
       "scenario": "r05-sprint-route",
       "group": "routes",
+      "name": "r05-sprint-route matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "r05-sprint-route",
+      "group": "routes",
       "name": "r05-sprint-route renders content",
       "ok": true,
-      "detail": "79 colors, mean luma 46.1"
+      "detail": "512 colors, mean luma 48.5"
     },
     {
       "scenario": "r05-sprint-route",
       "group": "routes",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "8.10, 1.50, 0.00, 1.00, 384.00, 53528.00, 0.00"
+      "detail": "8.10, 1.50, 0.00, 1.00, 384.00, 53700.00, 0.00"
     },
     {
       "scenario": "r05-sprint-route",
@@ -2648,16 +3425,23 @@
     {
       "scenario": "i01-keycard-pickup",
       "group": "interaction",
+      "name": "i01-keycard-pickup matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "i01-keycard-pickup",
+      "group": "interaction",
       "name": "i01-keycard-pickup renders content",
       "ok": true,
-      "detail": "365 colors, mean luma 54.6"
+      "detail": "512 colors, mean luma 54.0"
     },
     {
       "scenario": "i01-keycard-pickup",
       "group": "interaction",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "17.50, 9.50, 0.00, 1.00, 384.00, 47151.00, 0.00"
+      "detail": "17.50, 9.50, 0.00, 1.00, 384.00, 47260.00, 0.00"
     },
     {
       "scenario": "i01-keycard-pickup",
@@ -2697,9 +3481,16 @@
     {
       "scenario": "i02-door-locked",
       "group": "interaction",
+      "name": "i02-door-locked matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "i02-door-locked",
+      "group": "interaction",
       "name": "i02-door-locked renders content",
       "ok": true,
-      "detail": "47 colors, mean luma 66.5"
+      "detail": "512 colors, mean luma 68.6"
     },
     {
       "scenario": "i02-door-locked",
@@ -2739,23 +3530,37 @@
     {
       "scenario": "i03-door-unlock",
       "group": "interaction",
+      "name": "i03-door-open matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "i03-door-unlock",
+      "group": "interaction",
       "name": "i03-door-open renders content",
       "ok": true,
-      "detail": "226 colors, mean luma 51.1"
+      "detail": "512 colors, mean luma 53.3"
+    },
+    {
+      "scenario": "i03-door-unlock",
+      "group": "interaction",
+      "name": "i03-door-unlock matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "i03-door-unlock",
       "group": "interaction",
       "name": "i03-door-unlock renders content",
       "ok": true,
-      "detail": "226 colors, mean luma 51.1"
+      "detail": "512 colors, mean luma 53.3"
     },
     {
       "scenario": "i03-door-unlock",
       "group": "interaction",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "8.40, 11.50, 0.00, 1.00, 384.00, 67237.00, 0.00"
+      "detail": "8.40, 11.50, 0.00, 1.00, 384.00, 67244.00, 0.00"
     },
     {
       "scenario": "i03-door-unlock",
@@ -2795,16 +3600,23 @@
     {
       "scenario": "i04-talk-cycle",
       "group": "interaction",
+      "name": "i04-talk-cycle matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "i04-talk-cycle",
+      "group": "interaction",
       "name": "i04-talk-cycle renders content",
       "ok": true,
-      "detail": "358 colors, mean luma 54.7"
+      "detail": "512 colors, mean luma 56.8"
     },
     {
       "scenario": "i04-talk-cycle",
       "group": "interaction",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "8.50, 1.50, 0.00, 1.00, 384.00, 67940.00, 0.00"
+      "detail": "8.50, 1.50, 0.00, 1.00, 384.00, 67946.00, 0.00"
     },
     {
       "scenario": "i04-talk-cycle",
@@ -2837,9 +3649,16 @@
     {
       "scenario": "i05-medkit-heal",
       "group": "interaction",
+      "name": "i05-medkit-heal matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "i05-medkit-heal",
+      "group": "interaction",
       "name": "i05-medkit-heal renders content",
       "ok": true,
-      "detail": "91 colors, mean luma 59.6"
+      "detail": "512 colors, mean luma 61.7"
     },
     {
       "scenario": "i05-medkit-heal",
@@ -2879,9 +3698,16 @@
     {
       "scenario": "i06-fuel-refill",
       "group": "interaction",
+      "name": "i06-fuel-refill matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "i06-fuel-refill",
+      "group": "interaction",
       "name": "i06-fuel-refill renders content",
       "ok": true,
-      "detail": "58 colors, mean luma 64.1"
+      "detail": "512 colors, mean luma 66.0"
     },
     {
       "scenario": "i06-fuel-refill",
@@ -2921,16 +3747,23 @@
     {
       "scenario": "i07-empty-interact",
       "group": "interaction",
+      "name": "i07-empty-interact matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "i07-empty-interact",
+      "group": "interaction",
       "name": "i07-empty-interact renders content",
       "ok": true,
-      "detail": "123 colors, mean luma 52.9"
+      "detail": "512 colors, mean luma 55.0"
     },
     {
       "scenario": "i07-empty-interact",
       "group": "interaction",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 4.50, 0.00, 1.00, 384.00, 67886.00, 0.00"
+      "detail": "5.50, 4.50, 0.00, 1.00, 384.00, 67901.00, 0.00"
     },
     {
       "scenario": "i07-empty-interact",
@@ -2963,23 +3796,37 @@
     {
       "scenario": "f01-player-strike",
       "group": "combat",
+      "name": "f01-enemy-hurt matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "f01-player-strike",
+      "group": "combat",
       "name": "f01-enemy-hurt renders content",
       "ok": true,
-      "detail": "380 colors, mean luma 46.4"
+      "detail": "512 colors, mean luma 47.8"
+    },
+    {
+      "scenario": "f01-player-strike",
+      "group": "combat",
+      "name": "f01-player-strike matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "f01-player-strike",
       "group": "combat",
       "name": "f01-player-strike renders content",
       "ok": true,
-      "detail": "380 colors, mean luma 46.4"
+      "detail": "512 colors, mean luma 47.8"
     },
     {
       "scenario": "f01-player-strike",
       "group": "combat",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "17.00, 14.50, 0.00, 1.00, 384.00, 45855.00, 0.00"
+      "detail": "17.00, 14.50, 0.00, 1.00, 384.00, 45860.00, 0.00"
     },
     {
       "scenario": "f01-player-strike",
@@ -3014,21 +3861,35 @@
       "group": "combat",
       "name": "the corpse drops out of targeting but stays rendered",
       "ok": true,
-      "detail": "alive=false · 8817 corpse px"
+      "detail": "alive=false · 6258 corpse px"
+    },
+    {
+      "scenario": "f02-player-kill",
+      "group": "combat",
+      "name": "f02-enemy-corpse matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "f02-player-kill",
       "group": "combat",
       "name": "f02-enemy-corpse renders content",
       "ok": true,
-      "detail": "390 colors, mean luma 47.1"
+      "detail": "512 colors, mean luma 46.8"
+    },
+    {
+      "scenario": "f02-player-kill",
+      "group": "combat",
+      "name": "f02-player-kill matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "f02-player-kill",
       "group": "combat",
       "name": "f02-player-kill renders content",
       "ok": true,
-      "detail": "390 colors, mean luma 47.1"
+      "detail": "512 colors, mean luma 46.8"
     },
     {
       "scenario": "f02-player-kill",
@@ -3061,9 +3922,16 @@
     {
       "scenario": "f03-attack-arc",
       "group": "combat",
+      "name": "f03-attack-arc matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "f03-attack-arc",
+      "group": "combat",
       "name": "f03-attack-arc renders content",
       "ok": true,
-      "detail": "229 colors, mean luma 51.5"
+      "detail": "512 colors, mean luma 54.1"
     },
     {
       "scenario": "f03-attack-arc",
@@ -3096,9 +3964,16 @@
     {
       "scenario": "f04-attack-range",
       "group": "combat",
+      "name": "f04-attack-range matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "f04-attack-range",
+      "group": "combat",
       "name": "f04-attack-range renders content",
       "ok": true,
-      "detail": "256 colors, mean luma 44.9"
+      "detail": "512 colors, mean luma 47.9"
     },
     {
       "scenario": "f04-attack-range",
@@ -3138,9 +4013,16 @@
     {
       "scenario": "f05-hostile-damage",
       "group": "combat",
+      "name": "f05-hostile-damage matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "f05-hostile-damage",
+      "group": "combat",
       "name": "f05-hostile-damage renders content",
       "ok": true,
-      "detail": "358 colors, mean luma 51.8"
+      "detail": "512 colors, mean luma 51.5"
     },
     {
       "scenario": "f05-hostile-damage",
@@ -3194,9 +4076,16 @@
     {
       "scenario": "f06-death-redeploy",
       "group": "combat",
+      "name": "f06-death-redeploy matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "f06-death-redeploy",
+      "group": "combat",
       "name": "f06-death-redeploy renders content",
       "ok": true,
-      "detail": "288 colors, mean luma 49.5"
+      "detail": "512 colors, mean luma 51.6"
     },
     {
       "scenario": "f06-death-redeploy",
@@ -3229,9 +4118,16 @@
     {
       "scenario": "f07-attack-cooldown",
       "group": "combat",
+      "name": "f07-attack-cooldown matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "f07-attack-cooldown",
+      "group": "combat",
       "name": "f07-attack-cooldown renders content",
       "ok": true,
-      "detail": "380 colors, mean luma 46.4"
+      "detail": "512 colors, mean luma 48.8"
     },
     {
       "scenario": "f07-attack-cooldown",
@@ -3264,9 +4160,16 @@
     {
       "scenario": "f08-enemy-windup",
       "group": "combat",
+      "name": "f08-enemy-windup matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "f08-enemy-windup",
+      "group": "combat",
       "name": "f08-enemy-windup renders content",
       "ok": true,
-      "detail": "357 colors, mean luma 51.8"
+      "detail": "512 colors, mean luma 51.1"
     },
     {
       "scenario": "f08-enemy-windup",
@@ -3313,16 +4216,30 @@
     {
       "scenario": "l01-transition-reactor",
       "group": "levels",
+      "name": "l01-reactor-spawn matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l01-transition-reactor",
+      "group": "levels",
       "name": "l01-reactor-spawn renders content",
       "ok": true,
-      "detail": "207 colors, mean luma 40.1"
+      "detail": "512 colors, mean luma 42.5"
+    },
+    {
+      "scenario": "l01-transition-reactor",
+      "group": "levels",
+      "name": "l01-transition-reactor matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "l01-transition-reactor",
       "group": "levels",
       "name": "l01-transition-reactor renders content",
       "ok": true,
-      "detail": "207 colors, mean luma 40.1"
+      "detail": "512 colors, mean luma 42.5"
     },
     {
       "scenario": "l01-transition-reactor",
@@ -3369,9 +4286,16 @@
     {
       "scenario": "l02-vault-return",
       "group": "levels",
+      "name": "l02-vault-return matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l02-vault-return",
+      "group": "levels",
       "name": "l02-vault-return renders content",
       "ok": true,
-      "detail": "288 colors, mean luma 49.5"
+      "detail": "512 colors, mean luma 51.6"
     },
     {
       "scenario": "l02-vault-return",
@@ -3404,9 +4328,16 @@
     {
       "scenario": "l03-terrace-climb",
       "group": "levels",
+      "name": "l03-terrace matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l03-terrace-climb",
+      "group": "levels",
       "name": "l03-terrace renders content",
       "ok": true,
-      "detail": "282 colors, mean luma 38.3"
+      "detail": "512 colors, mean luma 39.2"
     },
     {
       "scenario": "l03-terrace-climb",
@@ -3418,16 +4349,23 @@
     {
       "scenario": "l03-terrace-climb",
       "group": "levels",
+      "name": "l03-terrace-climb matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l03-terrace-climb",
+      "group": "levels",
       "name": "l03-terrace-climb renders content",
       "ok": true,
-      "detail": "123 colors, mean luma 43.6"
+      "detail": "512 colors, mean luma 46.0"
     },
     {
       "scenario": "l03-terrace-climb",
       "group": "levels",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "9.50, 15.90, 0.00, 1.00, 384.00, 38976.00, 2.00"
+      "detail": "9.50, 15.90, 0.00, 1.00, 384.00, 38935.00, 7.00"
     },
     {
       "scenario": "l03-terrace-climb",
@@ -3453,16 +4391,23 @@
     {
       "scenario": "l04-reactor-hover",
       "group": "levels",
+      "name": "l04-reactor-hover matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l04-reactor-hover",
+      "group": "levels",
       "name": "l04-reactor-hover renders content",
       "ok": true,
-      "detail": "158 colors, mean luma 37.3"
+      "detail": "512 colors, mean luma 39.7"
     },
     {
       "scenario": "l04-reactor-hover",
       "group": "levels",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "2.50, 20.50, 0.00, 1.00, 384.00, 21091.00, 128.00"
+      "detail": "2.50, 20.50, 0.00, 1.00, 384.00, 20970.00, 247.00"
     },
     {
       "scenario": "l04-reactor-hover",
@@ -3495,16 +4440,23 @@
     {
       "scenario": "l05-beacon-loop",
       "group": "levels",
+      "name": "l05-beacon-loop matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l05-beacon-loop",
+      "group": "levels",
       "name": "l05-beacon-loop renders content",
       "ok": true,
-      "detail": "288 colors, mean luma 49.4"
+      "detail": "512 colors, mean luma 51.6"
     },
     {
       "scenario": "l05-beacon-loop",
       "group": "levels",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 66984.00, 0.00"
+      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 66998.00, 0.00"
     },
     {
       "scenario": "l05-beacon-loop",
@@ -3532,292 +4484,399 @@
     {
       "name": "g01-spawn-idle",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "g02-walk-forward",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "g03-walk-backward",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "g04-strafe-right",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "g05-strafe-left",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "g06-sprint-forward",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "g07-diagonal-walk",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "g08-wall-block",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "g09-north-wall-slide",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "g10-respawn-key",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "v01-jump-burst",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "v02-jet-burn",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "v03-jet-ceiling",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "v04-jet-empty-fuel",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "v05-fall-land",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "v06-ground-refuel",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "v07-freefly-up",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "v08-freefly-descend-crate",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "v09-freefly-off-fall",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a01-ground-pitch-clamp-down",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a02-ground-pitch-clamp-up",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a03-air-pitch-top",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a04-mouse-yaw",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a05-mouse-pitch",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a06-sector-front",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a07-sector-back",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a08-sector-south",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a09-sector-north",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a10-sector-ne",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a11-sector-sw",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a12-sector-se",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a13-sector-nw",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a14-pitch-band-low",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a15-pitch-band-level",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a16-pitch-band-high",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "a17-pitch-band-top",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "a18-fov-stable-altitude",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "a19-topdown-scale",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "s01-stairs-approach",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "s02-stairs-climb",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "s03-stairs-descend",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "s04-platform-stand",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "s05-crate-block",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "s06-crate-perch",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "s07-wall-land",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "s08-wall-stepoff",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "s09-wall-perch-down",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "s10-near-wall",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "s11-near-wall-lookdown",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "s12-wall-side-landing",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "s13-corner-landing",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "c01-watcher-tracks",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "c02-patrol-advance",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "c03-patrol-reverse",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "c04-chase-approach",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "c05-hover-bob",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "c06-idle-animation",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "c07-occlusion-crate",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "c08-occlusion-wall",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "c09-overhead-guard",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "c10-overhead-edge-actor",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "c11-multi-actor-aerial",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "w01-idle-viewmodel",
+      "kind": "canvas",
+      "baseline": "skipped"
+    },
+    {
+      "name": "w01-idle-overlay",
+      "kind": "canvas",
+      "baseline": "skipped"
+    },
+    {
+      "name": "w02-strike-viewmodel",
+      "kind": "canvas",
+      "baseline": "skipped"
+    },
+    {
+      "name": "w02-attack-swing",
+      "kind": "canvas",
+      "baseline": "skipped"
+    },
+    {
+      "name": "w03-swing-recovery",
+      "kind": "canvas",
+      "baseline": "skipped"
     },
     {
       "name": "u01-minimap-visible",
@@ -3837,7 +4896,8 @@
     {
       "name": "u04-pause-freeze",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "u05-pause-resume",
@@ -3847,37 +4907,44 @@
     {
       "name": "u06-hud-values",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "u07-fuel-readout",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "r01-jet-over-wall",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "r02-jet-forward-climb",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "r03-aerial-lookdown",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "r04-respawn-midair",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "r05-sprint-route",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "i01-keycard-toast",
@@ -3887,22 +4954,26 @@
     {
       "name": "i01-keycard-pickup",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "i02-door-locked",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "i03-door-open",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "i03-door-unlock",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "i04-talk",
@@ -3912,52 +4983,62 @@
     {
       "name": "i04-talk-cycle",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "i05-medkit-heal",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "i06-fuel-refill",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "i07-empty-interact",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "f01-enemy-hurt",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "f01-player-strike",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "f02-enemy-corpse",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "f02-player-kill",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "f03-attack-arc",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "f04-attack-range",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "f05-player-hit",
@@ -3967,7 +5048,8 @@
     {
       "name": "f05-hostile-damage",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "f06-player-dead",
@@ -3982,52 +5064,62 @@
     {
       "name": "f06-death-redeploy",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "f07-attack-cooldown",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "f08-enemy-windup",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "l01-reactor-spawn",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "l01-transition-reactor",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "l02-vault-return",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "l03-terrace",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "l03-terrace-climb",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "l04-reactor-hover",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "l05-beacon-loop",
       "kind": "canvas",
-      "baseline": "updated"
+      "diff": 0,
+      "baseline": "compared"
     }
   ],
   "consoleErrors": [],

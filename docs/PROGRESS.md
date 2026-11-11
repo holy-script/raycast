@@ -13,8 +13,9 @@ Last updated: **2026-11-11**
 | Blender → stylize → atlas, 3 chassis | M4 | ✅ Complete |
 | Heightmap blocks: stairs, platforms, crates | M5 | ✅ Complete |
 | ComfyUI / MCP AI stylization | M6 | ✅ Complete; atlases AI-stylized |
-| Combat, interaction, doors, reactor map | M7 | 🚧 Gameplay complete; guardian six-state atlas shipped, scout/brute atlas pending |
+| Combat, interaction, doors, reactor map | M7 | ✅ Guardian six-state atlas shipped; scout/brute prototypes retired |
 | Audio, menus, deployment | M8 | ✅ Audio, pause/settings, profiled render loop, README capture, auto-deploy; public-session check clean |
+| Viewmodel and visual stability | M9 | ✅ Blender viewmodel, fixed FOV, pitch-scale compensation, wall-side depenetration, hardened playtests |
 
 ## Verification snapshot
 
@@ -23,54 +24,53 @@ Run from a clean checkout:
 ```bash
 npm ci
 npm run typecheck   # passes
-npm test            # 8 files, 52 tests pass
+npm test            # 8 files, 57 tests pass
 npm run build       # tsc + vite build
-npm run playtest    # 29/29 browser checks pass
-npm run playtest:matrix  # 90 scenarios, 581/581 checks, 0 console errors
-npm run playtest:states  # 98/98 state checks, 43 captures, 0 console errors
-npm run assets:verify  # 384-frame atlases; IoU 1.000, mean drift 5.4–6.2
+npm run playtest    # 40/40 browser checks pass
+npm run playtest:matrix  # 97 scenarios, 625/625 checks, 0 console errors
+npm run playtest:states  # 42/42 state checks, 21 captures, 0 console errors
+npm run assets:verify  # 1,216-frame guardian atlas; IoU 1.000
 ```
 
-The new-state AI pass (832 frames per character) is the only outstanding M7 item;
-`assets:verify` will report 1,216 frames per character after the repack.
+The guardian's six-state atlas (1,216 frames) is the only shipped atlas; scout/brute
+packed assets and tooling defaults were removed. `assets:verify` now defaults to guardian.
 
-Asset-side verification (2026-11-11, after the AI pass landed):
+Asset-side verification (2026-11-11, after the M9 pass):
 
-- Blender exports 384 raw + 384 depth + 384 normal PNGs per character (1,152 frames per
-  pass, 3,456 files total); `assets:comfy --dry-run` reports no missing controls.
-- The full ComfyUI pass generated all 1,152 frames with 0 palette fallbacks (~55 min per
-  character) and repacked three 1536×2304 atlases.
-- `npm run assets:verify` compares all 1,152 AI frames against raw renders: minimum IoU
-  1.000 with the 1 px outline tolerance; mean neighbour-yaw palette drift 6.2 (guardian),
-  6.1 (scout), 5.4 (brute); worst single frame 24.8 / 25.4 / 29.3 (threshold is mean ≤ 12).
+- Blender exports 1,216 raw frames per character (16 yaws × 4 pitches × 19 poses), each
+  with depth and normal control passes; `assets:comfy --dry-run` reports no missing
+  controls.
+- The guardian atlas is the only shipped atlas (1536×7296, 1,216 frames, six states).
+  Scout and brute packed assets, frames, and tooling defaults were removed: ~13.5 MB of
+  tracked sprites and every stale frame directory is gone.
+- `npm run assets:verify` compares the guardian AI frames against raw renders: IoU 1.000
+  with the 1 px outline tolerance and mean neighbour-yaw palette drift under 7 (threshold
+  is mean ≤ 12).
 - `tests/comfy-cli.test.ts` runs the real CLI against a mock ComfyUI HTTP server and
   verifies both uploads, the queued graph (seed 1337, SaveImage prefix), history polling,
   download, silhouette masking, and 96×96 output.
 - MCP smoke test: `initialize`, `tools/list`, and a dry-run `generate_character_atlas`
   call return valid JSON-RPC with only stdout framing.
 
-Browser verification (2026-11-11, headless Chrome over CDP, `http://127.0.0.1:5199/?screenshot`):
+Browser verification (2026-11-11, headless Chrome over CDP):
 
-- Three atlases load: guardian / scout / brute, each 16 directions × 4 pitches × 384
-  frames (1536×2304).
+- One atlas loads: guardian, 16 directions × 4 pitches × 1,216 frames (1536×7296), with
+  no missing state frames and no retired atlas fetched.
 - Movement, strafing, mouse yaw, and wall collision match screen direction.
 - Jetpack lifts to 4.85 m and burns fuel, lands and refuels, holds an 18 m ceiling; pitch
   clamps at -63° on the ground and unlocks past it airborne.
-- Front/back yaw selection verified at yaw 0 / 8 for all three chassis.
+- Front/back yaw selection and the 8 camera sectors verified on the guardian.
 - Aerial views show a solid courtyard with wall tops, straight floor grid, visible actors,
-  and sky only outside the map boundary.
+  and sky only outside the map boundary. FOV is fixed at 70° from floor to ceiling.
 - Airborne wall faces stay opaque: 384 columns / 35,120 wall pixels at altitude.
 - Pressed against a wall the view stays solid (384 columns / 92,160 pixels) and survives a
   steep look-down (55,680 pixels), with no fisheye or vanishing geometry.
-- Overhead sprites keep a readable silhouette (6×6 px, 26 opaque px), stay centred, and an
-  actor near the map edge remains in view.
-- The player lands on a wall top at 1.40 m (`support 1.40`, grounded) and drops to 0 when
-  stepping off.
-- Walking north from the courtyard floor climbs the two 0.2 steps onto the 0.4 platform
-  (`support 0.40`, grounded); a 0.6 crate blocks walking but can be landed on.
-- Per-cell tops render from the ground and from altitude, and the crate occludes 1,706
-  opaque scholar pixels behind it while leaving the upper body visible.
-- Screenshots: `docs/screenshots/playtest/01-…26-…`; machine-readable results in
+- Overhead sprites keep a readable silhouette and scale: the top pitch billboard is
+  0.78 m through `pitchWorldScale`, so actors do not balloon as the camera rises.
+- The first-person viewmodel renders over the scene in idle, strike, and recovery poses.
+- The player lands beside and on walls without wedging (x ≥ 1.18 after a capsule-overlap
+  drop) and can walk away freely.
+- Screenshots: `docs/screenshots/playtest/01-…`; machine-readable results in
   `docs/screenshots/playtest/report.json`.
 - No console errors during the checked session.
 - Production deployment: https://raycast-rosy.vercel.app — HTML, atlas JSON/PNG, and
@@ -151,6 +151,37 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
 - Artifacts: `docs/screenshots/states/contact-sheet.png`, 43 PNGs, `report.json`.
 
 ## Session log
+
+### 2026-11-11 — M9 first-person viewmodel and visual stabilization
+
+- Added a Blender-authored first-person viewmodel (`tools/blender/render_viewmodel.py`):
+  both armored gauntlets plus a plasma projector, rendered through a perspective 35 mm
+  camera to 256×208 RGBA. Five poses (idle ×2, wind-up, strike, recovery) are tracked in
+  `public/assets/sprites/player/`; `render-all.sh` renders and copies them with the atlas.
+- The game picks a pose from the attack cooldown (wind-up < 0.09 s, strike < 0.22 s,
+  recovery < 0.36 s), adds walk bob, and composites the overlay after all world sprites.
+  Draw coordinates are rounded to whole pixels because fractional writes to a
+  `Uint8ClampedArray` are silently dropped (the viewmodel was invisible until fixed).
+- Removed the altitude FOV boost. Projection FOV now stays 70° from the floor to the
+  ceiling; the matrix asserts identical `fovDegrees`/`tanHalf` at 0 m and 16 m.
+- Added `pitchWorldScale` to the atlas manifest: the near-overhead row was rendered
+  through a tighter ortho frame, so its billboard shrinks to 0.678× (0.78 m) and
+  crossfades with the high row. Actors now keep a stable apparent size as the camera
+  rises; the matrix checks the top-pitch size.
+- Hardened wall-footprint depenetration with an epsilon gap and per-iteration map-edge
+  clamp. New browser regressions drop the player at x=1.05 (capsule overlapping the
+  wall) and at the corner (1.05, 1.05); both eject to ≥1.18 and can walk/strafe away.
+- Retired the scout/brute shipping assets and stale sprite directories; the packer,
+  stylizer, verifier, MCP server, and Blender rig now default to guardian. Every actor
+  still renders through the guardian six-state atlas. The state gallery and matrix were
+  collapsed to guardian and their goldens regenerated.
+- Verification: typecheck clean, 57 unit tests, `playtest` 40/40, `playtest:matrix`
+  625/625 across 97 scenarios (stable on a second run), `playtest:states` 42/42 across
+  21 captures, zero console errors. Refreshed `gameplay.png`/`courtyard.png` with
+  guardian-only captures that include the viewmodel.
+- Remaining approximation: the four-pitch turntable atlas plus pitch crossfade is not
+  true sprite stacking. It keeps one billboard and stable depth per actor; stacked slices
+  remain a deferred renderer change.
 
 ### 2026-11-11 — M8 performance, README capture, and public-session check
 
@@ -408,39 +439,35 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
 - The playtests verify mechanics, render statistics, and atlas wiring, not art quality;
   the state gallery catches missing states and blank sprites, and the playtester agent
   reviews the captures for silhouette/pose/framing regressions.
-- Guardian's AI attack wind-up has a detached antenna block and talk frame 0 reads dark
-  in the atlas; the raw Blender frames are clean, so these need a frame-level stylizer
-  re-run (no `--frames` filter exists yet).
-- Headless Chrome only emits rAF for a foregrounded target; both harnesses front the page,
+- Guardian's AI attack wind-up had a detached antenna block in an older stylized pass;
+  the current atlas frames are clean in the state-gallery captures.
+- Headless Chrome only emits rAF for a foregrounded target; all harnesses front the page,
   and the matrix does so again before resume. Without it, real-time checks freeze while
   `isPaused()` still returns false.
 - Matrix golden PNGs are replaced after a mismatch is reported, so the first run after a
   visual change flags every affected scenario. Review that run before committing.
-- The committed atlases come from a real SD1.5 + depth-ControlNet pass (mock-tested CLI,
-  0 fallbacks). Guardian's attack/hurt/death/talk frames are complete and packed; scout
-  and brute are still mid-pass, so those two fall back to idle for the new states.
-  AutoSprite/Gamelabs is not implemented.
+- The committed atlas comes from a real SD1.5 + depth-ControlNet pass (mock-tested CLI,
+  0 fallbacks). Guardian's attack/hurt/death/talk frames are complete and packed;
+  scout/brute are retired. AutoSprite/Gamelabs is not implemented.
+- The viewmodel is a flat 256×208 overlay drawn without depth, so it always covers world
+  geometry; muzzle-flash frames can briefly cover the weapon receiver. Its Blender pose
+  frames are committed, but the viewmodel has no per-altitude or per-FOV variants.
 - Sprites are still masked to the Blender silhouette, so AI cannot invent limbs outside
   the render; a reference-image lock for costume details is also not implemented.
 - Audio is synthesized (no music, no assets) and starts only after a user gesture; the
   mute state, sensitivity, and FOV persist in localStorage. Headless playtests never
   create an AudioContext, so sound is reviewed by code and manual play, not the harness.
-- Each six-state atlas is 1536×7296 (~45 MB decoded), so the three characters cost
-  ~134 MB of texture memory. Splitting atlases per state (or per state/pitch) is the
-  obvious optimization if load time or mobile memory becomes a problem.
+- The six-state guardian atlas is 1536×7296 (~45 MB decoded); the five viewmodel frames
+  add ~1 MB. Splitting the atlas per state (or per state/pitch) is the obvious
+  optimization if load time or mobile memory becomes a problem.
 
 ## Immediate next steps
 
-1. Finish the AI pass for attack/hurt/death/talk on scout and brute (guardian is done),
-   repack all three atlases, and run `assets:verify`. Interrupted passes resume with
-   `--resume`. Until all three repack, `npm run playtest` reports 28/29 because the
-   "three 16-way character atlases load" check expects 1,216 frames each;
-   `npm run playtest:matrix` still passes 490/490.
-2. Refresh the matrix goldens/screenshots so combat captures show the new poses, then
-   rerun typecheck, tests, build, playtest, and matrix; commit the asset slice and verify
-   the Vercel deployment.
-3. Owner playtest of the M7 loop; capture feel/balance feedback (damage, range, cooldown)
-   and any M8 audio/settings feedback.
-4. M8: profiling, the README capture, and the public-session console check are done; no
-   renderer change was warranted (numbers in [ARCHITECTURE.md](ARCHITECTURE.md#performance-notes)).
-5. Optional: AutoSprite/Gamelabs adapter behind the same CLI/workflow boundary.
+1. Owner playtest of the M9 viewmodel and M7 loop; capture feel feedback (weapon swing,
+   muzzle flash size, damage/range/cooldown) and any wall/scale regressions.
+2. If the viewmodel needs another pass, refine `tools/blender/render_viewmodel.py` poses
+   and re-run `npm run assets:blender`; the game reads whatever poses are in
+   `public/assets/sprites/player/`.
+3. Optional: implement true stacked-slice actor rendering behind a feature flag, keeping
+   the current turntable atlas as the fallback and depth contract.
+4. Optional: AutoSprite/Gamelabs adapter behind the same CLI/workflow boundary.
