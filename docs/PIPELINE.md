@@ -285,13 +285,17 @@ npm run assets:comfy -- guardian \
 
 npm run assets:comfy -- guardian --palette --only idle:0:1:0   # no server needed
 npm run assets:comfy -- guardian --fallback                     # palette on any failure
+npm run assets:comfy -- guardian --only attack,hurt --resume    # only missing outputs
+npm run assets:comfy -- guardian --only attack:0 --resume       # one state frame, all views
 npm run assets:comfy -- --dry-run                               # plan only
 ```
 
 Flags: `--endpoint` (default `http://127.0.0.1:8188`), `--workflow`, `--prompt`,
 `--negative`, `--steps`, `--cfg`, `--denoise`, `--strength`, `--start`, `--end`,
-`--timeout`, `--concurrency`, `--limit`, `--only`, `--out`, `--raw`, `--control`, and
-`--no-outline`. The client uploads each raw/control pair to `/upload/image`, queues the
+`--timeout`, `--concurrency`, `--limit`, `--only`, `--resume`, `--out`, `--raw`,
+`--control`, and `--no-outline`. `--resume` skips frames whose output already exists, so
+an interrupted pass continues where it stopped; `--only` accepts
+`state:frame:pitch:yaw` prefixes, which makes targeted repair of a single pose cheap. The client uploads each raw/control pair to `/upload/image`, queues the
 graph at `/prompt`, polls `/history/<id>`, downloads the result from `/view`, then:
 
 1. Box-downsamples the generated image and the raw render to 96×96 (premultiplied alpha).

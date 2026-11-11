@@ -6,10 +6,11 @@ reproducible pipeline for multi-angle character sprites, based on
 
 **Live demo:** https://raycast-rosy.vercel.app
 
-> **M7 status:** combat, interaction, doors, and transitions are live. Guardian's
-> six-state atlas (idle/walk/attack/hurt/death/talk) is shipped; scout and brute still
-> use the idle/walk atlas and fall back to idle for the new states until their AI
-> passes finish.
+> **Status:** combat, interaction, doors, and transitions are live, and M8 polish has
+> landed procedural audio plus a pause/settings menu (mouse sensitivity, FOV, mute).
+> Guardian's six-state atlas (idle/walk/attack/hurt/death/talk) is shipped; scout and
+> brute still use the idle/walk atlas and fall back to idle for the new states until
+> their AI passes finish.
 
 ![Courtyard demo](docs/screenshots/courtyard.png)
 
@@ -23,11 +24,13 @@ depth ControlNet (deterministic palette stylizer as fallback), and packed into o
 per character. Height and pitch drive frame selection, including a dedicated
 near-overhead row, so looking down from altitude picks the correct view for every actor.
 
-**Status:** playable M7 build. Two levels, combat with hurt/death states, NPC dialogue,
-doors, keycard/medkit/fuel pickups, level transitions, and a 90-scenario deterministic
-playtest matrix. The M6 AI stylization infrastructure (Blender depth/normal controls,
-ComfyUI img2img + ControlNet, silhouette/palette verification, MCP studio server) remains
-the asset path; the attack/hurt/death/talk AI frames and atlas repack are the last M7
+**Status:** playable build with two levels, combat with hurt/death states, NPC dialogue,
+doors, keycard/medkit/fuel pickups, level transitions, synthesized audio, and a
+pause/settings menu. Verification runs a 90-scenario deterministic matrix (581 checks)
+plus a 98-check paused-state gallery capturing every body state. The M6 AI stylization
+infrastructure (Blender depth/normal controls, ComfyUI img2img + ControlNet,
+silhouette/palette verification, MCP studio server) remains the asset path; the
+attack/hurt/death/talk AI frames and atlas repack for scout/brute are the last M7
 deliverable. See the [roadmap](docs/ROADMAP.md), [pipeline](docs/PIPELINE.md), and
 [progress log](docs/PROGRESS.md).
 
@@ -43,6 +46,7 @@ npm run typecheck
 npm run build      # static build in dist/
 npm run playtest   # headless Chrome: input, physics, atlas + screenshot checks
 npm run playtest:matrix  # 90 deterministic state/interaction/combat/level checks
+npm run playtest:states  # paused-state gallery: 98 checks, 43 captures
 ```
 
 ## Controls
@@ -60,9 +64,11 @@ npm run playtest:matrix  # 90 deterministic state/interaction/combat/level check
 | `M` / `Tab` | Toggle minimap |
 | `F3` | Toggle detailed HUD |
 | `R` | Respawn |
-| `Esc` | Release pointer |
+| `Esc` | Release pointer and pause (opens settings) |
 
-Append `?screenshot` to the URL to hide the intro overlay for automated captures.
+The pause panel adjusts mouse sensitivity, field of view, and audio mute; settings
+persist locally. Audio is synthesized with WebAudio and starts on the first click.
+Append `?screenshot` to the URL to hide the overlays for automated captures.
 
 ## Asset pipeline
 
@@ -98,7 +104,7 @@ names (`npm run assets:atlas -- guardian`) and default to guardian, scout, and b
 ## Repository map
 
 ```
-src/engine/      DDA, world/collision, renderer, atlas loader, input, math
+src/engine/      DDA, world/collision, renderer, atlas loader, input, audio, math
 src/content/      courtyard + reactor level definitions, actors, props
 src/game.ts       player physics, jetpack, camera, animation, minimap, HUD
 src/main.ts       asset boot, render loop, pointer lock, debug API
@@ -109,9 +115,9 @@ tools/comfy/      API-format workflow + placeholder validation + HTTP client
 tools/verify/     silhouette IoU and palette-drift metrics/report
 tools/atlas/      atlas packer + manifest generator
 tools/mcp/        stdio MCP server for atlas generation and single-view repair
-tools/playtest/   CDP harness: happy-path run + deterministic state matrix
+tools/playtest/   CDP harness: happy-path run, state matrix, paused-state gallery
 .qoder/agents/    playtester subagent definition
-tests/            Vitest coverage for DDA, math, world, atlas, Comfy workflow, style metrics
+tests/            Vitest coverage for DDA, math, world, atlas, settings, Comfy workflow, style metrics
 docs/             spec, roadmap, progress, architecture, pipeline, handoff, ADRs
 ```
 

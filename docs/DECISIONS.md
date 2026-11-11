@@ -219,3 +219,23 @@ keycard and opened doors do not persist), which is acceptable for a two-level de
 would need a session/inventory layer for a longer campaign. Actors do not collide with the
 player or each other, and strikes ignore walls, keeping combat readable at this scale;
 both would need real work before larger maps.
+
+## ADR-015 — Procedural WebAudio and persisted local settings
+
+**Context:** M8 needs audio and a pause/settings menu without adding binary assets, a
+build step, or state that breaks deterministic playtests. Pointer-lock release already
+provided a natural pause point, but the simulation kept running behind the overlay.
+
+**Decision:** Synthesize every sound in WebAudio (oscillator and filtered-noise
+envelopes) in `src/engine/audio.ts`; create the AudioContext on the first real gesture,
+drop queued events, and let the game emit a small `GameEvent` list that the soundscape
+drains each frame. Pointer-lock release now actually pauses the simulation when not in
+scripted automation, and the pause overlay became a settings panel (sensitivity
+0.4–2.0×, FOV 55–100°, mute). Settings persist in `localStorage` under
+`raycast.settings.v1` and are clamped on load.
+
+**Consequences:** No audio files, no network, and no new dependencies; headless runs stay
+silent because no gesture creates a context. Game logic remains audio-free and
+deterministic, at the cost of a small event-name coupling. LocalStorage may be blocked
+(private browsing) and fails open. Settings apply immediately; FOV also widens the
+minimap wedge and the altitude boost stays a fixed +30°.

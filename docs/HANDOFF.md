@@ -16,8 +16,10 @@ npm run playtest:states  # 98 state checks, 43 paused-state captures
 npm run dev        # http://localhost:5173
 ```
 
-Expected: typecheck clean, 50 tests passing across 7 files, Vite build succeeds, playtest
-29/29, matrix 581/581, state gallery 98/98 with zero console errors. Click the canvas, move with WASD, hold
+Expected: typecheck clean, 52 tests passing across 8 files, Vite build succeeds, playtest
+29/29, matrix 581/581, state gallery 98/98 with zero console errors. Until scout and
+brute repack, playtest reports 28/29 (the atlas-completeness check); that is the only
+expected failure. Click the canvas, move with WASD, hold
 Space to jetpack up to 18 m, and look down to see the top-pitch sprite rows and the
 diorama. Walk up the panel stairs (x=10–13, y=18–21) onto the 0.4 platform, jump the 0.6
 crate at (4.5, 13.5), or land on a wall to perch; walk off to fall back.
@@ -40,7 +42,7 @@ npm run assets:atlas              # commit the regenerated atlases
 npm run assets:comfy -- guardian \
   --checkpoint v1-5-pruned-emaonly.safetensors \
   --controlnet control_v11f1p_sd15_depth.safetensors \
-  --fallback --timeout 600
+  --only attack,hurt,death,talk --resume --fallback --timeout 600
 npm run assets:comfy -- --dry-run # plan/missing-control check, writes nothing
 npm run assets:comfy -- guardian --palette --only idle:0:1:0 --out /tmp/frames
 ```
@@ -68,6 +70,7 @@ window.__raycast.automation.press("KeyW");
 window.__raycast.automation.look(120, 0);
 window.__raycast.automation.state();          // HudState
 window.__raycast.debug();                     // camera, player, actor rects, render stats
+window.__raycast.audioRunning();               // AudioContext is running (after a gesture)
 
 window.__raycast.automation.pause();          // freeze the live frame loop
 window.__raycast.automation.step(0.5);        // fixed-dt ticks while paused, then render
@@ -216,6 +219,11 @@ leave HUD values at `--`.
   hold the idle/walk atlas, so their attack/hurt/death/talk states fall back to idle
   silhouettes (mechanics and timing are already correct).
 - Intro overlay can stick on a cold Vite start if HMR interrupts boot; reload fixes it.
+- Pointer-lock release now pauses the simulation and opens the settings panel. Scripted
+  automation bypasses that path, so matrix timing is unaffected.
+- Audio is fully procedural and needs a user gesture; there is no music, no external
+  audio asset, and no audio assertion in the harness. Settings live in localStorage
+  (`raycast.settings.v1`) and fail open when storage is blocked.
 - No license file yet.
 
 ## Next task: finish scout and brute sprite-state atlases
@@ -239,8 +247,10 @@ from real AI frames. Scout and brute still need their new-state frames.
    passes 490/490. After the repack, rerun `npm run playtest:matrix -- --update-golden`
    so combat/talk captures show the new poses, then playtest/build/typecheck/tests,
    commit the asset slice, and check Vercel.
-4. Then move to M8 polish (audio, pause/settings menu, performance) unless the owner's
-   playtest feedback changes priorities.
+4. M8 audio and pause/settings are shipped. Remaining polish: profile before a
+   performance change, capture the final README gameplay shot, and run a five-minute
+   public-session console check — unless the owner's playtest feedback changes
+   priorities.
 
 If a design choice could go either way, record it in [DECISIONS.md](DECISIONS.md) with the
 tradeoff, then proceed.

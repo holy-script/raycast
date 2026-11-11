@@ -35,8 +35,8 @@ import {
   type PickupSpec,
 } from "./content/levels";
 
-export const FOV = (70 * Math.PI) / 180;
-const HIGH_ALTITUDE_FOV = (100 * Math.PI) / 180;
+const DEFAULT_FOV = (70 * Math.PI) / 180;
+const ALTITUDE_FOV_BOOST = (30 * Math.PI) / 180;
 const EYE_HEIGHT = 0.55;
 const PLAYER_RADIUS = 0.19;
 const WALK_SPEED = 3.0;
@@ -74,6 +74,19 @@ const DEATH_STATE_TIME = 0.67;
 const PITCH_LABELS = ["LOW", "LEVEL", "HIGH", "TOP"];
 
 type ActorState = "idle" | "walk" | "attack" | "hurt" | "death" | "talk";
+
+export type GameEvent =
+  | "strike"
+  | "hit"
+  | "kill"
+  | "hurt"
+  | "death"
+  | "pickup"
+  | "door"
+  | "locked"
+  | "talk"
+  | "redeploy"
+  | "level";
 
 export interface GameAssets {
   atlases: Record<string, SpriteAtlas>;
@@ -204,6 +217,8 @@ export class Game {
   minimapVisible = true;
   hudDetailVisible = true;
   flying = false;
+  sensitivity = 1;
+  fovDegrees = (DEFAULT_FOV * 180) / Math.PI;
 
   private readonly player: Player;
   private actors: Actor[] = [];
@@ -218,6 +233,7 @@ export class Game {
   private time = 0;
   private toastText = "";
   private toastT = 0;
+  private events: GameEvent[] = [];
 
   constructor(renderer: Renderer, assets: GameAssets, canvas: HTMLCanvasElement) {
     this.renderer = renderer;
@@ -276,8 +292,9 @@ export class Game {
     if (!this.input.active) return;
 
     const look = this.input.consumeLook();
-    this.player.yaw = wrapAngle(this.player.yaw + look.x * MOUSE_SENSITIVITY);
-    this.player.pitch -= look.y * MOUSE_SENSITIVITY;
+    const lookRate = MOUSE_SENSITIVITY * this.sensitivity;
+    this.player.yaw = wrapAngle(this.player.yaw + look.x * lookRate);
+    this.player.pitch -= look.y * lookRate;
     this.settlePitch(dt);
 
     const forward =
@@ -567,17 +584,20 @@ export class Game {
     if (this.player.dead) return;
     this.player.health = Math.max(0, this.player.health - amount);
     this.player.hitFlash = DAMAGE_FLASH_TIME;
+    this.emit("hurt");
     if (this.player.health <= 0) {
       this.player.dead = true;
       this.player.deathT = 0;
       this.player.thrusting = false;
       this.setToast("SYSTEMS OFFLINE · redeploying", 3);
+      this.emit("death");
     }
   }
 
   private redeploy(): void {
     this.placeAtSpawn();
     this.setToast(`REDEPLOYED · ${this.level.title}`, 2.4);
+    this.emit("redeploy");
   }
 
   private placeAtSpawn(): void {
@@ -602,6 +622,7 @@ export class Game {
   attack(): boolean {
     if (this.player.dead || this.player.attackCooldown > 0) return false;
     this.player.attackCooldown = PLAYER_ATTACK_COOLDOWN;
+    this.emit("strike");
 
     let target: Actor | null = null;
     let best = Infinity;
@@ -625,9 +646,11 @@ export class Game {
 
     target.hp = Math.max(0, target.hp - PLAYER_ATTACK_DAMAGE);
     target.stateT = 0;
+    this.emit("hit");
     if (target.hp <= 0) {
       target.state = "death";
       this.setToast(`${target.spec.name.toUpperCase()} DOWN`, 1.6);
+      this.emit("kill");
     } else {
       target.state = "hurt";
       const dx = target.x - this.player.x;
@@ -655,6 +678,7 @@ export class Game {
       const line = lines[npc.talkIndex % Math.max(1, lines.length)] ?? "";
       npc.talkIndex += 1;
       this.setToast(`${npc.spec.name.toUpperCase()} · ${line}`, 4);
+      this.emit("talk");
       return "talk";
     }
 
@@ -662,6 +686,7 @@ export class Game {
     if (door) {
       if (door.requires === "keycard" && !this.keycard) {
         this.setToast("SEALED · keycard required", 2);
+        this.emit("locked");
         return "locked";
       }
       this.openDoor(door);
@@ -735,6 +760,7 @@ export class Game {
     this.world.tiles[cell] = 0;
     this.world.heights[cell] = 0;
     this.setToast("DOOR UNLOCKED", 1.8);
+    this.emit("door");
   }
 
   private collectPickups(): void {
@@ -746,6 +772,7 @@ export class Game {
   private collectPickup(pickup: WorldPickup): void {
     if (pickup.taken) return;
     pickup.taken = true;
+    this.emit("pickup");
     if (pickup.kind === "keycard") {
       this.keycard = true;
       this.setToast("KEYCARD ACQUIRED · lift chamber unlocked", 3);
@@ -765,6 +792,7 @@ export class Game {
         EXIT_RADIUS
       ) {
         const index = levelIndexById(exit.target);
+        this.emit("level");
         this.loadLevel(index, `ENTERING ${LEVELS[index].title}`);
         return;
       }
@@ -837,9 +865,22 @@ export class Game {
     );
   }
 
+  setSensitivity(value: number): void {
+    this.sensitivity = clamp(value, 0.4, 2);
+  }
+
+  setFovDegrees(value: number): void {
+    this.fovDegrees = clamp(value, 55, 100);
+  }
+
+  private baseFov(): number {
+    return (this.fovDegrees * Math.PI) / 180;
+  }
+
   private cameraState(): CameraState {
     const altitudeT = clamp((this.player.z - 1) / 10, 0, 1);
-    const fov = FOV + (HIGH_ALTITUDE_FOV - FOV) * altitudeT;
+    const baseFov = this.baseFov();
+    const fov = baseFov + ALTITUDE_FOV_BOOST * altitudeT;
     const tanHalf = Math.tan(fov / 2);
     const dirX = Math.cos(this.player.yaw);
     const dirY = Math.sin(this.player.yaw);
@@ -1183,17 +1224,18 @@ export class Game {
     const px = this.player.x * scale;
     const py = (world.height - this.player.y) * scale;
 
+    const halfFov = this.baseFov() / 2;
     ctx.strokeStyle = "rgba(255, 210, 138, 0.24)";
     ctx.beginPath();
     ctx.moveTo(px, py);
     ctx.lineTo(
-      px + Math.cos(this.player.yaw - FOV / 2) * 26,
-      py + Math.sin(this.player.yaw - FOV / 2) * 26,
+      px + Math.cos(this.player.yaw - halfFov) * 26,
+      py + Math.sin(this.player.yaw - halfFov) * 26,
     );
     ctx.moveTo(px, py);
     ctx.lineTo(
-      px + Math.cos(this.player.yaw + FOV / 2) * 26,
-      py + Math.sin(this.player.yaw + FOV / 2) * 26,
+      px + Math.cos(this.player.yaw + halfFov) * 26,
+      py + Math.sin(this.player.yaw + halfFov) * 26,
     );
     ctx.stroke();
 
@@ -1246,6 +1288,16 @@ export class Game {
 
   isThrusting(): boolean {
     return this.player.thrusting;
+  }
+
+  consumeEvents(): GameEvent[] {
+    const events = this.events;
+    this.events = [];
+    return events;
+  }
+
+  private emit(event: GameEvent): void {
+    if (this.events.length < 32) this.events.push(event);
   }
 
   get damageFlash(): number {

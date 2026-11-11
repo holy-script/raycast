@@ -4,12 +4,12 @@ Milestones are ordered. A milestone is complete only when every acceptance crite
 is checked and the verification command passes. Update this file and
 [PROGRESS.md](PROGRESS.md) whenever a milestone starts or finishes.
 
-Current position: **M7 gameplay complete — sprite-state atlas pending.** Combat,
+Current position: **M7 sprite-state atlas pass running; M8 polish in progress.** Combat,
 interaction, doors/pickups, level transitions, and the reactor map are playable and
-covered by 581 deterministic matrix checks. The Blender rig, atlas packer, and engine
-timelines already handle attack/hurt/death/talk; the AI pass for those 832 frames per
-character is running, and repacking the atlases is the last M7 asset step. Meanwhile the
-engine falls back to idle for the new states, so the build remains playable.
+covered by 581 deterministic matrix checks plus a 98-check paused-state gallery. Guardian
+ships all six states; scout and brute are mid-pass and fall back to idle for the new
+states. M8 now has procedural audio and a real pause/settings menu (sensitivity, FOV,
+mute) with persisted settings; performance profiling and the final README capture remain.
 
 ## M0 — Foundation
 
@@ -150,14 +150,14 @@ and E interaction. It is covered by the 90-scenario / 581-check matrix. Three ho
 specs (stalker, prowler, marauder) and four prop types are in. The remaining M7
 deliverable is the AI-stylized attack/hurt/death/talk atlas repack described above.
 
-## M8 — Polish and deployment ⬜
+## M8 — Polish and deployment 🚧
 
-- [ ] Audio (footsteps, ambience, UI)
-- [ ] Pause/settings menu, sensitivity and FOV controls
+- [x] Audio (procedural footsteps, ambience, jet, combat, UI; mute)
+- [x] Pause/settings menu, sensitivity and FOV controls, persisted settings
 - [ ] Performance pass (typed-array batching, optional resolution scale)
 - [x] Static hosting on Vercel — https://raycast-rosy.vercel.app
-- [x] GitHub → Vercel auto-deploy on `main` (Git integration connected)
+- [x] GitHub → Vercel auto-deploy on `main` (Git integration connected; CI deferred)
 - [ ] Final README with gameplay capture
 
-**Acceptance:** public URL runs the demo; CI deploys on tagged releases; no console
+**Acceptance:** public URL runs the demo; every push to `main` auto-deploys; no console
 errors during a five-minute play session.

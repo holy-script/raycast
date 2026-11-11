@@ -1,7 +1,9 @@
 import "./style.css";
 import { loadAtlas, loadTexture } from "./engine/atlas";
+import { Soundscape } from "./engine/audio";
 import { Renderer } from "./engine/renderer";
 import { Game, type HudState, type RenderDebug } from "./game";
+import { loadSettings, saveSettings } from "./settings";
 
 const BASE = import.meta.env.BASE_URL;
 const MINIMAP_SIZE = 168;
@@ -17,8 +19,15 @@ async function boot(): Promise<void> {
   const minimap = byId<HTMLCanvasElement>("minimap");
   const loading = byId<HTMLDivElement>("loading");
   const intro = byId<HTMLDivElement>("intro");
-  const resume = byId<HTMLDivElement>("resume");
+  const pausePanel = byId<HTMLDivElement>("pause");
   const enter = byId<HTMLButtonElement>("enter");
+  const pauseResume = byId<HTMLButtonElement>("pause-resume");
+  const sensitivityInput = byId<HTMLInputElement>("set-sensitivity");
+  const sensitivityValue = byId<HTMLOutputElement>("set-sensitivity-value");
+  const fovInput = byId<HTMLInputElement>("set-fov");
+  const fovValue = byId<HTMLOutputElement>("set-fov-value");
+  const muteInput = byId<HTMLInputElement>("set-mute");
+  const muteValue = byId<HTMLOutputElement>("set-mute-value");
   const hud = byId<HTMLDivElement>("hud");
 
   const hudFps = byId<HTMLSpanElement>("hud-fps");
@@ -81,9 +90,46 @@ async function boot(): Promise<void> {
   const renderer = new Renderer(view, 384, 240);
   const game = new Game(renderer, assets, view);
   loading.classList.add("hidden");
+
+  const settings = loadSettings();
+  const audio = new Soundscape(settings.muted);
+  const unlockAudio = (): void => {
+    audio.unlock();
+    // Drop anything queued before the first gesture so it does not replay at once.
+    game.consumeEvents();
+  };
+  const syncSettingsUi = (): void => {
+    game.setSensitivity(settings.sensitivity);
+    game.setFovDegrees(settings.fov);
+    sensitivityInput.value = String(Math.round(settings.sensitivity * 100));
+    sensitivityValue.textContent = `${settings.sensitivity.toFixed(2)}\u00d7`;
+    fovInput.value = String(Math.round(settings.fov));
+    fovValue.textContent = `${Math.round(settings.fov)}\u00b0`;
+    muteInput.checked = !settings.muted;
+    muteValue.textContent = settings.muted ? "OFF" : "ON";
+    audio.setMuted(settings.muted);
+  };
+  sensitivityInput.addEventListener("input", () => {
+    settings.sensitivity = Number(sensitivityInput.value) / 100;
+    syncSettingsUi();
+    saveSettings(settings);
+  });
+  fovInput.addEventListener("input", () => {
+    settings.fov = Number(fovInput.value);
+    syncSettingsUi();
+    saveSettings(settings);
+  });
+  muteInput.addEventListener("change", () => {
+    settings.muted = !muteInput.checked;
+    syncSettingsUi();
+    saveSettings(settings);
+    if (!settings.muted) unlockAudio();
+  });
+  syncSettingsUi();
+
   if (new URLSearchParams(window.location.search).has("screenshot")) {
     intro.classList.add("hidden");
-    resume.classList.add("hidden");
+    pausePanel.classList.add("hidden");
   }
 
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -96,18 +142,28 @@ async function boot(): Promise<void> {
   mapCtx.scale(dpr, dpr);
 
   let started = false;
+  let last = performance.now();
+  let smoothedFps = 60;
+  let hudClock = 0;
+  let paused = false;
+  let frameCount = 0;
+
   const announceLock = (locked: boolean): void => {
     if (locked) {
       started = true;
+      paused = false;
+      last = performance.now();
       intro.classList.add("hidden");
-      resume.classList.add("hidden");
-    } else if (started) {
-      resume.classList.remove("hidden");
+      pausePanel.classList.add("hidden");
+    } else if (started && !game.input.scripted) {
+      paused = true;
+      pausePanel.classList.remove("hidden");
     }
   };
   game.input.onLockChange = announceLock;
 
   const requestLock = (): void => {
+    unlockAudio();
     try {
       view.requestPointerLock();
     } catch (error) {
@@ -115,12 +171,8 @@ async function boot(): Promise<void> {
     }
   };
   enter.addEventListener("click", requestLock);
-
-  let last = performance.now();
-  let smoothedFps = 60;
-  let hudClock = 0;
-  let paused = false;
-  let frameCount = 0;
+  pauseResume.addEventListener("click", requestLock);
+  view.addEventListener("pointerdown", unlockAudio);
 
   const syncFrame = (): void => {
     game.render();
@@ -172,6 +224,7 @@ async function boot(): Promise<void> {
     const dt = Math.min(0.05, elapsed);
 
     if (!paused) game.update(dt);
+    audio.update(paused ? 0 : dt, game);
     syncFrame();
 
     if (elapsed > 0) smoothedFps = smoothedFps * 0.9 + (1 / elapsed) * 0.1;
@@ -191,9 +244,10 @@ async function boot(): Promise<void> {
     setPose: (x, y, z, yaw, pitch) => game.setPose(x, y, z, yaw, pitch),
     setFlying: (value) => game.setFlying(value),
     debug: () => game.getRenderDebug(),
+    audioRunning: () => audio.running,
     dismissIntro: () => {
       intro.classList.add("hidden");
-      resume.classList.add("hidden");
+      pausePanel.classList.add("hidden");
     },
     automation: {
       enable: () => {
@@ -270,6 +324,7 @@ declare global {
       setPose: (x: number, y: number, z: number, yaw: number, pitch: number) => void;
       setFlying: (value: boolean) => void;
       debug: () => RenderDebug;
+      audioRunning: () => boolean;
       dismissIntro: () => void;
       automation: {
         enable: () => void;

@@ -49,7 +49,36 @@
         <canvas id="minimap" aria-label="Minimap"></canvas>
         <div id="prompt" aria-live="polite"></div>
         <div id="toast" aria-live="polite"></div>
-        <div id="resume" class="hidden">PAUSED <span>click to resume</span></div>
+        <div id="pause" class="hidden" role="dialog" aria-label="Paused settings">
+          <div class="pause-card">
+            <p class="eyebrow">SESSION PAUSED</p>
+            <h2>Settings</h2>
+            <label class="setting" for="set-sensitivity">
+              <span>Mouse sensitivity</span>
+              <output id="set-sensitivity-value">1.00&times;</output>
+              <input id="set-sensitivity" type="range" min="40" max="200" step="5" value="100" />
+            </label>
+            <label class="setting" for="set-fov">
+              <span>Field of view</span>
+              <output id="set-fov-value">70&deg;</output>
+              <input id="set-fov" type="range" min="55" max="100" step="1" value="70" />
+            </label>
+            <label class="setting toggle" for="set-mute">
+              <span>Audio</span>
+              <output id="set-mute-value">ON</output>
+              <input id="set-mute" type="checkbox" />
+            </label>
+            <button id="pause-resume" type="button">Resume session</button>
+            <p class="fine pause-hints">
+              <span><kbd>M</kbd> map</span>
+              <span><kbd>F2</kbd> freefly</span>
+              <span><kbd>F3</kbd> HUD</span>
+              <span><kbd>R</kbd> respawn</span>
+              <span><kbd>F</kbd> strike</span>
+              <span><kbd>E</kbd> interact</span>
+            </p>
+          </div>
+        </div>
       </section>
 
       <div id="intro">

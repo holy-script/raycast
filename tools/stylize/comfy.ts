@@ -49,6 +49,7 @@ interface Options {
   timeoutSeconds: number;
   only: string[];
   limit: number;
+  resume: boolean;
   concurrency: number;
   dryRun: boolean;
   palette: boolean;
@@ -92,6 +93,7 @@ function parseArgs(argv: string[]): Options {
     timeoutSeconds: 300,
     only: [],
     limit: 0,
+    resume: false,
     concurrency: 1,
     dryRun: false,
     palette: false,
@@ -128,6 +130,9 @@ function parseArgs(argv: string[]): Options {
         break;
       case "--fallback":
         options.fallback = true;
+        break;
+      case "--resume":
+        options.resume = true;
         break;
       case "--no-outline":
         options.outline = false;
@@ -299,9 +304,13 @@ function listFrames(dirs: CharacterDirs, options: Options): FrameRef[] {
     };
     if (matchesOnly(ref, options.only)) frames.push(ref);
   }
-  const limited = options.limit > 0 ? frames.slice(0, options.limit) : frames;
+  const selected = options.resume
+    ? frames.filter((frame) => !existsSync(join(dirs.out, `${frame.key}.png`)))
+    : frames;
+  const limited = options.limit > 0 ? selected.slice(0, options.limit) : selected;
   if (limited.length === 0) {
-    throw new Error(`No frames matched in ${dirs.raw}`);
+    const suffix = options.resume ? " (all matching outputs already exist)" : "";
+    throw new Error(`No frames matched in ${dirs.raw}${suffix}`);
   }
   return limited;
 }
@@ -439,7 +448,7 @@ function printPlan(
   console.log(`  raw:     ${dirs.raw}`);
   console.log(`  control: ${dirs.control}`);
   console.log(`  out:     ${dirs.out}`);
-  console.log(`  frames:  ${frames.length}`);
+  console.log(`  frames:  ${frames.length}${options.resume ? " (remaining; resume skips existing outputs)" : ""}`);
   console.log(`  workflow: ${options.workflow}`);
   console.log(`  endpoint: ${endpoint}`);
   console.log(`  checkpoint: ${options.checkpoint || "<not set>"}`);

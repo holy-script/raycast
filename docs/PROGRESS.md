@@ -14,7 +14,7 @@ Last updated: **2026-11-11**
 | Heightmap blocks: stairs, platforms, crates | M5 | ✅ Complete |
 | ComfyUI / MCP AI stylization | M6 | ✅ Complete; atlases AI-stylized |
 | Combat, interaction, doors, reactor map | M7 | 🚧 Gameplay complete; guardian six-state atlas shipped, scout/brute atlas pending |
-| Audio, menus, deployment | M8 | 🚧 Live + auto-deploy; audio/menus pending |
+| Audio, menus, deployment | M8 | 🚧 Live + auto-deploy; audio, pause/settings shipped; perf pass + capture pending |
 
 ## Verification snapshot
 
@@ -23,7 +23,7 @@ Run from a clean checkout:
 ```bash
 npm ci
 npm run typecheck   # passes
-npm test            # 7 files, 50 tests pass
+npm test            # 8 files, 52 tests pass
 npm run build       # tsc + vite build
 npm run playtest    # 29/29 browser checks pass
 npm run playtest:matrix  # 90 scenarios, 581/581 checks, 0 console errors
@@ -149,6 +149,29 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
 - Artifacts: `docs/screenshots/states/contact-sheet.png`, 43 PNGs, `report.json`.
 
 ## Session log
+
+### 2026-11-11 — M8 procedural audio and pause/settings menu
+
+- Added `src/engine/audio.ts`: a dependency-free WebAudio soundscape (ambience drone,
+  footsteps with walk/sprint cadence, jet noise loop, strike/hit/kill/hurt/death,
+  pickup/door/locked/talk/redeploy/level cues, mute). The game emits a small
+  `GameEvent` queue that the soundscape drains each frame; audio stays out of game logic
+  and headless runs stay silent because no gesture creates a context.
+- Replaced the passive pause hint with a real pause/settings panel: mouse sensitivity
+  (0.4–2.0×), FOV (55–100°), and audio mute. Settings persist in localStorage, clamp on
+  load, and apply live; the minimap wedge follows the FOV.
+- Pointer-lock release now actually freezes the simulation (previously actors kept
+  animating behind the overlay); scripted automation is exempt so matrix timing is
+  unchanged.
+- Added `--resume` to `assets:comfy`: it skips frames whose output exists, so the
+  interrupted 1,519-frame scout/brute pass continues instead of restarting. Combined with
+  `--only state:frame:pitch:yaw`, a single pose can be regenerated for repair.
+- Added `tests/settings.test.ts` (2 tests) and the `audioRunning()` debug hook. Verified
+  in the browser: the panel renders, sliders update labels and persisted JSON, FOV 55 vs
+  100 visibly changes the corridor and minimap wedge, and a trusted click brings the
+  AudioContext to `running`.
+- `playtest` 28/29 (expected atlas check), `playtest:matrix` 581/581, state gallery
+  98/98, typecheck/tests/build clean.
 
 ### 2026-11-11 — State-gallery playtest harness
 
@@ -379,6 +402,9 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
   AutoSprite/Gamelabs is not implemented.
 - Sprites are still masked to the Blender silhouette, so AI cannot invent limbs outside
   the render; a reference-image lock for costume details is also not implemented.
+- Audio is synthesized (no music, no assets) and starts only after a user gesture; the
+  mute state, sensitivity, and FOV persist in localStorage. Headless playtests never
+  create an AudioContext, so sound is reviewed by code and manual play, not the harness.
 - Each six-state atlas is 1536×7296 (~45 MB decoded), so the three characters cost
   ~134 MB of texture memory. Splitting atlases per state (or per state/pitch) is the
   obvious optimization if load time or mobile memory becomes a problem.
@@ -395,5 +421,7 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
    the Vercel deployment.
 3. Owner playtest of the M7 loop; capture feel/balance feedback (damage, range, cooldown)
    as the input for M8.
-4. M8 polish: audio, pause/settings menu, performance pass, final README capture.
+4. M8 polish remaining: profile the renderer before changing it (the current 384×240
+   buffer holds 120 FPS), then the final README gameplay capture and a five-minute
+   public-session console check. Audio and the pause/settings menu are shipped.
 5. Optional: AutoSprite/Gamelabs adapter behind the same CLI/workflow boundary.

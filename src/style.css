@@ -335,35 +335,102 @@ body {
   pointer-events: none;
 }
 
-#resume {
+#pause {
   position: absolute;
-  left: 50%;
-  bottom: 18px;
-  transform: translateX(-50%);
-  padding: 8px 16px;
-  background: rgba(6, 8, 14, 0.85);
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: radial-gradient(ellipse at 50% 45%, rgba(8, 11, 18, 0.72), rgba(4, 5, 9, 0.88));
+  backdrop-filter: blur(2px);
+  z-index: 6;
+}
+
+.pause-card {
+  width: min(390px, 92%);
+  padding: 22px 24px 18px;
+  background: linear-gradient(180deg, rgba(14, 18, 27, 0.97), rgba(8, 10, 16, 0.97));
   border: 1px solid var(--line-bright);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6);
+}
+
+.pause-card h2 {
+  margin: 4px 0 18px;
+  font-size: 20px;
+  letter-spacing: 0.06em;
   color: var(--amber);
+}
+
+.setting {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 12px;
+  align-items: baseline;
+  margin-bottom: 14px;
   font-size: 10px;
-  letter-spacing: 0.22em;
-  pointer-events: none;
-  animation: pulse 2.4s ease-in-out infinite;
-}
-
-#resume span {
+  letter-spacing: 0.16em;
   color: var(--muted);
-  margin-left: 10px;
-  letter-spacing: 0.1em;
 }
 
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 0.65;
-  }
-  50% {
-    opacity: 1;
-  }
+.setting output {
+  color: var(--cyan);
+}
+
+.setting input[type="range"] {
+  grid-column: 1 / -1;
+  width: 100%;
+  accent-color: var(--amber);
+  cursor: pointer;
+}
+
+.setting.toggle {
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+}
+
+.setting.toggle input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--amber);
+  cursor: pointer;
+}
+
+#pause-resume {
+  width: 100%;
+  margin-top: 4px;
+  padding: 10px 14px;
+  background: rgba(226, 176, 119, 0.12);
+  border: 1px solid var(--amber);
+  color: var(--amber);
+  font: inherit;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+#pause-resume:hover {
+  background: rgba(226, 176, 119, 0.22);
+}
+
+.pause-card .fine {
+  margin: 14px 0 0;
+  font-size: 9px;
+  line-height: 1.6;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.pause-hints {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 12px;
+}
+
+.pause-hints span {
+  white-space: nowrap;
 }
 
 #intro {
@@ -386,7 +453,7 @@ body {
 }
 
 #intro.hidden,
-#resume.hidden,
+#pause.hidden,
 #loading.hidden {
   display: none;
 }
