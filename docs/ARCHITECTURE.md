@@ -30,6 +30,11 @@ solid diorama from jetpack altitude and the player can land on a wall to look do
 | `src/game.ts` | Player physics, jetpack, camera state, actor behavior, sprite selection, HUD |
 | `src/content/` | ASCII map, spawn, actor specs (sprite id, behavior, tint, scale) |
 | `src/main.ts` | Asset boot, render loop, DOM/HUD wiring, debug API |
+| `tools/blender/` | Headless turntable: raw RGBA, depth, and normal passes |
+| `tools/stylize/` | Palette stylizer, shared premultiplied downsample, ComfyUI CLI |
+| `tools/comfy/` | API-format workflow, placeholder filling/validation, HTTP client |
+| `tools/verify/` | Silhouette IoU and neighbour-yaw palette-drift report |
+| `tools/mcp/` | Dependency-free stdio MCP server for atlas generation/repair |
 | `tools/playtest/` | CDP browser harness, screenshots, JSON report |
 
 ## Camera
@@ -246,6 +251,30 @@ attenuation scales down at altitude so the whole courtyard stays readable.
 `requestAnimationFrame`. `dt` is clamped to 50 ms. HUD values update at ~10 Hz; FPS is
 smoothed with a 90/10 exponential average. The framebuffer is scaled with CSS
 `image-rendering: pixelated`.
+
+## Asset generation and AI stylization
+
+The runtime only consumes `public/assets/sprites/<character>/atlas.{png,json}`; every
+stage before that is offline tooling, so the renderer has no ComfyUI dependency.
+
+1. `tools/blender/render_turntable.py` renders each pose/yaw/pitch cell three times:
+   RGBA colour, normalized depth (3.2–5.0 → white–black), and encoded normals (black
+   background). Controls use the Blender 5.2 compositor node group and few samples.
+2. `tools/stylize/pixel-art.ts` is the deterministic fallback: premultiplied 4× downsample,
+   alpha cutoff, saturation/contrast punch, fixed-palette quantization, 1 px outline.
+3. `tools/stylize/comfy.ts` fills `tools/comfy/workflow_api.json` (img2img + depth
+   ControlNet + fixed seed), uploads raw/control pairs, polls the ComfyUI history, and
+   downloads results. Its `finalizeFrame` downsamples to 96², **takes alpha from the raw
+   mask** (the silhouette authority), optionally adds the outline, and writes the frame.
+   `--palette` and `--fallback` keep the pipeline usable offline.
+4. `tools/atlas/pack.ts` packs frames row-major and emits the manifest; direction/pitch
+   counts come from filenames, so the renderer is unchanged.
+5. `tools/verify/style.ts` checks silhouette IoU (one-pixel tolerance for the outline) and
+   mean colour drift between adjacent yaw views; the report lands in `artifacts/`.
+6. `tools/mcp/studio.ts` wraps steps 3–5 in an MCP stdio server with
+   `generate_character_atlas` and `regenerate_view`; stdout is JSON-RPC only.
+
+The pipeline contract and every flag are documented in [PIPELINE.md](PIPELINE.md).
 
 ## Playtest harness
 

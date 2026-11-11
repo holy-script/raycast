@@ -12,9 +12,13 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "playtest": "tsx tools/playtest/run.ts",
+    "mcp:studio": "tsx tools/mcp/studio.ts",
     "assets:textures": "tsx tools/assets/make-textures.ts",
     "assets:blender": "bash tools/blender/render-all.sh",
     "assets:stylize": "tsx tools/stylize/pixel-art.ts",
+    "assets:comfy": "tsx tools/stylize/comfy.ts",
+    "assets:comfy:dry": "tsx tools/stylize/comfy.ts --dry-run",
+    "assets:verify": "tsx tools/verify/style.ts",
     "assets:atlas": "tsx tools/atlas/pack.ts",
     "assets": "npm run assets:textures && npm run assets:blender && npm run assets:stylize && npm run assets:atlas"
   },

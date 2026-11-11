@@ -101,9 +101,22 @@ def parse_args():
     parser.add_argument("--yaws", type=int, default=16)
     parser.add_argument("--only", default="", help="state:frame:pitch:yaw for a single test render")
     parser.add_argument("--pitches", default="", help="comma-separated pitch indices to render")
+    parser.add_argument(
+        "--no-controls",
+        dest="controls",
+        action="store_false",
+        help="skip the depth/normal control renders",
+    )
+    parser.add_argument(
+        "--control-samples",
+        type=int,
+        default=4,
+        help="Cycles samples for control passes (they need no color detail)",
+    )
     args = parser.parse_args(argv)
     if not args.out:
         args.out = os.path.join("assets-src", "characters", args.character, "raw")
+    args.control = os.path.join(os.path.dirname(args.out), "control")
     return args
 
 
@@ -383,6 +396,13 @@ def setup_render(args):
     scene.view_settings.view_transform = "Standard"
     scene.view_settings.look = "None"
 
+    # ControlNet passes. They are rendered separately from the RGBA frame, so the
+    # raw output stays byte-compatible with earlier atlas runs.
+    view_layer = bpy.context.view_layer
+    view_layer.use_pass_z = True
+    view_layer.use_pass_normal = True
+    scene.render.use_compositing = False
+
     world = bpy.data.worlds.new("proxy_world")
     world.use_nodes = True
     background = world.node_tree.nodes.get("Background")
@@ -427,6 +447,85 @@ def aim_camera(camera, yaw_index, pitch_angle, yaws, radius=4.0, target_z=0.5):
     camera.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
 
 
+def _control_group(scene):
+    """Creates a fresh compositor group feeding one image to the render output."""
+    scene.compositing_node_group = None
+    previous = bpy.data.node_groups.get("RaycastControls")
+    if previous:
+        bpy.data.node_groups.remove(previous)
+    group = bpy.data.node_groups.new("RaycastControls", "CompositorNodeTree")
+    group.interface.new_socket("Image", in_out="OUTPUT", socket_type="NodeSocketColor")
+    render_layers = group.nodes.new("CompositorNodeRLayers")
+    output = group.nodes.new("NodeGroupOutput")
+    scene.compositing_node_group = group
+    scene.render.use_compositing = True
+    return group, render_layers, output
+
+
+def _map_range(group, from_min, from_max, to_min, to_max):
+    node = group.nodes.new("ShaderNodeMapRange")
+    node.clamp = True
+    node.inputs["From Min"].default_value = from_min
+    node.inputs["From Max"].default_value = from_max
+    node.inputs["To Min"].default_value = to_min
+    node.inputs["To Max"].default_value = to_max
+    return node
+
+
+def configure_depth(scene):
+    """Near surfaces are white, far surfaces are black, background is black."""
+    group, render_layers, output = _control_group(scene)
+    depth = _map_range(group, 3.2, 5.0, 1.0, 0.0)
+    group.links.new(render_layers.outputs["Depth"], depth.inputs["Value"])
+    group.links.new(depth.outputs["Result"], output.inputs[0])
+
+
+def configure_normal(scene):
+    """Encodes the camera-space normal as RGB in [0, 1] and masks the background."""
+    group, render_layers, output = _control_group(scene)
+    separate = group.nodes.new("ShaderNodeSeparateXYZ")
+    combine = group.nodes.new("ShaderNodeCombineXYZ")
+    group.links.new(render_layers.outputs["Normal"], separate.inputs["Vector"])
+    for axis in ("X", "Y", "Z"):
+        channel = _map_range(group, -1.0, 1.0, 0.0, 1.0)
+        group.links.new(separate.outputs[axis], channel.inputs["Value"])
+        group.links.new(channel.outputs["Result"], combine.inputs[axis])
+
+    black = group.nodes.new("CompositorNodeRGB")
+    black.outputs["Color"].default_value = (0.0, 0.0, 0.0, 1.0)
+    over = group.nodes.new("CompositorNodeAlphaOver")
+    group.links.new(black.outputs["Color"], over.inputs["Background"])
+    group.links.new(combine.outputs["Vector"], over.inputs["Foreground"])
+    group.links.new(render_layers.outputs["Alpha"], over.inputs["Factor"])
+    group.links.new(over.outputs["Image"], output.inputs[0])
+
+
+def render_control(scene, camera, args, mode, path):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    if mode == "depth":
+        configure_depth(scene)
+    else:
+        configure_normal(scene)
+    scene.cycles.samples = args.control_samples
+    scene.render.image_settings.file_format = "PNG"
+    scene.render.image_settings.color_mode = "BW" if mode == "depth" else "RGB"
+    scene.render.image_settings.color_depth = "8"
+    scene.render.filepath = path
+    scene.view_settings.view_transform = "Raw"
+    bpy.context.view_layer.update()
+    bpy.ops.render.render(write_still=True)
+
+
+def restore_rgba_render(scene, args):
+    scene.render.use_compositing = False
+    scene.render.image_settings.file_format = "PNG"
+    scene.render.image_settings.color_mode = "RGBA"
+    scene.render.image_settings.color_depth = "8"
+    scene.render.image_settings.compression = 60
+    scene.cycles.samples = args.samples
+    scene.view_settings.view_transform = "Standard"
+
+
 def main():
     args = parse_args()
     reset_scene()
@@ -463,9 +562,25 @@ def main():
                     aim_camera(camera, yaw, pitch_angles[pitch], args.yaws)
                     bpy.context.view_layer.update()
                     filename = f"{state_name}_f{frame}_p{pitch}_y{yaw}.png"
+                    restore_rgba_render(bpy.context.scene, args)
                     bpy.context.scene.render.filepath = os.path.join(args.out, filename)
                     bpy.ops.render.render(write_still=True)
                     rendered += 1
+                    if args.controls:
+                        render_control(
+                            bpy.context.scene,
+                            camera,
+                            args,
+                            "depth",
+                            os.path.join(args.control, "depth", filename),
+                        )
+                        render_control(
+                            bpy.context.scene,
+                            camera,
+                            args,
+                            "normal",
+                            os.path.join(args.control, "normal", filename),
+                        )
                     print(f"rendered {filename}", flush=True)
 
     print(f"done: {rendered} frames -> {args.out}", flush=True)

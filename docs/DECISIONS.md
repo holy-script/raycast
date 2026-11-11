@@ -173,3 +173,28 @@ collision path, and low geometry never hides taller geometry behind it. Pits, ov
 doors, and ceilings are not representable; adding them would require the sector model.
 Because `Float32Array` stores heights imprecisely (0.2 becomes 0.20000000298),
 height assertions in tests use `toBeCloseTo`.
+
+## ADR-013 — AI stylization behind the atlas contract, with raw-silhouette masking
+
+**Context:** M6 needs a generative style pass without changing the renderer or atlas
+format. ComfyUI outputs RGB, geometry can drift, and edge alpha is either missing or
+fringed. The palette stylizer must remain available on machines without a GPU server or
+when the server is down.
+
+**Decision:** Keep the stage contract at `384×384 RGBA + depth control → 96×96 RGBA` with
+the same filenames. Render a normalized depth pass (and a normal pass for future use) in
+Blender through the 5.2 compositor node group. Drive an API-format img2img + depth
+ControlNet graph from a wrapper (fixed seed, character-aware prompt, configurable models).
+After generation, box-downsample both the result and the raw render, take alpha from the
+raw mask, then apply the same optional 1 px outline. Add `--palette`/`--fallback` and a
+mock-server integration test so the pipeline works without ComfyUI. Put the same CLI
+behind a dependency-free stdio MCP server. Verify IoU with a one-pixel outline tolerance
+and measure palette drift against adjacent yaw views.
+
+**Consequences:** The renderer and packer stay untouched, AI output cannot exceed the
+Blender silhouette, and background fringing is eliminated. Masking means the pass cannot
+invent new geometry outside the render; new costume details only affect colour inside the
+silhouette. Palette drift is measured for view-to-view consistency, not fidelity to the
+raw colours, so a deliberate global restyle is allowed. A real ComfyUI generation still
+needs a checkpoint and ControlNet supplied by the operator; the repo only guarantees the
+HTTP flow and the fallback. `artifacts/style-report.json` is the tuning input.

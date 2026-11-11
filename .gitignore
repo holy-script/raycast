@@ -6,10 +6,14 @@ coverage/
 
 # Blender raw turntable output is reproducible from tools/blender/render-all.sh
 assets-src/characters/*/raw/
+assets-src/characters/*/control/
 assets-src/character/raw/
 
 # Generated intermediate stylized frames; the packed atlases are committed
 public/assets/sprites/*/frames/
+
+# Local style verification reports
+artifacts/
 
 # Root-level reference PDFs; the spec is archived in docs/spec/
 /*.pdf

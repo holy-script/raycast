@@ -1,5 +1,6 @@
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { PNG } from "pngjs";
 
 const SCALE = 4;
@@ -100,7 +101,7 @@ function nearestColor(r: number, g: number, b: number): [number, number, number]
   return best;
 }
 
-function stylize(raw: PNG): PNG {
+export function stylize(raw: PNG): PNG {
   const width = Math.floor(raw.width / SCALE);
   const height = Math.floor(raw.height / SCALE);
   const out = new PNG({ width, height });
@@ -169,7 +170,7 @@ function stylize(raw: PNG): PNG {
   return out;
 }
 
-function stylizeCharacter(dirs: CharacterDirs): number {
+export function stylizeCharacter(dirs: CharacterDirs): number {
   mkdirSync(dirs.out, { recursive: true });
   const files = readdirSync(dirs.raw).filter((file) => file.endsWith(".png"));
   if (files.length === 0) {
@@ -195,4 +196,6 @@ function main(): void {
   console.log(`stylized ${total} frames across ${names.length} character(s)`);
 }
 
-main();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main();
+}

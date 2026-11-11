@@ -4,10 +4,12 @@ Milestones are ordered. A milestone is complete only when every acceptance crite
 is checked and the verification command passes. Update this file and
 [PROGRESS.md](PROGRESS.md) whenever a milestone starts or finishes.
 
-Current position: **M5 complete — M6 next.** Jetpack flight, aerial camera, the browser
-playtest harness, 16-way sprites, and three character chassis landed early from M7. The
-world now has per-cell surface heights: walkable stairs, a 0.4 platform, and a 0.6 crate
-with correct occlusion.
+Current position: **M6 complete — M7 next.** The asset pipeline can now export Blender
+depth/normal control passes, stylize through a ComfyUI img2img + ControlNet graph (with a
+deterministic palette fallback), verify silhouette/palette consistency, and drive the
+whole flow from an MCP studio server. Jetpack flight, aerial camera, the browser playtest
+harness, 16-way sprites, three character chassis, and heightmap blocks landed earlier.
+Next: playtest feedback and the M7 combat/interaction loop.
 
 ## M0 — Foundation
 
@@ -102,19 +104,27 @@ behind a waist-high crate is correctly partially occluded; no regression in FPS.
 Deferred: full floor/ceiling sectors (pits, overhangs, ceilings) remain out of scope; the
 heightmap-block model is sufficient for this game and the second-map work in M7.
 
-## M6 — AI stylization and MCP integration 🚧
+## M6 — AI stylization and MCP integration ✅
 
 Goal: swap the palette stylizer for a generative pass while keeping the atlas contract.
 
-- [ ] Export depth/normal control images alongside each raw render
-- [ ] ComfyUI workflow (img2img + ControlNet depth/normal) for consistent characters
-- [ ] CLI wrapper: raw RGBA → stylized RGBA with fixed seed/style preset
-- [ ] MCP server exposing `generate_character_atlas` and `regenerate_view`
-- [ ] Style consistency checks (silhouette IoU, palette drift) in CI or a report
-- [ ] Optional AutoSprite/Gamelabs Studio adapter behind the same interface
+- [x] Export depth/normal control images alongside each raw render
+- [x] ComfyUI workflow (img2img + ControlNet depth) for consistent characters
+- [x] CLI wrapper: raw RGBA → stylized RGBA with fixed seed/style preset
+- [x] MCP server exposing `generate_character_atlas` and `regenerate_view`
+- [x] Style consistency checks (silhouette IoU, palette drift) in a report
+- [ ] Optional AutoSprite/Gamelabs Studio adapter behind the same interface — deferred;
+  the ComfyUI workflow/CLI boundary is the adapter point
 
 **Acceptance:** one command regenerates a stylized per-character atlas (384 frames); the
 renderer needs no code changes; costume edits remain consistent across all view/pitch cells.
+
+Status: `npm run assets:comfy` drives all 384 frames through `/upload/image`, `/prompt`,
+`/history`, and `/view`, masks each result to the raw silhouette, downsamples to 96², and
+the existing packer runs unchanged. `--palette` and `--fallback` keep the pipeline usable
+without a server. `npm run assets:verify` reports IoU and neighbour-yaw palette drift.
+The mock-server integration test covers the HTTP flow; a real ComfyUI generation is still
+pending because no server/checkpoint/ControlNet is bundled in the repo.
 
 ## M7 — Content and gameplay 🚧
 

@@ -14,11 +14,32 @@ npm run playtest   # headless Chrome, 29 checks + screenshots
 npm run dev        # http://localhost:5173
 ```
 
-Expected: typecheck clean, 32 tests passing across 4 files, Vite build succeeds, playtest
+Expected: typecheck clean, 43 tests passing across 6 files, Vite build succeeds, playtest
 29/29. Click the canvas, move with WASD, hold Space to jetpack up to 18 m, and look down
 to see the top-pitch sprite rows and the diorama. Walk up the panel stairs (x=10–13,
 y=18–21) onto the 0.4 platform, jump the 0.6 crate at (4.5, 13.5), or land on a wall to
 perch; walk off to fall back.
+
+Asset pipeline after a fresh clone (raw renders are gitignored):
+
+```bash
+BLENDER_BIN=/Applications/Blender.app/Contents/MacOS/Blender npm run assets:blender
+npm run assets:stylize            # palette baseline
+npm run assets:verify             # IoU + palette drift report
+npm run assets:atlas              # commit the regenerated atlases
+
+# AI pass, once ComfyUI is running with a checkpoint and depth ControlNet:
+npm run assets:comfy -- guardian --checkpoint sd15.safetensors \
+  --controlnet control_v11f1p_sd15_depth.pth --style "SNES RPG, muted palette"
+npm run assets:comfy -- --dry-run # plan/missing-control check, writes nothing
+npm run assets:comfy -- guardian --palette --only idle:0:1:0 --out /tmp/frames
+```
+
+`assets:blender` renders raw + depth + normal passes (pass `--no-controls` to skip the
+latter). `assets:comfy` falls back to the palette stylizer with `--fallback`; without a
+server use `--palette` or `--fallback`. The MCP server (`npm run mcp:studio`) exposes
+`generate_character_atlas` and `regenerate_view` over stdio; see
+[PIPELINE.md](PIPELINE.md#mcp-studio-server-toolsmcpstudiots) for the client config.
 
 ## Debug API
 
@@ -89,8 +110,17 @@ leave HUD values at `--`.
   atlases remain renderable.
 - **Per-actor atlas:** `ActorSpec.sprite` selects the atlas; frame size and direction count
   come from that atlas's manifest, not global constants.
-- **Raw assets are disposable:** `assets-src/characters/*/raw/` and stylized frames are
-  reproducible. The committed atlases are the source of truth for the running game.
+- **Raw assets are disposable:** `assets-src/characters/*/raw/`, `control/`, and stylized
+  frames are reproducible. The committed atlases are the source of truth for the running
+  game.
+- **AI frame masking:** the ComfyUI wrapper cuts generated art with the raw render's alpha
+  mask before writing a frame. Do not replace this with luminance keying or the model's
+  background; black/white fringes and silhouette growth return.
+- **Style verification tolerance:** the default IoU dilates the raw mask by one pixel
+  because the mandated outline lives outside the silhouette. `--tolerance 0` is the strict
+  comparison; a mean palette-drift threshold of 12 matches the palette baseline.
+- **MCP framing:** `tools/mcp/studio.ts` must write only JSON-RPC lines to stdout; logs
+  belong on stderr. Tool calls spawn `tsx` with an argv array, never a shell string.
 
 ## Conventions
 
@@ -133,21 +163,22 @@ leave HUD values at `--`.
 - Intro overlay can stick on a cold Vite start if HMR interrupts boot; reload fixes it.
 - No license file yet.
 
-## Next task: M6 AI stylization pipeline
+## Next task: playtest feedback, then M7 gameplay
 
-M5 is complete. The runtime pipeline is still the deterministic Blender render plus palette
-stylizer; there is no ComfyUI dependency yet.
+M6 is complete: Blender controls, the ComfyUI workflow/CLI, style verification, and the
+MCP studio server are in place. The owner is playtesting the current build next; treat
+their bug/feel report as the first input before starting new content.
 
-Recommended order:
+After that, resume M7:
 
-1. Export depth and normal control images alongside each raw render in the Blender pass.
-2. Build a ComfyUI img2img + ControlNet workflow, driven by a fixed seed/style preset, and
-   a CLI wrapper that consumes raw RGBA + control images and emits stylized RGBA.
-3. Keep the atlas contract unchanged (384 frames per character, same filenames/manifest) so
-   the renderer needs no changes.
-4. Add consistency checks (silhouette IoU against the raw render, palette drift) and an
-   optional MCP server exposing `generate_character_atlas` / `regenerate_view`.
-5. Then resume M7: attack/hurt/death states, a simple combat loop, and a second map.
+1. Add attack/hurt/death/talk states to the Blender timeline, state constants, atlas
+   manifests, and frame selection.
+2. Add actor interaction (use/talk) and a simple combat loop with damage, hit feedback,
+   and enemy removal.
+3. Add doors, pickups, and a level transition.
+4. Add a second map that exercises the heightmap sectors and vertical camera.
+5. When ComfyUI + models are available, run a real `assets:comfy` pass, inspect
+   `artifacts/style-report.json`, and tune the drift threshold/style preset.
 
 If a design choice could go either way, record it in [DECISIONS.md](DECISIONS.md) with the
 tradeoff, then proceed.

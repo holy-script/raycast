@@ -12,7 +12,7 @@ Last updated: **2026-11-11**
 | 16-way × 4-pitch billboard sprites | M3 | ✅ Complete |
 | Blender → stylize → atlas, 3 chassis | M4 | ✅ Complete |
 | Heightmap blocks: stairs, platforms, crates | M5 | ✅ Complete |
-| ComfyUI / MCP AI stylization | M6 | ⬜ Planned |
+| ComfyUI / MCP AI stylization | M6 | ✅ Complete (real generation needs a server + models) |
 | 16-way and multi-character content | M7 | 🚧 Chassis, directions, behaviors done; combat pending |
 | Audio, menus, deployment | M8 | 🚧 Live + auto-deploy; audio/menus pending |
 
@@ -23,10 +23,24 @@ Run from a clean checkout:
 ```bash
 npm ci
 npm run typecheck   # passes
-npm test            # 4 files, 32 tests pass
+npm test            # 6 files, 43 tests pass
 npm run build       # tsc + vite build
 npm run playtest    # 29/29 browser checks pass
+npm run assets:verify  # 384 frames/character; IoU 1.000, mean drift 4.6–5.1
 ```
+
+Asset-side verification (2026-11-11, after the M6 pipeline landed):
+
+- Blender exports 384 raw + 384 depth + 384 normal PNGs per character (1,152 frames per
+  pass, 3,456 files total); `assets:comfy --dry-run` reports no missing controls.
+- `npm run assets:verify` compares all 1,152 palette frames against raw renders: minimum
+  IoU 1.000 with the 1 px outline tolerance; mean neighbour-yaw palette drift 4.6
+  (guardian), 4.6 (scout), 5.1 (brute); worst single frame 27.5 / 27.7 / 30.1.
+- `tests/comfy-cli.test.ts` runs the real CLI against a mock ComfyUI HTTP server and
+  verifies both uploads, the queued graph (seed 1337, SaveImage prefix), history polling,
+  download, silhouette masking, and 96×96 output.
+- MCP smoke test: `initialize`, `tools/list`, and a dry-run `generate_character_atlas`
+  call return valid JSON-RPC with only stdout framing.
 
 Browser verification (2026-11-11, headless Chrome over CDP, `http://127.0.0.1:5199/?screenshot`):
 
@@ -63,6 +77,30 @@ Browser verification (2026-11-11, headless Chrome over CDP, `http://127.0.0.1:51
   on the crate.
 
 ## Session log
+
+### 2026-11-11 — M6 ComfyUI pipeline, verification, and MCP studio
+
+- Blender now renders two control passes per frame through `scene.compositing_node_group`
+  (the Blender 5.2 replacement for the removed legacy compositor): depth normalised
+  3.2–5.0 and normals encoded from -1..1 to 0..1 with an alpha-cut black background.
+  `--control-samples` keeps them cheap and `--no-controls` skips them. All 1,152 frames
+  were re-rendered with controls (384 raw + 768 control files per character).
+- Added `tools/comfy/workflow_api.json`, an API-format img2img + depth-ControlNet graph,
+  and a dependency-free client (`/upload/image`, `/prompt`, `/history/<id>`, `/view`) with
+  typed history/error handling.
+- Added `tools/stylize/comfy.ts`: per-frame placeholder substitution and validation,
+  upload/poll/download, fixed seed and style preset, 96² premultiplied downsample, raw
+  silhouette masking, optional 1 px outline, `--dry-run`, `--palette`, `--fallback`,
+  `--only`, `--limit`, and per-character directories. `assets:comfy`/`assets:comfy:dry`
+  scripts added; `.gitignore` now excludes `control/` and `artifacts/`.
+- Added `tools/verify/style.ts` + metrics: silhouette IoU with a 1 px outline tolerance,
+  neighbour-yaw palette drift, and `artifacts/style-report.json`. Calibrated against the
+  palette baseline (IoU 1.000, mean drift 4.6–5.1); thresholds 0.98 / 12.
+- Added `tools/mcp/studio.ts`, a no-SDK newline-delimited JSON-RPC stdio server exposing
+  `generate_character_atlas` and `regenerate_view`. It shells out with an argv array,
+  validates character/frame inputs, defaults to palette fallback, and repacks/verifies.
+- Tests: 43 across 6 files, including the mock ComfyUI integration test and workflow
+  validation/metrics; typecheck and build clean.
 
 ### 2026-11-11 — M5 heightmap blocks, stairs, and crate occlusion
 
@@ -165,13 +203,18 @@ Browser verification (2026-11-11, headless Chrome over CDP, `http://127.0.0.1:51
 - The intro overlay can require a reload on a cold Vite dev start if assets race HMR.
 - The playtest verifies mechanics, render statistics, and atlas wiring, not art quality;
   the playtester agent reviews the screenshots for visual regressions.
+- The ComfyUI path is implemented and covered against a mock server, but no real
+  checkpoint/ControlNet generation has run in this repo; start ComfyUI and supply
+  `--checkpoint`/`--controlnet` to validate art quality. AutoSprite/Gamelabs is not
+  implemented.
+- Sprites are still masked to the Blender silhouette, so AI cannot invent limbs outside
+  the render; a reference-image lock for costume details is also not implemented.
 
 ## Immediate next steps
 
-1. Export depth/normal control images alongside each raw Blender render (`M6`).
-2. Add the ComfyUI img2img + ControlNet workflow and a CLI wrapper that preserves the
-   atlas contract (fixed seed/style preset, 384 frames per character).
-3. Add style-consistency checks (silhouette IoU, palette drift) and an optional MCP
-   server exposing `generate_character_atlas` / `regenerate_view`.
-4. Add attack/hurt/death states and a simple interaction or combat loop (`M7`).
-5. Add a second map exercising the vertical layouts (M7).
+1. Playtest the current M6 build and collect bug/feel feedback (owner).
+2. Add attack/hurt/death states and a simple interaction or combat loop (`M7`).
+3. Add a second map exercising the vertical layouts (M7).
+4. Run a real ComfyUI pass once a server and models are available, then tune
+   `--max-drift` from `artifacts/style-report.json`.
+5. Optional: AutoSprite/Gamelabs adapter behind the same CLI/workflow boundary.

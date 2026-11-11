@@ -17,11 +17,14 @@ art, and packed into one atlas per character. Height and pitch drive frame selec
 including a dedicated near-overhead row, so looking down from altitude picks the correct
 view for every actor.
 
-**Status:** playable M5 build with a browser playtest harness. Core renderer, jetpack
+**Status:** playable M6 build with a browser playtest harness. Core renderer, jetpack
 physics, aerial camera, heightmap stairs/platforms, 16-way/4-pitch sprites, five actor
-behaviors, and the full Blender → stylizer → atlas pipeline work end-to-end. The AI
-stylization stage is the next milestone — see the
-[roadmap](docs/ROADMAP.md) and [progress log](docs/PROGRESS.md).
+behaviors, and the full Blender → stylizer → atlas pipeline work end-to-end. M6 adds
+Blender depth/normal control passes, a ComfyUI img2img + ControlNet style stage with a
+deterministic palette fallback, silhouette/palette verification, and an MCP studio server
+for atlas generation. The renderer still consumes the same committed atlases; see the
+[roadmap](docs/ROADMAP.md), [pipeline](docs/PIPELINE.md), and
+[progress log](docs/PROGRESS.md).
 
 ## Quick start
 
@@ -58,22 +61,31 @@ Append `?screenshot` to the URL to hide the intro overlay for automated captures
 The full pipeline regenerates every visual asset:
 
 ```bash
-npm run assets            # textures → Blender renders → stylize → atlas
+npm run assets            # textures → Blender renders → palette stylize → atlas
+
+# AI style pass (ComfyUI running locally with a checkpoint + depth ControlNet):
+npm run assets:comfy -- guardian --checkpoint sd15.safetensors \
+  --controlnet control_v11f1p_sd15_depth.pth --style "SNES RPG, muted palette"
+npm run assets:comfy -- guardian --palette   # deterministic fallback, no server
+npm run assets:verify                        # silhouette IoU + palette drift report
 ```
 
-Individual stages, requirements, frame naming, and atlas schema are documented in
-[docs/PIPELINE.md](docs/PIPELINE.md). Raw Blender renders and intermediate stylized
-frames are reproducible and gitignored; the packed atlas is committed.
+Individual stages, ComfyUI setup, frame naming, and atlas schema are documented in
+[docs/PIPELINE.md](docs/PIPELINE.md). Raw Blender renders, control passes, and intermediate
+stylized frames are reproducible and gitignored; the packed atlas is committed.
 
 | Command | Output |
 | --- | --- |
 | `npm run assets:textures` | `public/assets/textures/{brick,panel,floor}.png` |
-| `npm run assets:blender` | 1,152 RGBA renders in `assets-src/characters/<id>/raw/` |
-| `npm run assets:stylize` | 96×96 pixel-art frames per character |
+| `npm run assets:blender` | 1,152 raw + 2,304 control PNGs in `assets-src/characters/<id>/` |
+| `npm run assets:stylize` | 96×96 palette frames per character |
+| `npm run assets:comfy` | 96×96 AI frames (or `--fallback`/`--palette`) |
+| `npm run assets:verify` | `artifacts/style-report.json` (gitignored) |
 | `npm run assets:atlas` | three `atlas.png` (1536×2304) + `atlas.json` pairs |
+| `npm run mcp:studio` | stdio MCP tools for atlas generation/repair |
 
-Both `assets:stylize` and `assets:atlas` accept character names
-(`npm run assets:atlas -- guardian`) and default to guardian, scout, and brute.
+Both `assets:stylize`, `assets:comfy`, `assets:verify`, and `assets:atlas` accept character
+names (`npm run assets:atlas -- guardian`) and default to guardian, scout, and brute.
 
 ## Repository map
 
@@ -83,12 +95,15 @@ src/content/      demo map + actor placements
 src/game.ts       player physics, jetpack, camera, animation, minimap, HUD
 src/main.ts       asset boot, render loop, pointer lock, debug API
 tools/assets/     deterministic wall/floor texture generator
-tools/blender/    headless turntable renderer for three character chassis
-tools/stylize/    downsample + palette quantizer + outline pass
+tools/blender/    headless turntable: raw, depth, and normal passes for three chassis
+tools/stylize/    palette stylizer, shared downsample, ComfyUI CLI wrapper
+tools/comfy/      API-format workflow + placeholder validation + HTTP client
+tools/verify/     silhouette IoU and palette-drift metrics/report
 tools/atlas/      atlas packer + manifest generator
+tools/mcp/        stdio MCP server for atlas generation and single-view repair
 tools/playtest/   CDP browser harness, screenshots, and JSON report
 .qoder/agents/    playtester subagent definition
-tests/            Vitest coverage for DDA, math, world, atlas
+tests/            Vitest coverage for DDA, math, world, atlas, Comfy workflow, style metrics
 docs/             spec, roadmap, progress, architecture, pipeline, handoff, ADRs
 ```
 

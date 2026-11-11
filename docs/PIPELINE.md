@@ -10,7 +10,7 @@ ASCII map ─────────────┐
 textures ──────────────┤
 3 × atlas.{png,json} ──┘
 
-Blender chassis ─► 1152 RGBA renders ─► 384 frames per character ─► 3 × 1536×2304 atlases
+Blender chassis ─► 1152 RGBA renders + depth/normal controls ─► 384 stylized frames per character ─► 3 × 1536×2304 atlases
 ```
 
 ## Commands
@@ -18,9 +18,12 @@ Blender chassis ─► 1152 RGBA renders ─► 384 frames per character ─► 
 ```bash
 npm run assets:textures   # requires only Node
 npm run assets:blender    # requires Blender on PATH (or BLENDER_BIN=...)
-npm run assets:stylize    # requires raw renders
+npm run assets:stylize    # palette stylizer, requires raw renders
+npm run assets:comfy      # ComfyUI stylizer, requires raw renders + controls
+npm run assets:comfy:dry  # print the resolved ComfyUI plan, no calls/writes
+npm run assets:verify     # silhouette IoU + palette drift report
 npm run assets:atlas      # requires stylized frames
-npm run assets            # all four, in order
+npm run assets            # textures → Blender → palette stylize → atlas
 ```
 
 `npm run assets:blender` passes extra arguments through to the Python script, e.g.:
@@ -29,15 +32,18 @@ npm run assets            # all four, in order
 npm run assets:blender -- --yaws 16 --samples 32
 npm run assets:blender -- --pitches 4
 npm run assets:blender -- --character scout --only idle:0:1:0 --resolution 128
+npm run assets:blender -- --no-controls          # skip depth/normal passes
 BLENDER_BIN=/Applications/Blender.app/Contents/MacOS/Blender npm run assets:blender
 ```
 
-The stylizer and packer default to guardian, scout, and brute; pass names to limit them:
-`npm run assets:stylize -- scout` and `npm run assets:atlas -- scout`.
+The stylizer, verifier, and packer default to guardian, scout, and brute; pass names to
+limit them: `npm run assets:stylize -- scout`, `npm run assets:comfy -- scout`,
+`npm run assets:verify -- scout`, `npm run assets:atlas -- scout`.
 
-Tested with Blender 5.2.2 and Node 24. The full 1152-frame render takes roughly two and a
-half minutes at 384² / 16 samples on Apple Silicon. Raw renders and stylized intermediate
-frames are gitignored; only the packed atlases, manifests, and textures are committed.
+Tested with Blender 5.2.2, Node 24, and ComfyUI's `/prompt` HTTP API. The full 1152-frame
+render takes roughly three minutes at 384² / 16 samples on Apple Silicon, plus two cheap
+control passes per frame. Raw renders, control images, and intermediate frames are
+gitignored; only the packed atlases, manifests, and textures are committed.
 
 ## Stage 1 — textures (`tools/assets/make-textures.ts`)
 
@@ -75,6 +81,19 @@ with different materials and proportions:
 
 Output: `assets-src/characters/<character>/raw/` — 384 files per character (16 yaws ×
 4 pitches × 6 poses), RGBA with a transparent background.
+
+Each frame also gets two control passes rendered through `scene.compositing_node_group`
+(Blender 5.2 removed the legacy compositor API and multilayer EXR):
+
+| Pass | Path | Encoding |
+| --- | --- | --- |
+| Depth | `assets-src/characters/<character>/control/depth/<frame>.png` | grayscale, `3.2–5.0` world units mapped to white→black |
+| Normal | `assets-src/characters/<character>/control/normal/<frame>.png` | `-1..1` per axis mapped to `0..1`, black background via alpha |
+
+Controls render with `--control-samples 4` (default) and the Raw view transform; they are
+cheap because they carry no colour detail. Pass `--no-controls` when only the raw frames
+are needed. The ComfyUI stage consumes the depth pass; the normal pass is available for a
+normal-ControlNet variant.
 
 ### Adding a state
 
@@ -170,28 +189,142 @@ atlas is incomplete.
 high-angle orthographic frames leave empty space below the feet; without it, feet clip
 during pitch.
 
-## Future: AI stylization (M6)
+## Stage 5 — ComfyUI stylization (`tools/stylize/comfy.ts`)
 
-The style stage is intentionally swappable. The contract is:
+The palette stylizer (stage 3) remains the deterministic fallback. The AI stage is
+backend-swappable and keeps the same contract:
 
 ```text
-input:  384×384 RGBA render + depth/normal control image + style preset + fixed seed
-output: 96×96 RGBA stylized frame with the same filename
+input:  384×384 RGBA render + depth control image + style preset + fixed seed
+output: 96×96 RGBA frame with the same filename
 ```
 
-Planned flow:
+### Workflow
 
-1. Blender exports a depth (and optionally normal) pass per frame.
-2. ComfyUI workflow: img2img with ControlNet depth/normal, fixed seed, reference image
-   per character to lock costume details.
-3. A Node or Python wrapper runs the workflow per frame and writes into the frames dir.
-4. The existing atlas packer runs unchanged.
-5. An MCP server exposes `generate_character_atlas(character, style, states)` and
-   `regenerate_view(frame)` so an LLM can drive regeneration from the IDE.
+`tools/comfy/workflow_api.json` is an API-format graph (`/prompt` format, not the UI
+format). The wrapper fills `__PLACEHOLDER__` tokens per frame:
 
-The palette stylizer remains the deterministic fallback and the comparison baseline.
-Validation should include silhouette IoU and palette drift across views, because AI
-stylization tends to drift in color and detail between angles.
+```text
+LoadImage(raw) ─┐
+                ├─► VAEEncode ─► KSampler (fixed seed, dpmpp_2m/karras) ─► VAEDecode ─► SaveImage
+Checkpoint ─────┤                      ▲
+CLIP + prompts ─┘                      │
+LoadImage(depth) ─► ControlNetApplyAdvanced (strength, start/end) ─┘
+```
+
+Placeholders: checkpoint, ControlNet, both image names, positive/negative prompt, seed,
+steps, cfg, denoise, control strength, start/end percent, filename prefix. The workflow
+validator checks node shape, `SaveImage` presence, and that every link points at an
+existing node. The model file names are required; they are passed as
+`--checkpoint` / `--controlnet` or `COMFY_CHECKPOINT` / `COMFY_CONTROLNET`.
+
+### CLI
+
+```bash
+npm run assets:comfy -- guardian \
+  --checkpoint sd15.safetensors \
+  --controlnet control_v11f1p_sd15_depth.pth \
+  --style "SNES RPG, muted palette" \
+  --seed 1337
+
+npm run assets:comfy -- guardian --palette --only idle:0:1:0   # no server needed
+npm run assets:comfy -- guardian --fallback                     # palette on any failure
+npm run assets:comfy -- --dry-run                               # plan only
+```
+
+Flags: `--endpoint` (default `http://127.0.0.1:8188`), `--workflow`, `--prompt`,
+`--negative`, `--steps`, `--cfg`, `--denoise`, `--strength`, `--start`, `--end`,
+`--timeout`, `--concurrency`, `--limit`, `--only`, `--out`, `--raw`, `--control`, and
+`--no-outline`. The client uploads each raw/control pair to `/upload/image`, queues the
+graph at `/prompt`, polls `/history/<id>`, downloads the result from `/view`, then:
+
+1. Box-downsamples the generated image and the raw render to 96×96 (premultiplied alpha).
+2. Uses the **raw alpha mask as the cutout authority**, so the generated sprite cannot
+   grow outside the Blender silhouette or keep a black/white background fringe.
+3. Optionally adds the same 1 px dark outline as the palette stylizer.
+4. Writes the frame, so the atlas packer (stage 4) runs unchanged.
+
+If ComfyUI is unreachable or a frame fails, `--fallback` (also used by the MCP server by
+default) reruns that frame through the palette stylizer. `--palette` skips ComfyUI
+entirely. `npm run assets:comfy:dry` never writes and lists missing controls.
+
+The prompt is character-aware (guardian/scout/brute descriptors), and one fixed seed is
+shared by every view to reduce view-to-view drift. There is no reference-image lock yet;
+the depth pass plus img2img keeps geometry, while the verifier catches colour drift.
+
+## Stage 6 — style verification (`tools/verify/style.ts`)
+
+```bash
+npm run assets:verify                       # all characters
+npm run assets:verify -- scout              # one character
+npm run assets:verify -- --min-iou 0.97 --max-drift 10
+```
+
+Writes `artifacts/style-report.json` (gitignored) and prints a per-character table:
+
+- **Silhouette IoU** compares the stylized alpha mask with the raw render downsampled to
+  96². It allows a 1 px dilation (`--tolerance 1`, default) because the outline pass is
+  intentionally outside the raw silhouette; use `--tolerance 0` for strict masks.
+- **Palette drift** compares each frame's mean opaque colour with the average of its two
+  yaw neighbours. Adjacent views show almost the same surfaces, so this detects a
+  generator changing costume colours between angles without flagging legitimate
+  front/back or top-down differences. Frames are grouped by state, frame index, and pitch,
+  so walk poses and pitch bands are compared only to their peers.
+- Missing raw renders, non-square frames, low IoU, or high mean drift fail the command.
+
+Baseline for the palette stylizer (384 frames × 3 characters): IoU 1.000 at 1 px
+tolerance; mean drift 4.6 (guardian/scout), 5.1 (brute); worst single frame 27.5–30.1.
+Thresholds default to `0.98` IoU and `12` mean drift. A real ComfyUI pass should be
+checked against the same report; tune `--max-drift` if a deliberate style preset changes
+the palette consistently across all views.
+
+## MCP studio server (`tools/mcp/studio.ts`)
+
+`npm run mcp:studio` speaks newline-delimited JSON-RPC 2.0 over stdio with no SDK
+dependency. It exposes:
+
+| Tool | Arguments | Action |
+| --- | --- | --- |
+| `generate_character_atlas` | `character`, `style`, `seed`, `mode` (comfy/palette), `fallback`, `only`, `pack`, `verify`, `dryRun` | Stylize the character, repack the atlas, then verify |
+| `regenerate_view` | `character`, `frame`, `style`, `seed`, `mode`, `fallback`, `pack` | Stylize one cell and repack |
+
+Both tools spawn the CLI directly with an argv array (no shell), restrict characters to
+the three atlas ids, validate frame keys, and default to `--fallback` so a missing
+ComfyUI server still produces frames. Logs go to stderr; stdout carries only JSON-RPC.
+
+Example IDE configuration:
+
+```json
+{
+  "mcpServers": {
+    "raycast-studio": {
+      "command": "npx",
+      "args": ["tsx", "tools/mcp/studio.ts"],
+      "cwd": "/absolute/path/to/raycast",
+      "env": {
+        "COMFY_ENDPOINT": "http://127.0.0.1:8188",
+        "COMFY_CHECKPOINT": "sd15.safetensors",
+        "COMFY_CONTROLNET": "control_v11f1p_sd15_depth.pth"
+      }
+    }
+  }
+}
+```
+
+Smoke test without an IDE:
+
+```bash
+printf '%s\n' \
+  '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' \
+  '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' | npm run mcp:studio
+```
+
+The ComfyUI call path is covered by `tests/comfy-cli.test.ts`, which runs the real CLI
+against a mock HTTP server (upload → prompt → history → view → 96² frame). An actual
+generation has not been run in this repository because no ComfyUI server, checkpoint, or
+ControlNet model is bundled; start ComfyUI and pass the two model names to
+`assets:comfy`. The optional AutoSprite/Gamelabs adapter from the roadmap is not built;
+the CLI/workflow boundary is the integration point.
 
 See the spec, [AI Sprites In Raycasting Games](spec/AI-Sprites-In-Raycasting-Games.pdf),
 for the ComfyUI/MCP discussion and generator references.
