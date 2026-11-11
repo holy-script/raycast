@@ -250,8 +250,9 @@ from real AI frames. Scout and brute still need their new-state frames.
    commit the asset slice, and check Vercel.
 4. M8 is complete: audio and pause/settings are shipped, the renderer is profiled (no
    change needed), the README has a current gameplay capture, and a five-minute
-   production session ran with zero application errors. The only remaining work is the
-   scout/brute atlas repack and the owner's playtest feedback; both can change priorities.
+   production session ran with no application errors (the only entry was a favicon 404,
+   now fixed and re-verified). The only remaining work is the scout/brute atlas repack
+   and the owner's playtest feedback; both can change priorities.
 
 If a design choice could go either way, record it in [DECISIONS.md](DECISIONS.md) with the
 tradeoff, then proceed.

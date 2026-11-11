@@ -8,9 +8,10 @@ Current position: **M7 sprite-state atlas pass running; M8 polish in progress.**
 interaction, doors/pickups, level transitions, and the reactor map are playable and
 covered by 581 deterministic matrix checks plus a 98-check paused-state gallery. Guardian
 ships all six states; scout and brute are mid-pass and fall back to idle for the new
-states. M8 now has procedural audio, a real pause/settings menu (sensitivity, FOV,
-mute) with persisted settings, a profiled render loop, and a current gameplay capture;
-the five-minute public-session console check is the last acceptance item.
+states. M8 is complete: procedural audio, a real pause/settings menu (sensitivity, FOV,
+mute) with persisted settings, a profiled render loop, a current gameplay capture, and a
+clean five-minute production session. The remaining M7 item is the scout/brute AI pass
+and atlas repack.
 
 ## M0 — Foundation
 
@@ -151,7 +152,7 @@ and E interaction. It is covered by the 90-scenario / 581-check matrix. Three ho
 specs (stalker, prowler, marauder) and four prop types are in. The remaining M7
 deliverable is the AI-stylized attack/hurt/death/talk atlas repack described above.
 
-## M8 — Polish and deployment 🚧
+## M8 — Polish and deployment ✅
 
 - [x] Audio (procedural footsteps, ambience, jet, combat, UI; mute)
 - [x] Pause/settings menu, sensitivity and FOV controls, persisted settings

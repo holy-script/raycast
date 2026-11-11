@@ -142,10 +142,12 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
 - Per-state checks assert the actor's resolved animation state, sprite pixel coverage
   (>200 px), and a rendered corpse; missing atlas states fail instead of silently
   falling back. This is how the scout/brute gap is tracked.
-- The playtester agent critiqued the gallery: guardian states are readable and distinct;
-  it found a detached antenna block on the attack wind-up frame and a near-black talk
-  frame 0. The raw Blender frames are clean, so both are stylization artifacts awaiting a
-  targeted frame-level re-run.
+- The playtester agent critiqued the gallery: guardian states are readable and distinct.
+  It flagged a detached antenna block on the attack wind-up; the resolved cell is
+  `attack_f0_p1_y0`, and the raw Blender frame is clean, so this is a stylization
+  artifact queued for `--only attack:0:1:0`. The earlier talk-0 concern did not
+  reproduce: all talk frame-0 cells measure mean luma 47–53 and the talk captures read
+  correctly, so no talk cell is queued.
 - Artifacts: `docs/screenshots/states/contact-sheet.png`, 43 PNGs, `report.json`.
 
 ## Session log
@@ -164,7 +166,8 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
 - Ran a five-minute scripted session against the production URL (52 play cycles, 18,267
   frames, both levels, movement/look/attack/jetpack/interact): steady 60 fps in every
   one-second sample, 0 slow samples, 0 application errors. The only console entry was a
-  `/favicon.ico` 404, fixed with an inline SVG favicon in `index.html`.
+  `/favicon.ico` 404, fixed with an inline SVG favicon in `index.html`; after the Vercel
+  deploy a 45 s rerun logged zero errors (`errors: []`).
 - Added `playtest:states` to the playtester agent's command list.
 
 ### 2026-11-11 — M8 procedural audio and pause/settings menu
