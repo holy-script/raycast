@@ -58,6 +58,9 @@ Browser verification (2026-11-11, headless Chrome over CDP, `http://127.0.0.1:51
   `PLAYTEST_OUT=/tmp/rc-prod-check npm run playtest
   -- --url https://raycast-rosy.vercel.app/` passed 24/24 against the deployed build,
   with all three 16-way / 4-pitch / 384-frame atlases served.
+- Production harness run (2026-11-11, after the M5 heightmap deploy): passed 29/29 against
+  the deployed build, including stairs, per-cell tops, crate block/occlusion, and landing
+  on the crate.
 
 ## Session log
 
