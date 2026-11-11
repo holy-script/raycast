@@ -3,8 +3,8 @@
 The engine is a CPU renderer writing into an `ImageData` framebuffer and blitting it to
 a 384×240 Canvas 2D. All spatial reasoning happens in a top-down 2D plane; verticality is
 added with an eye height, a true rotational pitch camera, and a per-pixel depth buffer.
-Above wall height the renderer also draws wall tops, so the courtyard reads as a solid
-diorama from jetpack altitude.
+Walls are solid `WALL_HEIGHT` blocks with walked-on tops, so the courtyard reads as a
+solid diorama from jetpack altitude and the player can land on a wall to look down.
 
 ## Coordinate system
 
@@ -22,7 +22,7 @@ diorama from jetpack altitude.
 | File | Responsibility |
 | --- | --- |
 | `src/engine/dda.ts` | Grid traversal; returns perpendicular distance, side, tile, `wallU` |
-| `src/engine/world.ts` | ASCII map parsing, solid lookup, circular collision via 9 samples |
+| `src/engine/world.ts` | ASCII map parsing, solid lookup, wall height / support height, height-aware collision |
 | `src/engine/math.ts` | Angle wrap, yaw/pitch quantization, elevation angle |
 | `src/engine/renderer.ts` | Sky, walls, floor, wall tops, sprites, shadows, depth buffer |
 | `src/engine/atlas.ts` | Manifest parsing, frame lookup with fallback, image loading |
@@ -52,18 +52,20 @@ up      = (-dirX * sinP, -dirY * sinP, cosP);
 ray     = forward + right * xCam + up * yCam;
 ```
 
-Walls and sprites use the matching pinhole projection:
+Walls use the matching pinhole projection (sprites share the camera-space transform but
+are drawn screen-aligned):
 
 ```ts
-projectY(cam, forward, dz):
+projectYClipped(cam, forward, dz):
   zCam = forward * cosP + dz * sinP;
   yCam = -forward * sinP + dz * cosP;
-  return H / 2 - focal * yCam / zCam;
+  if (zCam > 0.01) return H / 2 - focal * yCam / zCam;
+  return yCam >= 0 ? -1e6 : 1e6;
 ```
 
 `forward` is the horizontal camera-space distance and `dz` is height relative to the eye.
 This supports looking steeply down without the vertical compression of a shear. Pitch is
-clamped to 1.1 rad (~63°) on the ground and 0.92 rad (~53°) airborne, keeping every ray
+clamped to 1.1 rad (~63°) on the ground and 1.45 rad (~83°) airborne, keeping every ray
 pointing downward.
 
 ## Walls
@@ -71,17 +73,30 @@ pointing downward.
 For each screen column, a DDA ray is cast and the perpendicular distance `d` is used:
 
 ```ts
-yTop    = projectY(cam, d, WALL_HEIGHT - eyeZ);  // WALL_HEIGHT = 1.4
-yBottom = projectY(cam, d, -eyeZ);
+yTop    = projectYClipped(cam, d, WALL_HEIGHT - eyeZ);  // WALL_HEIGHT = 1.4
+yBottom = projectYClipped(cam, d, -eyeZ);
 texX    = floor(wallU * texture.width);
 ```
 
-Vertical texture coordinate advances by `texture.height / (yBottom - yTop)` per pixel.
+`projectYClipped` rotates the point into camera space and handles the near plane:
+`zCam = d·cosP + dz·sinP`. When `zCam` is at or behind `NEAR_PLANE = 0.01` it returns a
+sentinel far off-screen instead of dividing by zero. A face whose top and bottom are both
+behind the near plane is skipped; a face that merely crosses it is still painted, so a
+wall stays solid while the player is pressed against it. There is no altitude skip: wall
+faces render at every eye height, which is what prevents the "transparent walls" look from
+above.
+
+Texture V is not interpolated from the clipped screen span, because that breaks when the
+face crosses the near plane. Instead each scanline inverts the projection exactly:
+
+```ts
+s  = (centerY - (y + 0.5)) / focal;            // camera-space up/forward slope
+dz = d * (sinP + s·cosP) / (cosP - s·sinP);    // height relative to the eye
+t  = (dz + eyeZ) / WALL_HEIGHT;                // 0 at the floor, 1 at the top
+```
+
 Shade falls off with distance (`1 / (1 + d·0.085)`), with vertical faces at 76%, and is
 blended toward the fog color `(16, 18, 30)`.
-
-When the eye is above `WALL_HEIGHT + 0.02`, wall faces are skipped: the camera is looking
-down on the tops, not at the sides.
 
 ## Floor and wall tops
 
@@ -123,14 +138,26 @@ Rendering order: sky → clear depth → walls → floor/wall tops → shadows a
 to near).
 
 A sprite is centered on `(x, y)`, has `worldSize` world units of height, and its frame
-bottom is offset by `anchorZ` (currently `-0.075`).
+bottom is offset by `anchorZ` (currently `-0.075`). Sprites are screen-aligned billboards:
+the atlas already supplies the correct pitch view, so the quad is not tilted in 3D.
 
 ```ts
-distance = (sprite.x - cam.x) * dirX + (sprite.y - cam.y) * dirY;
-yFeet    = projectY(cam, distance, sprite.z + anchorZ - eyeZ);
-yHead    = projectY(cam, distance, sprite.z + anchorZ + worldSize - eyeZ);
-halfW    = focal * worldSize / (2 * distance);
+forward  = dx·dirX + dy·dirY;                       // horizontal depth
+centerZ  = sprite.z + anchorZ + worldSize / 2;
+zCam     = forward·cosP + (centerZ − eyeZ)·sinP;    // camera-space depth
+xCam     = −dx·dirY + dy·dirX;
+yCam     = −forward·sinP + (centerZ − eyeZ)·cosP;
+screenX  = width/2 + focal·xCam/zCam;
+screenY  = centerY − focal·yCam/zCam;
+heightPx = max(2, focal·worldSize/zCam);
+widthPx  = heightPx · frameW/frameH;
 ```
+
+`zCam` stays positive for actors below an overhead camera even while `forward ≈ 0`. The
+old code divided by the horizontal distance, which shrank overhead sprites to a line and
+then flung them off-screen. Sprites at `zCam ≤ 0.12` are rejected. The depth test still
+compares horizontal `forward`, matching walls and floor, which store horizontal forward
+distance.
 
 Per pixel: sample the atlas rect, multiply RGB by the actor tint and distance shade,
 blend by alpha, and update depth for opaque pixels. A soft elliptical shadow is drawn at
@@ -143,9 +170,14 @@ relative   = actor.facing - atan2(camY - actorY, camX - actorX);  // wrapped
 yawIndex   = round(relative / (2π / directions)) mod directions;
 centerZ    = actor.z + anchorZ + worldSize / 2;
 elevation  = atan2(camEyeZ - centerZ, distance);
-pitchIndex = elevation > 0.08 ? 2 : elevation < -0.08 ? 0 : 1;   // high / low / level
+pitchIndex = quantizePitch(elevation, manifest.pitches);
 frameIndex = floor(animTime * state.fps) % state.frames;
 ```
+
+`quantizePitch` uses bands centred between the atlas elevations. With four pitches
+(`[-0.31, 0, 0.49, 1.25]` rad) the thresholds are `0.87 → top`, `0.245 → high`,
+`-0.155 → level`, otherwise low. A three-pitch atlas keeps the earlier ±0.1 bands, so
+manifest-driven atlases of either size work.
 
 `ActorSpec.sprite` selects one of the loaded atlases (`guardian`, `scout`, `brute`).
 `SpriteAtlas.getFrame(state, pitch, yaw, frame)` resolves exact entries, falls back to the
@@ -169,11 +201,20 @@ new renders.
 | Terminal fall | 15 units·s⁻¹ |
 | Max altitude | 18 |
 | Mouse sensitivity | 0.0022 rad·px⁻¹ |
-| Pitch limit | 1.1 rad ground, 0.92 rad airborne |
+| Pitch limit | 1.1 rad ground, 1.45 rad airborne |
 
 Horizontal movement is resolved per axis so sliding along walls works. Collision samples
-nine points on the player circle against solid tiles. Gravity integrates `vz`; the floor
-clamps `z` to 0.
+nine points on the player circle; `canOccupy(..., z)` rejects a destination whose tile
+height is above the player's feet, so walls block at ground level but become walkable once
+the player is above them. The map edge stays blocked at every altitude.
+`supportHeight` samples the cell under the player's centre (a footprint sample would lift
+the player onto any wall they stand next to) and returns `WALL_HEIGHT` when solid.
+
+Gravity integrates `vz`; the player lands on the support height rather than always `z = 0`.
+Jetpack thrust, refuelling, and the grounded flag all key off that support, so the player
+can fly onto a wall top, stand there (`PERCH · WALL 1.4 m` in the HUD), look down at the
+courtyard, and step off to fall back to the floor. Freefly clamps `z` to
+`[support, MAX_ALTITUDE]`.
 
 Holding `Space` burns fuel and thrusts upward from the ground or midair. At `MAX_ALTITUDE`
 the clamp zeroes upward velocity while thrusting, so the player can hover and look down
@@ -193,9 +234,26 @@ smoothed with a 90/10 exponential average. The framebuffer is scaled with CSS
 
 `tools/playtest/run.ts` starts Vite on a fixed port, launches headless Chrome, and drives
 the game through `window.__raycast.automation` (scripted keys and look deltas, no pointer
-lock). It asserts movement, collision, jetpack lift/landing/refuel, altitude ceiling,
+lock). It also reads `window.__raycast.debug()`, which returns the camera, player, actor
+screen rects, and renderer stats (`wallColumns`, `wallPixels`, per-sprite opaque `pixels`
+and width/height of the visible silhouette).
+
+The 24 checks cover movement, collision, jetpack lift/landing/refuel, altitude ceiling,
 pitch clamps, front/back frame indices for all three chassis, atlas dimensions, and page
-errors. Screenshots and a JSON report land in `docs/screenshots/playtest/`.
+errors, plus these regressions:
+
+| Check | Assertion |
+| --- | --- |
+| Wall faces stay opaque while airborne | `wallColumns = 384` and > 8k wall pixels from altitude |
+| Close wall fills the screen | 384 columns and > 85k wall pixels pressed against a wall |
+| Near wall survives a steep look-down | 384 columns and > 20k wall pixels |
+| Overhead sprite keeps a silhouette | visible `contentW ≥ 4`, `contentH ≥ 6`, `pixels ≥ 24` |
+| Overhead sprite stays centred | projected centre within 48 px of screen centre |
+| Overhead edge actor stays in view | actor near the map edge still visible and centred |
+| Player lands on a wall top | `z ≈ 1.4`, `support ≈ 1.4`, `onGround` |
+| Stepping off drops to the floor | `z ≤ 0.001`, `support ≤ 0.001` |
+
+Screenshots and a JSON report land in `docs/screenshots/playtest/`.
 
 ## Performance notes
 

@@ -10,16 +10,18 @@ reproducible pipeline for multi-angle character sprites, based on
 
 The engine renders a 384×240 framebuffer to Canvas 2D: DDA grid traversal, textured
 walls and floors, a true rotational pitch camera, wall-top/roof planes, per-pixel depth,
-and jetpack flight up to 18 m. Three Blender chassis (guardian, scout, brute) are each
-rendered from 16 yaw angles × 3 pitch angles × 6 animation poses (288 frames), stylized
-to 96×96 pixel art, and packed into one atlas per character. Height and pitch drive
-frame selection, so looking down from altitude picks the correct view for every actor.
+and jetpack flight up to 18 m. Walls are solid 1.4-unit blocks you can land on and survey
+the courtyard from. Three Blender chassis (guardian, scout, brute) are each rendered from
+16 yaw angles × 4 pitch angles × 6 animation poses (384 frames), stylized to 96×96 pixel
+art, and packed into one atlas per character. Height and pitch drive frame selection,
+including a dedicated near-overhead row, so looking down from altitude picks the correct
+view for every actor.
 
 **Status:** playable M4+ build with a browser playtest harness. Core renderer, jetpack
-physics, aerial camera, 16-way/3-pitch sprites, and the full Blender → stylizer → atlas
-pipeline work end-to-end. Variable-height sectors and the AI stylization stage are the
-next milestones — see the [roadmap](docs/ROADMAP.md) and
-[progress log](docs/PROGRESS.md).
+physics, aerial camera, wall landing, 16-way/4-pitch sprites, five actor behaviors, and
+the full Blender → stylizer → atlas pipeline work end-to-end. Variable-height sectors and
+the AI stylization stage are the next milestones — see the
+[roadmap](docs/ROADMAP.md) and [progress log](docs/PROGRESS.md).
 
 ## Quick start
 
@@ -66,9 +68,9 @@ frames are reproducible and gitignored; the packed atlas is committed.
 | Command | Output |
 | --- | --- |
 | `npm run assets:textures` | `public/assets/textures/{brick,panel,floor}.png` |
-| `npm run assets:blender` | 864 RGBA renders in `assets-src/characters/<id>/raw/` |
+| `npm run assets:blender` | 1,152 RGBA renders in `assets-src/characters/<id>/raw/` |
 | `npm run assets:stylize` | 96×96 pixel-art frames per character |
-| `npm run assets:atlas` | three `atlas.png` (1536×1728) + `atlas.json` pairs |
+| `npm run assets:atlas` | three `atlas.png` (1536×2304) + `atlas.json` pairs |
 
 Both `assets:stylize` and `assets:atlas` accept character names
 (`npm run assets:atlas -- guardian`) and default to guardian, scout, and brute.

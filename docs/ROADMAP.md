@@ -4,8 +4,9 @@ Milestones are ordered. A milestone is complete only when every acceptance crite
 is checked and the verification command passes. Update this file and
 [PROGRESS.md](PROGRESS.md) whenever a milestone starts or finishes.
 
-Current position: **M4 complete — M5 next.** Jetpack flight, aerial camera, the browser
-playtest harness, 16-way sprites, and three character chassis landed early from M7.
+Current position: **M4 complete — M5 next.** Jetpack flight, aerial camera, wall landing,
+the browser playtest harness, 16-way sprites, and three character chassis landed early
+from M7. Wall-top support (constant height) is in; variable sector heights are M5.
 
 ## M0 — Foundation
 
@@ -44,13 +45,14 @@ playtest harness, 16-way sprites, and three character chassis landed early from 
 
 **Acceptance:** jump and jetpack lift/land/refuel work; mouse pitch reaches ~63° without
 perspective warping; sprites remain grounded at every altitude. Verified 2026-11-11 by
-`npm run playtest` (16/16).
+`npm run playtest` (suite has since grown to 24 checks).
 
 ## M3 — Directional sprites ✅
 
 - [x] Billboard transform into camera space
 - [x] 16-way yaw quantization from `actor.facing − atan2(camera − actor)`
-- [x] 3 pitch buckets (low / level / high) from elevation angle
+- [x] 4 pitch buckets (low / level / high / top) from elevation angle
+- [x] Screen-aligned billboards with camera-space depth (no 1D collapse overhead)
 - [x] Per-pixel sprite depth test + alpha blending
 - [x] Ground shadows and per-actor RGB tint
 - [x] Atlas manifest lookup with pitch/state fallbacks
@@ -58,20 +60,21 @@ perspective warping; sprites remain grounded at every altitude. Verified 2026-11
 - [x] Verified front/back (yaw 0 / 8) selection for guardian, scout, and brute
 
 **Acceptance:** orbiting a stationary actor cycles 16 visually distinct views; raising
-the camera switches to the high-angle row. Verified 2026-11-11.
+the camera switches to the high-angle row, and looking straight down selects the top row
+with a readable silhouette. Verified 2026-11-11.
 
 ## M4 — Blender → atlas asset pipeline ✅
 
 - [x] Headless Blender proxy rig, orthographic turntable camera
 - [x] Three chassis (guardian, scout, brute) with distinct palette and proportions
-- [x] 16 yaw × 3 pitch × idle(2) + walk(4) = 288 renders per character (864 total)
+- [x] 16 yaw × 4 pitch × idle(2) + walk(4) = 384 renders per character (1152 total)
 - [x] Premultiplied 4× downsample to 96×96
 - [x] Saturation/contrast punch, palette quantization, 1 px outline
 - [x] Atlas packer auto-detects direction/pitch counts; emits per-character manifests
 - [x] Engine loads and selects from multiple atlases per actor
 - [x] Pipeline documented and reproducible via `npm run assets`
 
-**Acceptance:** `npm run assets` regenerates three 1536×1728 atlases; the game loads them
+**Acceptance:** `npm run assets` regenerates three 1536×2304 atlases; the game loads them
 without console errors and assigns chassis per actor. Verified 2026-11-11.
 
 ## M5 — Variable-height world 🚧
@@ -79,13 +82,17 @@ without console errors and assigns chassis per actor. Verified 2026-11-11.
 Goal: replace the flat floor with sectors so stairs, ledges, pits and crates have real
 collision and render heights.
 
+Landed early (2026-11-11): walls are walkable `WALL_HEIGHT` blocks with support-height
+landing, z-aware collision, `PERCH` HUD, and step-off falling. That is the constant-height
+half of this milestone; per-cell heights remain.
+
 - [ ] Sector data model (floor height, ceiling height, tile kind)
 - [ ] Step-up/step-down collision and grounded height from sector
 - [ ] Render wall spans relative to sector floor/ceiling
 - [ ] Variable-height risers and connected stairs
-- [ ] Sprites and shadows use the actor's sector floor
+- [x] Sprites and shadows use the actor's ground height
 - [ ] Demo map with a raised platform, stairs, and a waist-high ledge
-- [ ] Tests for height lookup and step limits
+- [x] Tests for height lookup and step limits (constant-height baseline)
 
 **Acceptance:** walk up and down stairs smoothly; stand on a 0.4-unit ledge; a sprite
 behind a waist-high crate is correctly partially occluded; no regression in FPS.
@@ -101,13 +108,14 @@ Goal: swap the palette stylizer for a generative pass while keeping the atlas co
 - [ ] Style consistency checks (silhouette IoU, palette drift) in CI or a report
 - [ ] Optional AutoSprite/Gamelabs Studio adapter behind the same interface
 
-**Acceptance:** one command regenerates a stylized per-character atlas (288 frames); the
+**Acceptance:** one command regenerates a stylized per-character atlas (384 frames); the
 renderer needs no code changes; costume edits remain consistent across all view/pitch cells.
 
 ## M7 — Content and gameplay 🚧
 
 - [x] 16-way direction mode (manifest-driven, engine index-agnostic)
 - [x] Multiple characters from one pipeline with shared rig and per-spec materials
+- [x] Five behaviors (idle, watcher, patrol, chase, hover) and 13 actors
 - [ ] Additional states: attack, hurt, death, talk
 - [ ] Actor interaction (use/talk), simple combat loop
 - [ ] Doors, pickups, level transitions

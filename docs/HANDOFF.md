@@ -10,13 +10,14 @@ npm ci
 npm run typecheck
 npm test
 npm run build
-npm run playtest   # headless Chrome, 16 checks + screenshots
+npm run playtest   # headless Chrome, 24 checks + screenshots
 npm run dev        # http://localhost:5173
 ```
 
-Expected: typecheck clean, 22 tests passing across 4 files, Vite build succeeds, playtest
-16/16. Click the canvas, move with WASD, hold Space to jetpack up to 18 m, and look down
-to see the high-pitch sprite rows and the wall-top diorama.
+Expected: typecheck clean, 27 tests passing across 4 files, Vite build succeeds, playtest
+24/24. Click the canvas, move with WASD, hold Space to jetpack up to 18 m, and look down
+to see the top-pitch sprite rows and the wall-top diorama. Land on a wall to perch; walk
+off to fall back.
 
 ## Debug API
 
@@ -31,11 +32,13 @@ window.__raycast.automation.enable();         // scripted input, no pointer lock
 window.__raycast.automation.press("KeyW");
 window.__raycast.automation.look(120, 0);
 window.__raycast.automation.state();          // HudState
+window.__raycast.debug();                     // camera, player, actor rects, render stats
 ```
 
 Useful for deterministic captures and tests. `game.getHudState()` returns the nearest
 actor's resolved yaw, pitch index, and sprite id, which is how directional selection was
-verified.
+verified. `debug()` exposes `renderer.stats.wallColumns`, `wallPixels`, and per-sprite
+`contentW/contentH/pixels` so the harness can assert on what was actually drawn.
 
 `?screenshot` hides the intro overlay for headless captures. Prefer the harness:
 `npm run playtest` starts Vite, drives Chrome over CDP, writes screenshots plus
@@ -57,12 +60,19 @@ leave HUD values at `--`.
   `(dx·dirY − dy·dirX)`. Flipping either independently mirrors sprites.
 - **Perpendicular distance:** DDA returns perpendicular distance, not Euclidean. All wall
   and sprite scaling assumes it.
-- **Pitch is rotation, not shear:** `projectY` rotates the camera basis. Floor/roof and
-  wall/sprite projections must use the same basis or geometry separates.
+- **Pitch is rotation, not shear:** `projectY` / `projectYClipped` rotate the camera basis.
+  Floor/roof and wall/sprite projections must use the same basis or geometry separates.
+- **Near plane:** walls are clipped with `zCam > 0.01`; never divide by it. A face crossing
+  the plane must still paint, and wall texture V must come from the per-pixel inverse
+  projection, not the clipped span.
 - **Depth metric:** walls, floor, wall tops, and sprites all compare horizontal forward
-  distance. Any new geometry must use the same metric or occlusion breaks.
-- **Roof plane:** when `eyeZ > WALL_HEIGHT`, wall faces are skipped and wall tops are
-  drawn by the floor pass. Keep the `roofT < floorT` ordering and the solid-cell fill.
+  distance. Sprite size and screen position use `zCam` instead, but the occlusion value
+  stays forward. Any new geometry must use the same depth metric or occlusion breaks.
+- **No altitude skip for walls:** wall faces render at every eye height. The floor pass
+  draws wall tops when `eyeZ > WALL_HEIGHT`; keep the `roofT < floorT` ordering and the
+  solid-cell fill.
+- **Sprite billboards:** screen-aligned, sized by `zCam`, never feet/head projected. This
+  is what keeps overhead actors readable; changing it reintroduces the 1D collapse.
 - **Sprite anchor:** frame bottoms sit at `actor.z + frameAnchorZ`; shadows use `actor.z`,
   not the frame bottom.
 - **Outline pass:** read from an immutable alpha mask. Never mutate the output during the
@@ -107,25 +117,29 @@ leave HUD values at `--`.
 
 ## Known constraints
 
-- Floor and walls are single-height. Low-angle sprite frames exist in the atlas but cannot
-  be selected yet because the camera eye is always above an actor's center on flat ground.
+- The floor is flat at `z = 0`; walls are solid, walkable 1.4-unit blocks. Per-cell floor
+  and ceiling heights, stairs, and ledges are still M5.
 - No ceiling geometry; sky is visible above the outer walls from ground level.
 - Wall tops are a constant-height plane; variable wall heights arrive with M5.
-- Actors have no collision with the player or each other; they are presentation-only.
+- Actors have no collision with the player or each other and no combat loop. Chase actors
+  pursue but do not damage; hover actors bob and spin.
 - Intro overlay can stick on a cold Vite start if HMR interrupts boot; reload fixes it.
 - No license file yet.
 
 ## Next task: M5 variable-height sectors
 
+Wall-top support already exists (`supportHeight`, z-aware `canOccupy`, grounded landing),
+so M5 generalizes that path to per-cell heights.
+
 Recommended order:
 
 1. Add `floorHeight(tile)` and `ceilingHeight(tile)` (start with a `heights` array or map
    string annotations). Keep the existing ASCII map valid with default height 0.
-2. Give the player a `groundZ` derived from the cell underfoot; allow step-up ≤ 0.3 and
-   snap `z` when grounded. Gravity still applies when stepping off a ledge.
-3. Render walls with per-cell base/top through `projectY(cam, d, height − eyeZ)`, clamped
-   to the framebuffer. Add riser faces between adjacent sectors and extend the roof pass
-   to per-cell floor/ceiling heights.
+2. Feed that into `supportHeight` and allow step-up ≤ 0.3 with grounded snapping; gravity
+   still applies when stepping off a ledge.
+3. Render walls with per-cell base/top through `projectYClipped(cam, d, height − eyeZ)`,
+   clamped to the framebuffer. Add riser faces between adjacent sectors and extend the
+   roof pass to per-cell floor/ceiling heights.
 4. Use the actor's sector floor for sprite `z`, shadow height, and selection distance.
 5. Add stairs and a raised platform to `src/content/demo-map.ts`, plus a waist-high crate
    to test partial sprite occlusion.

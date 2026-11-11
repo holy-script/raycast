@@ -10,7 +10,7 @@ ASCII map ─────────────┐
 textures ──────────────┤
 3 × atlas.{png,json} ──┘
 
-Blender chassis ─► 864 RGBA renders ─► 288 frames per character ─► 3 × 1536×1728 atlases
+Blender chassis ─► 1152 RGBA renders ─► 384 frames per character ─► 3 × 1536×2304 atlases
 ```
 
 ## Commands
@@ -27,6 +27,7 @@ npm run assets            # all four, in order
 
 ```bash
 npm run assets:blender -- --yaws 16 --samples 32
+npm run assets:blender -- --pitches 4
 npm run assets:blender -- --character scout --only idle:0:1:0 --resolution 128
 BLENDER_BIN=/Applications/Blender.app/Contents/MacOS/Blender npm run assets:blender
 ```
@@ -34,9 +35,9 @@ BLENDER_BIN=/Applications/Blender.app/Contents/MacOS/Blender npm run assets:blen
 The stylizer and packer default to guardian, scout, and brute; pass names to limit them:
 `npm run assets:stylize -- scout` and `npm run assets:atlas -- scout`.
 
-Tested with Blender 5.2.2 and Node 24. The full 864-frame render takes roughly two minutes
-at 384² / 16 samples on Apple Silicon. Raw renders and stylized intermediate frames are
-gitignored; only the packed atlases, manifests, and textures are committed.
+Tested with Blender 5.2.2 and Node 24. The full 1152-frame render takes roughly two and a
+half minutes at 384² / 16 samples on Apple Silicon. Raw renders and stylized intermediate
+frames are gitignored; only the packed atlases, manifests, and textures are committed.
 
 ## Stage 1 — textures (`tools/assets/make-textures.ts`)
 
@@ -64,15 +65,16 @@ with different materials and proportions:
 | `brute` | Dark rust/charcoal, orange visor | Wide (1.3 bulk), large helmet, shoulder plates, no antenna |
 
 - Cycles, 384×384, 16 samples, Standard view transform.
-- Ortho scale 1.15 world units, camera aimed at `(0, 0, 0.5)`.
+- Ortho scale 1.15 world units, camera aimed at `(0, 0, 0.5)`. The near-overhead pitch
+  uses `PITCH_SCALES[3] = 0.78` so the foreshortened top view fills more of the frame.
 - Yaw: camera orbits with `azimuth = yaw / yaws × 2π`, 16 yaws by default.
-- Pitch: camera elevation `z = 0.5 + sin(pitch) × R`, with `PITCH_ANGLES = [-0.31, 0, 0.49]`
-  (low, level, high).
+- Pitch: camera elevation `z = 0.5 + sin(pitch) × R`, with
+  `PITCH_ANGLES = [-0.31, 0, 0.49, 1.25]` (low, level, high, top).
 - States: `idle` (2 frames), `walk` (4 frames, hip/arm swing).
 - Frame filenames: `{state}_f{frame}_p{pitch}_y{yaw}.png`.
 
-Output: `assets-src/characters/<character>/raw/` — 288 files per character, RGBA with a
-transparent background.
+Output: `assets-src/characters/<character>/raw/` — 384 files per character (16 yaws ×
+4 pitches × 6 poses), RGBA with a transparent background.
 
 ### Adding a state
 
@@ -80,6 +82,15 @@ transparent background.
 2. Add `{ name, fps, frames }` to `STATES` in `tools/atlas/pack.ts`.
 3. Update `manifest.states` expectations and the engine's state fallback if needed.
 4. Rerun `npm run assets:blender && npm run assets:stylize && npm run assets:atlas`.
+
+### Adding a pitch
+
+1. Extend `PITCH_ANGLES`, `PITCH_NAMES`, and `PITCH_SCALES` together in
+   `render_turntable.py`; the index must match the atlas row order.
+2. Extend `pitchOrder` in `tools/atlas/pack.ts` and the bands in
+   `quantizePitch` (`src/engine/math.ts`) so each frame covers its elevation range.
+3. Rerun the Blender, stylize, and atlas stages. The packer and engine read the count
+   from the manifest, so no other wiring changes.
 
 ### Adding a character
 
@@ -118,9 +129,10 @@ counts are detected from the frame filenames, so 8-way and 16-way atlases use th
 code.
 
 - Frame size: 96×96.
-- Grid: 16 columns (yaw) × 18 rows (state × frame × pitch) = 1536×1728 per character.
+- Grid: 16 columns (yaw) × 24 rows (state × frame × pitch) = 1536×2304 per character.
 - `frameWorldSize = 1.15`, `frameAnchorZ = -0.075`.
-- Row order: for each state, for each frame, for each pitch (low, level, high), then yaw.
+- Row order: for each state, for each frame, for each pitch (low, level, high, top), then
+  yaw.
 - Output: `public/assets/sprites/<character>/atlas.{png,json}`.
 
 Manifest shape (`atlas.json`):
@@ -135,8 +147,8 @@ Manifest shape (`atlas.json`):
   "frameWorldSize": 1.15,
   "frameAnchorZ": -0.075,
   "directions": 16,
-  "pitches": 3,
-  "pitchOrder": ["low", "level", "high"],
+  "pitches": 4,
+  "pitchOrder": ["low", "level", "high", "top"],
   "states": {
     "idle": { "fps": 2, "frames": 2 },
     "walk": { "fps": 8, "frames": 4 }
@@ -146,6 +158,9 @@ Manifest shape (`atlas.json`):
   ]
 }
 ```
+
+The packer detects direction and pitch counts from filenames, so 3-pitch atlases remain
+valid; the engine reads `pitches` to choose the quantization bands.
 
 Lookup order: exact `(state, pitch, yaw, frame)` → level pitch → `idle/level/yaw/0`.
 Yaw and frame indices wrap, so a smaller fallback atlas still renders if a character

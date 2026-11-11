@@ -102,7 +102,8 @@ overhead ray grazes a top and lands on a farther solid cell.
 **Consequences:** Steep downward pitch and true aerial framing work, at the cost of a
 per-pixel 3D ray in the floor pass and a few extra branches. Pitch must stay short of
 vertical so `rayZ < 0`; the limits enforce that. Any future geometry must use the same
-scene depth metric (horizontal forward distance).
+scene depth metric (horizontal forward distance). The wall-face skip was removed in
+ADR-010; wall tops are still drawn by this plane pass.
 
 ## ADR-009 — Three character atlases at 16 directions
 
@@ -117,4 +118,40 @@ still provide variants within a chassis.
 **Consequences:** 864 Blender frames and roughly 1.7 MB per atlas, but actors are
 unmistakably distinct and 22.5° yaw steps look smooth. The packer detects direction counts
 from filenames, so smaller atlases remain valid. Adding a character is a data + spec
-change, not an engine change.
+change, not an engine change. Superseded in counts by ADR-010 (4 pitches, 1152 frames,
+1536×2304).
+
+## ADR-010 — Camera-space billboards, wall faces at altitude, and a top pitch
+
+**Context:** Flying over actors collapsed them from 2D to 1D and then showed their backs;
+actors also drifted far outside the map as altitude rose. Meanwhile walls vanished when
+the eye rose above them ("transparent" walls) and a wall pressed against the camera
+fisheye-stretched and disappeared.
+
+**Decision:** Project sprite centers into full 3D camera space and draw them as
+screen-aligned quads sized by camera-space depth `zCam`, while keeping horizontal
+`forward` only for occlusion. Render wall faces at every eye height, clip them at
+`zCam = 0.01`, and compute wall texture V per scanline by inverting the pitch projection.
+Add a fourth atlas pitch (top, 1.25 rad) with a tighter 0.78 ortho scale and raise the
+airborne pitch limit to 1.45 rad.
+
+**Consequences:** Overhead actors stay readable and centred, and walls remain solid from
+any altitude or distance. Sprite screen size now depends on the vertical camera angle,
+which is expected for billboards; a true 3D sprite volume would need a different approach.
+The atlas is 33% larger (384 frames, 1536×2304). The playtest asserts wall-column counts
+and sprite silhouette bounds so these defects cannot silently return.
+
+## ADR-011 — Walls as walkable constant-height blocks
+
+**Context:** The aerial view is only useful if the player can land somewhere and inspect
+actors from above. Before sectors exist, walls are the only raised surfaces.
+
+**Decision:** Treat solid cells as `WALL_HEIGHT = 1.4` platforms. Add `tileHeightAt`,
+`supportHeight`, and a z argument to `canOccupy`; land on support height, track grounded
+state, and clamp freefly to `[support, MAX_ALTITUDE]`. Generalize the same path to
+per-cell heights in M5.
+
+**Consequences:** The player can perch on walls and step off to fall, with no new geometry
+format. Collision now depends on the player's feet height, so a wall blocks at ground
+level but not from above. Constant height means all walls are equal; M5 replaces
+`tileHeightAt` with a sector lookup and adds risers/stairs.
