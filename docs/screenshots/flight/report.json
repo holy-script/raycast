@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-12T06:54:25.662Z",
+  "generatedAt": "2026-11-12T07:44:56.934Z",
   "url": "http://127.0.0.1:5202/?screenshot",
-  "durationMs": 6959,
+  "durationMs": 7372,
   "poses": [
     {
       "id": "f01-ground-level",
@@ -166,7 +166,7 @@
       "pitch": -1.2
     }
   ],
-  "fps": 59.39947780678851,
+  "fps": 59.36073059360731,
   "passed": 109,
   "failed": 0,
   "checks": [
@@ -804,7 +804,7 @@
       "scenario": "flight-realtime",
       "name": "flight-realtime-burn canvas renders content",
       "ok": true,
-      "detail": "43 colors, mean luma 29.0"
+      "detail": "45 colors, mean luma 29.0"
     },
     {
       "scenario": "flight-realtime",
@@ -816,7 +816,7 @@
       "scenario": "flight-realtime",
       "name": "a real-time burn climbs without the scripted stepper",
       "ok": true,
-      "detail": "alt 8.14 m, 91 frames"
+      "detail": "alt 8.15 m, 91 frames"
     },
     {
       "scenario": "page",

@@ -58,6 +58,7 @@ import {
   type PickupKind,
   type PickupSpec,
 } from "./content/levels";
+import type { MissionClear } from "./campaign";
 
 const DEFAULT_FOV = (70 * Math.PI) / 180;
 const MAX_FOV_DEGREES = 90;
@@ -125,7 +126,10 @@ export type GameEvent =
   | "locked"
   | "talk"
   | "redeploy"
-  | "level";
+  | "level"
+  | "boss"
+  | "extract"
+  | "victory";
 
 interface Impact {
   x: number;
@@ -200,6 +204,8 @@ export interface HudState {
   vz: number;
   support: number;
   onGround: boolean;
+  /** Interior slab underside over the player; 0 under open sky. */
+  ceiling: number;
   yawDeg: number;
   pitchDeg: number;
   flying: boolean;
@@ -215,6 +221,7 @@ export interface HudState {
   maxHealth: number;
   dead: boolean;
   damageFlash: number;
+  levelId: string;
   levelTitle: string;
   objective: string;
   /** Live boss encounter data; null when no boss is in range. */
@@ -229,6 +236,8 @@ export interface HudState {
   victory: boolean;
   huntKills: number;
   huntTargets: number;
+  /** Player deaths in the current level (reset on every load). */
+  deaths: number;
   prompt: string;
   toast: string;
   keycard: boolean;
@@ -297,6 +306,10 @@ export class Game {
   flying = false;
   sensitivity = 1;
   fovDegrees = (DEFAULT_FOV * 180) / Math.PI;
+  /** Fired when the player leaves a level through an exit or the victory pad. */
+  onMissionClear?: (clear: MissionClear) => void;
+  /** Fired after every level load, including the initial courtyard boot. */
+  onLevelLoad?: (levelId: string) => void;
 
   private readonly player: Player;
   private actors: Actor[] = [];
@@ -314,6 +327,8 @@ export class Game {
   private time = 0;
   private victory = false;
   private victoryTime = 0;
+  private levelDeaths = 0;
+  private lastMissionStage: MissionStage = "hunt";
   private toastText = "";
   private toastT = 0;
   private armorNotice = 0;
@@ -553,8 +568,18 @@ export class Game {
     }
     this.player.eyeBob = lerp(this.player.eyeBob, bobTarget, Math.min(1, dt * 12));
 
+    this.trackMissionStage();
     this.collectPickups();
     this.checkExits();
+  }
+
+  /** Emits one cue when the mission stage changes, never on load. */
+  private trackMissionStage(): void {
+    const stage = this.missionStage();
+    if (stage === this.lastMissionStage) return;
+    this.lastMissionStage = stage;
+    if (stage === "boss") this.emit("boss");
+    else if (stage === "extract") this.emit("extract");
   }
 
   private pitchLimit(): number {
@@ -806,6 +831,7 @@ export class Game {
       this.player.dead = true;
       this.player.deathT = 0;
       this.player.thrusting = false;
+      this.levelDeaths += 1;
       this.setToast("SYSTEMS OFFLINE · redeploying", 3);
       this.emit("death");
     }
@@ -1285,14 +1311,27 @@ export class Game {
         // player leaves on E instead of being cut straight back to the city.
         this.victory = true;
         this.victoryTime = this.time;
-        this.emit("level");
+        this.reportClear();
+        this.emit("victory");
         return;
       }
       const index = levelIndexById(exit.target);
+      this.reportClear();
       this.emit("level");
       this.loadLevel(index, `ENTERING ${LEVELS[index].title}`);
       return;
     }
+  }
+
+  /** Hands a completed run to the campaign record exactly once per exit. */
+  private reportClear(): void {
+    if (!this.onMissionClear) return;
+    this.onMissionClear({
+      levelId: this.level.id,
+      time: this.victory ? this.victoryTime : this.time,
+      kills: this.huntKills,
+      deaths: this.levelDeaths,
+    });
   }
 
   private setToast(text: string, seconds = 2.5): void {
@@ -1328,12 +1367,15 @@ export class Game {
     this.impacts = [];
     this.keycard = false;
     this.huntKills = 0;
+    this.levelDeaths = 0;
     this.victory = false;
     this.victoryTime = 0;
     this.placeAtSpawn();
     this.toastText = "";
     this.toastT = 0;
+    this.lastMissionStage = this.missionStage();
     if (message) this.setToast(message, 3);
+    this.onLevelLoad?.(level.id);
   }
 
   private createActor(spec: ActorSpec, index: number): Actor {
@@ -1777,6 +1819,7 @@ export class Game {
       vz: this.player.vz,
       support,
       onGround: this.player.onGround,
+      ceiling: ceilingAt(this.world, this.player.x, this.player.y),
       yawDeg: Math.round((wrapAngle(this.player.yaw) * 180) / Math.PI),
       pitchDeg: Math.round((this.player.pitch * 180) / Math.PI),
       flying: this.flying,
@@ -1792,6 +1835,7 @@ export class Game {
       maxHealth: PLAYER_MAX_HEALTH,
       dead: this.player.dead,
       damageFlash: this.player.hitFlash / DAMAGE_FLASH_TIME,
+      levelId: this.level.id,
       levelTitle: this.level.title,
       objective,
       boss,
@@ -1807,6 +1851,7 @@ export class Game {
       victory: this.victory,
       huntKills: this.huntKills,
       huntTargets: this.level.huntTargets ?? 0,
+      deaths: this.levelDeaths,
       prompt: this.interactionPrompt(),
       toast: this.toastT > 0 ? this.toastText : "",
       keycard: this.keycard,

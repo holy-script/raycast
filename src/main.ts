@@ -1,9 +1,22 @@
 import "./style.css";
 import { loadAtlas, loadTexture } from "./engine/atlas";
-import { Soundscape } from "./engine/audio";
+import { Soundscape, type AudioDebug } from "./engine/audio";
 import { Renderer } from "./engine/renderer";
 import { Game, type HudState, type RenderDebug } from "./game";
 import { loadSettings, saveSettings } from "./settings";
+import {
+  CAMPAIGN_LEVELS,
+  defaultCampaign,
+  formatClock,
+  isLevelUnlocked,
+  loadCampaign,
+  markReached,
+  recordMission,
+  saveCampaign,
+  type CampaignRecord,
+  type LevelRecord,
+} from "./campaign";
+import { LEVELS } from "./content/levels";
 
 const BASE = import.meta.env.BASE_URL;
 const MINIMAP_SIZE = 168;
@@ -52,6 +65,18 @@ async function boot(): Promise<void> {
   const toast = byId<HTMLDivElement>("toast");
   const victory = byId<HTMLDivElement>("victory");
   const victoryStats = byId<HTMLParagraphElement>("victory-stats");
+  const victoryBest = byId<HTMLParagraphElement>("victory-best");
+  const campaignPanel = byId<HTMLDivElement>("campaign");
+  const campaignCards = byId<HTMLDivElement>("campaign-cards");
+  const campaignBriefing = byId<HTMLDivElement>("campaign-briefing");
+  const briefingTitle = byId<HTMLHeadingElement>("briefing-title");
+  const briefingObjective = byId<HTMLParagraphElement>("briefing-objective");
+  const briefingStats = byId<HTMLParagraphElement>("briefing-stats");
+  const briefingDeploy = byId<HTMLButtonElement>("briefing-deploy");
+  const briefingBack = byId<HTMLButtonElement>("briefing-back");
+  const campaignClose = byId<HTMLButtonElement>("campaign-close");
+  const openCampaignButton = byId<HTMLButtonElement>("open-campaign");
+  const pauseCampaignButton = byId<HTMLButtonElement>("pause-campaign");
   const damage = byId<HTMLDivElement>("damage");
   const thrust = byId<HTMLDivElement>("thrust");
 
@@ -177,6 +202,112 @@ async function boot(): Promise<void> {
   let paused = false;
   let frameCount = 0;
 
+  let campaign: CampaignRecord = loadCampaign();
+  let campaignOutcome: { improved: boolean; level: LevelRecord } | null = null;
+  let campaignOpen = false;
+  let selectedLevelId: string | null = null;
+  let campaignReturnFocus: HTMLElement | null = null;
+
+  const levelById = (id: string) => LEVELS.find((level) => level.id === id);
+
+  const describeRecord = (record: LevelRecord): string => {
+    if (!record.cleared) return "NO CLEAR";
+    const clock = record.bestTime !== null ? formatClock(record.bestTime) : "--:--";
+    return `BEST ${clock} · ${record.bestKills} KILLS · ${record.deaths} DEATHS`;
+  };
+
+  const renderBriefing = (): void => {
+    const level = selectedLevelId ? levelById(selectedLevelId) : undefined;
+    if (!level) {
+      campaignBriefing.classList.add("hidden");
+      return;
+    }
+    const record = campaign.levels[level.id];
+    const unlocked = isLevelUnlocked(campaign, level.id);
+    briefingTitle.textContent = level.title;
+    briefingObjective.textContent = level.objective;
+    briefingStats.textContent = unlocked
+      ? describeRecord(record)
+      : "LOCKED · reach this sector in the field to unlock deployment.";
+    briefingDeploy.disabled = !unlocked;
+    campaignBriefing.classList.remove("hidden");
+  };
+
+  const renderCampaign = (): void => {
+    campaignCards.replaceChildren();
+    for (const id of CAMPAIGN_LEVELS) {
+      const level = levelById(id);
+      if (!level) continue;
+      const unlocked = isLevelUnlocked(campaign, id);
+      const card = document.createElement("button");
+      card.type = "button";
+      card.dataset.level = id;
+      card.className = `level-card${unlocked ? "" : " locked"}${
+        selectedLevelId === id ? " selected" : ""
+      }`;
+      card.setAttribute("aria-pressed", selectedLevelId === id ? "true" : "false");
+      const title = document.createElement("span");
+      title.className = "card-title";
+      title.textContent = level.title;
+      const objective = document.createElement("span");
+      objective.className = "card-objective";
+      objective.textContent = level.objective;
+      const stats = document.createElement("span");
+      stats.className = "card-stats";
+      stats.textContent = unlocked
+        ? describeRecord(campaign.levels[id])
+        : "LOCKED · discover in the field";
+      card.append(title, objective, stats);
+      card.addEventListener("click", () => selectLevel(id));
+      campaignCards.append(card);
+    }
+    renderBriefing();
+  };
+
+  const selectLevel = (id: string): void => {
+    selectedLevelId = id;
+    renderCampaign();
+    campaignCards
+      .querySelector<HTMLButtonElement>(`[data-level="${id}"]`)
+      ?.focus();
+  };
+
+  const deployLevel = (id: string): boolean => {
+    if (!isLevelUnlocked(campaign, id) || !levelById(id)) return false;
+    campaignOpen = false;
+    campaignPanel.classList.add("hidden");
+    intro.classList.add("hidden");
+    pausePanel.classList.add("hidden");
+    started = true;
+    // Scripted input drives its own clock; real play resumes immediately.
+    if (!game.input.scripted) {
+      paused = false;
+      last = performance.now();
+    }
+    game.loadLevelById(id);
+    syncFrame();
+    syncHud();
+    if (!game.input.scripted) requestLock();
+    return true;
+  };
+
+  const openCampaign = (): void => {
+    campaignReturnFocus =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    campaignOpen = true;
+    selectedLevelId = null;
+    renderCampaign();
+    campaignPanel.classList.remove("hidden");
+    campaignCards.querySelector<HTMLButtonElement>("button.level-card")?.focus();
+  };
+
+  const closeCampaign = (): void => {
+    campaignOpen = false;
+    campaignPanel.classList.add("hidden");
+    campaignReturnFocus?.focus();
+    campaignReturnFocus = null;
+  };
+
   const announceLock = (locked: boolean): void => {
     if (locked) {
       started = true;
@@ -202,6 +333,56 @@ async function boot(): Promise<void> {
   enter.addEventListener("click", requestLock);
   pauseResume.addEventListener("click", requestLock);
   view.addEventListener("pointerdown", unlockAudio);
+  openCampaignButton.addEventListener("click", openCampaign);
+  pauseCampaignButton.addEventListener("click", openCampaign);
+  campaignClose.addEventListener("click", closeCampaign);
+  briefingBack.addEventListener("click", () => {
+    selectedLevelId = null;
+    renderCampaign();
+    campaignCards.querySelector<HTMLButtonElement>("button.level-card")?.focus();
+  });
+  briefingDeploy.addEventListener("click", () => {
+    if (selectedLevelId) deployLevel(selectedLevelId);
+  });
+  campaignPanel.addEventListener("keydown", (event) => {
+    if (event.code === "Escape") {
+      event.preventDefault();
+      closeCampaign();
+      return;
+    }
+    if (event.code !== "ArrowDown" && event.code !== "ArrowUp") return;
+    const cards = [...campaignCards.querySelectorAll<HTMLButtonElement>("button.level-card")];
+    if (cards.length === 0) return;
+    event.preventDefault();
+    const index = cards.indexOf(document.activeElement as HTMLButtonElement);
+    const step = event.code === "ArrowDown" ? 1 : -1;
+    const next = cards[(index + step + cards.length) % cards.length];
+    next.focus();
+  });
+  window.addEventListener("keydown", (event) => {
+    if (event.code === "KeyL" && game.victoryShown && !campaignOpen) {
+      event.preventDefault();
+      openCampaign();
+      return;
+    }
+    if (event.code === "Escape" && campaignOpen) closeCampaign();
+  });
+
+  game.onLevelLoad = (levelId) => {
+    campaign = markReached(campaign, levelId);
+    campaignOutcome = null;
+    saveCampaign(campaign);
+    if (campaignOpen) renderCampaign();
+  };
+  game.onMissionClear = (clear) => {
+    const outcome = recordMission(campaign, clear);
+    campaign = outcome.record;
+    campaignOutcome = { improved: outcome.improved, level: outcome.level };
+    saveCampaign(campaign);
+  };
+  campaign = markReached(campaign, "courtyard");
+  saveCampaign(campaign);
+  renderCampaign();
 
   const syncFrame = (): void => {
     game.render();
@@ -252,9 +433,16 @@ async function boot(): Promise<void> {
     toast.classList.toggle("visible", state.toast !== "");
     victory.classList.toggle("hidden", !state.victory);
     if (state.victory && state.mission) {
-      const seconds = Math.floor(state.mission.time);
-      const clock = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
-      victoryStats.textContent = `TIME ${clock} · ${state.mission.targets} HOSTILES DOWN`;
+      const clock = formatClock(state.mission.time);
+      const deathLabel = state.deaths === 1 ? "DEATH" : "DEATHS";
+      victoryStats.textContent = `TIME ${clock} · ${state.mission.targets} HOSTILES DOWN · ${state.deaths} ${deathLabel}`;
+      const record = campaign.levels[state.levelId];
+      const best =
+        record?.cleared && record.bestTime !== null
+          ? `${record.bestKills} KILLS · BEST ${formatClock(record.bestTime)}`
+          : "";
+      victoryBest.textContent = best ? `${campaignOutcome?.improved ? "NEW BEST · " : ""}${best}` : "";
+      victoryBest.classList.toggle("new-best", campaignOutcome?.improved === true);
     }
     hud.classList.toggle("minimal", !game.hudDetailVisible);
   };
@@ -297,6 +485,7 @@ async function boot(): Promise<void> {
         ]),
       ),
     audioRunning: () => audio.running,
+    audioDebug: (): AudioDebug => audio.getDebug(),
     dismissIntro: () => {
       intro.classList.add("hidden");
       pausePanel.classList.add("hidden");
@@ -330,6 +519,7 @@ async function boot(): Promise<void> {
         const timestep = Math.max(1 / 240, Math.min(0.05, dt));
         const steps = Math.max(0, Math.round(seconds / timestep));
         for (let index = 0; index < steps; index += 1) game.update(timestep);
+        audio.update(0, game);
         syncFrame();
         syncHud();
       },
@@ -337,6 +527,7 @@ async function boot(): Promise<void> {
         game.resetLevel();
         game.input.clearKeys();
         game.input.consumeLook();
+        audio.update(0, game);
         syncFrame();
         syncHud();
       },
@@ -380,6 +571,7 @@ async function boot(): Promise<void> {
       },
       loadLevel: (id) => {
         game.loadLevelById(id);
+        audio.update(0, game);
         syncFrame();
         syncHud();
       },
@@ -387,6 +579,37 @@ async function boot(): Promise<void> {
         game.viewmodelVisible = visible;
         syncFrame();
       },
+    },
+    campaign: {
+      load: () => campaign,
+      reset: () => {
+        campaign = defaultCampaign();
+        campaignOutcome = null;
+        saveCampaign(campaign);
+        renderCampaign();
+      },
+      open: () => openCampaign(),
+      close: () => closeCampaign(),
+      select: (id) => selectLevel(id),
+      deploy: (id) => deployLevel(id),
+      view: () => ({
+        open: campaignOpen,
+        selected: selectedLevelId,
+        cards: [...campaignCards.querySelectorAll<HTMLButtonElement>("button.level-card")].map(
+          (card) => ({
+            id: card.dataset.level ?? "",
+            locked: card.classList.contains("locked"),
+            selected: card.classList.contains("selected"),
+            stats: card.querySelector(".card-stats")?.textContent ?? "",
+          }),
+        ),
+        briefing: {
+          hidden: campaignBriefing.classList.contains("hidden"),
+          title: briefingTitle.textContent ?? "",
+          stats: briefingStats.textContent ?? "",
+          deployDisabled: briefingDeploy.disabled,
+        },
+      }),
     },
   };
 }
@@ -400,6 +623,7 @@ declare global {
       debug: () => RenderDebug;
       atlasReport: () => Record<string, { states: string[]; missing: string[] }>;
       audioRunning: () => boolean;
+      audioDebug: () => AudioDebug;
       dismissIntro: () => void;
       automation: {
         enable: () => void;
@@ -426,6 +650,25 @@ declare global {
         };
         loadLevel: (id: string) => void;
         setViewmodelVisible: (visible: boolean) => void;
+      };
+      campaign: {
+        load: () => CampaignRecord;
+        reset: () => void;
+        open: () => void;
+        close: () => void;
+        select: (id: string) => void;
+        deploy: (id: string) => boolean;
+        view: () => {
+          open: boolean;
+          selected: string | null;
+          cards: Array<{ id: string; locked: boolean; selected: boolean; stats: string }>;
+          briefing: {
+            hidden: boolean;
+            title: string;
+            stats: string;
+            deployDisabled: boolean;
+          };
+        };
       };
     };
   }

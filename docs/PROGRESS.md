@@ -21,8 +21,8 @@ Last updated: **2026-11-12**
 | Combat depth, interiors, slices | M12 | ✅ Muzzle-aligned bolts, 5 destructible crates, 7 cover props, overseer boss; office + vault sectors with ceilings/roofs and indoor flight cap; 4-band stacked-slice billboards on a separate depth atlas |
 | District mission and boss | M13 | ✅ Hunt → boss → extract → clear stages, three-bolt overseer volley, rooftop cover, boss HP bar, mission-complete overlay with `E` continue; panel-clad interior walls and ceilings |
 | Enemy roster and AI | M14 | ✅ Rusher, charged lancer with muzzle telegraph, frontal-armor bulwark; 117 unit tests, 784 matrix checks, all browser suites green; deployed |
-| Campaign and progression | M15 | 📋 Planned: versioned localStorage campaign, level select/briefings, best time/kills; research complete |
-| Audio and game feel | M16 | 📋 Planned: layered procedural music/ambience, stage-driven intensity, audio debug hook; research complete |
+| Campaign and progression | M15 | ✅ Versioned `raycast.campaign.v1` record, unlock/best-time/kills persistence, keyboard level select with briefings, `NEW BEST` victory summary; 125 unit tests |
+| Audio and game feel | M16 | ✅ Pure audio mix director, per-level ambience beds, stage-driven bass/pad/percussion, boss/extract/victory cues, low-health heartbeat, `audioDebug()` hook; 133 unit tests |
 | Foundry biome | M17 | 📋 Planned: SLAGWORKS 48×48 foundry, cycling slag hazards, coolant collection + foreman boss; research complete |
 
 ## Verification snapshot
@@ -169,6 +169,65 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
 - Artifacts: `docs/screenshots/states/contact-sheet.png`, 43 PNGs, `report.json`.
 
 ## Session log
+
+### 2026-11-12 — M16 audio director and game feel
+
+- `src/engine/audio-mix.ts` is a pure `computeAudioMix(input)` over level id, indoor flag,
+  mission stage, kills/targets, boss distance, health, and death. It returns the bed,
+  0–1 intensity, bass/pad/percussion gains, and the low-health flag. Stage weights are
+  hunt 0.45, boss 0.68, extract 0.30, clear 0.20, plus up to 0.2 for hunt progress and
+  0.18 when the boss is within 24 m; death multiplies intensity by 0.4. Layer gains are
+  linear in intensity (`bass 0.18 + 0.3i`, `pad 0.12 + 0.28i`, `percussion 0.05 + 0.4i`),
+  and the heartbeat runs while alive at ≤34% health.
+- `Soundscape` was rewritten around persistent buses: one looping noise wind into a
+  lowpass carrier, a two-oscillator hum, and a bass/pad music bed. Each level has bed
+  settings (cutoff, wind, hum, oscillator pair) and `applyBed` retunes them on change;
+  `applyMix` crossfades the music gains. Percussion schedules from a beat timer
+  (`0.62 − 0.28i` s, min 0.28 s) with a kick every beat and a hat above 0.3 intensity;
+  the heartbeat fires a lub-dub every 0.9 s. All nodes are still created inside
+  `unlock()`, so autoplay rules are unchanged.
+- New cues: `boss` (sawtooth/square swell), `extract` (rising triangle pair), and
+  `victory` (262/330/392 Hz chord plus shimmer). `Game` emits `boss`/`extract` from
+  `trackMissionStage()` when the stage changes and `victory` when the beacon closes.
+  Blocked plating, charged release, and kill confirms keep distinct cues from M14.
+- `getDebug()` reports bed/intensity/gains/low-health/muted/running through
+  `window.__raycast.audioDebug()`; automation `step`, `reset`, and `loadLevel` refresh the
+  mix with `audio.update(0, game)` so headless checks never depend on frame timing.
+  Without an AudioContext the director still drains events, so a later gesture cannot
+  replay a backlog.
+- Tests: 8 new `tests/audio-mix.test.ts` cases cover bed fallback, indoor override, stage
+  ordering, hunt progress and boss proximity, intensity clamping, death damping, and the
+  low-health threshold (133 unit tests total). Matrix adds `n01`–`n05`: courtyard bed,
+  reactor bed, indoor bed inside the security office, boss stage lifting intensity
+  0.45 → 0.88, and the heartbeat starting at 20 HP and stopping at 90.
+- Verification: typecheck clean, **133 unit tests**, matrix 701/701 across 122 scenarios
+  in a scratch capture dir, `playtest` 40/40, `flight` 109/109, `states` 42/42, zero
+  console errors, build 78.17 kB JS / 26.45 kB gzip (goldens are regenerated with M17).
+
+### 2026-11-12 — M15 campaign and level select
+
+- `src/campaign.ts` owns the versioned record `raycast.campaign.v1`: `reached` ids,
+  per-level `{ cleared, bestTime, bestKills, deaths }`, and `lastLevel`. `sanitizeCampaign`
+  rejects unknown versions, filters unknown level ids, always keeps the courtyard
+  reachable, and falls back to defaults for malformed JSON. `recordMission` only runs on a
+  clear/victory report: first/slower/faster times and higher kill counts set `improved`,
+  bests are min/max, and deaths accumulate per level.
+- `Game` reports `onMissionClear({ levelId, time, kills, deaths })` from `checkExits` and
+  `onLevelLoad(levelId)` after every `loadLevel`, so the shell never infers records from
+  HUD text. `levelDeaths` resets on load and increments in `damagePlayer`.
+- `main.ts` adds the campaign panel: three level cards (title, objective, stats), locked
+  state, arrow/Tab/Enter/Escape flow, and a briefing with a deploy button. The intro and
+  pause menus open it; `L` opens it from the victory overlay. Deploying hides overlays,
+  marks the level reached, loads it, and does not un-pause scripted automation.
+- The victory overlay now shows `TIME · HOSTILES DOWN · DEATHS` plus best kills/time and a
+  `NEW BEST` badge when the run improved. `window.__raycast.campaign` exposes
+  `load/reset/open/close/select/deploy/view` for the headless suite.
+- Tests: 8 `tests/campaign.test.ts` cases cover unlock gating, reach marking, first/slower/
+  faster clears, death accumulation, sanitisation of corrupt/unknown data, the mocked
+  localStorage round-trip, and clock formatting (125 unit tests at that point). Matrix adds
+  `u08-campaign-menu` (fresh gating, locked briefing, refused deploy, courtyard deploy,
+  district unlock + persistence, close) and extends `l09-hunt-gate` with the death count,
+  best badge, and persisted district record.
 
 ### 2026-11-12 — M14 enemy roster and AI
 

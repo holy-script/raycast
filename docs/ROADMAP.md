@@ -430,27 +430,27 @@ Verified 2026-11-12.
 
 Goal: let a session survive a reload and give the district a reason to be replayed.
 
-Research complete; implementation not started.
+Implemented 2026-11-12.
 
 **Persistent campaign**
 
-- [ ] Versioned localStorage record `raycast.campaign.v1` holding unlocked levels, best
+- [x] Versioned localStorage record `raycast.campaign.v1` holding unlocked levels, best
   time, best kills, deaths, and the last selected level
-- [ ] Load/save helpers validate shape, clamp numbers, ignore malformed JSON, and migrate
-  older versions; unit tests cover round-trip, corruption, and clamping
-- [ ] Records update only on mission clear (victory overlay), never on a mid-run death
-- [ ] A corrupt or missing record falls back to the current default spawn without a crash
+- [x] Load/save helpers validate shape, clamp numbers, ignore malformed JSON, and reject
+  unknown versions; v1 is the first schema, so there is nothing older to migrate
+- [x] Records update only on mission clear (victory overlay), never on a mid-run death
+- [x] A corrupt or missing record falls back to the current default spawn without a crash
 
 **Level select and briefings**
 
-- [ ] Title menu lists courtyard, district, and reactor cards with objective, best time,
+- [x] Title menu lists courtyard, district, and reactor cards with objective, best time,
   best kills, and a locked state
-- [ ] Selecting a card opens a briefing panel with the mission objective and a deploy
+- [x] Selecting a card opens a briefing panel with the mission objective and a deploy
   action; the existing pause menu stays unchanged
-- [ ] The victory overlay gains a mission summary: time, hostiles, deaths, and a
+- [x] The victory overlay gains a mission summary: time, hostiles, deaths, and a
   `NEW BEST` badge when a record improves
-- [ ] `E` continues to the courtyard as today; the summary adds a level-select action
-- [ ] Keyboard-only flow (arrows/Tab/Enter) and the current settings persistence are
+- [x] `E` continues to the courtyard as today; the summary adds a level-select action
+- [x] Keyboard-only flow (arrows/Tab/Enter) and the current settings persistence are
   preserved
 
 **Acceptance:** campaign state round-trips through a page reload; level select and
@@ -462,26 +462,28 @@ menu flow; all existing suites stay green.
 
 Goal: make the moment-to-moment loop sound alive without shipping audio files.
 
-Research complete; implementation not started.
+Implemented 2026-11-12. `computeAudioMix` is a pure function over the HUD snapshot;
+`Soundscape` applies it to persistent gain nodes and `window.__raycast.audioDebug()`
+reports the result.
 
 **Music and ambience**
 
-- [ ] A procedural music director with layered voices (bass pulse, pad, percussion) whose
+- [x] A procedural music director with layered voices (bass pulse, pad, percussion) whose
   intensity follows mission stage and nearby hostiles; layers crossfade through gain nodes
-- [ ] Per-level ambience beds: courtyard wind/hum, reactor drone, district wind, and an
+- [x] Per-level ambience beds: courtyard wind/hum, reactor drone, district wind, and an
   indoor variant that damps the outdoor bed
-- [ ] All persistent buses, noise buffers, and the AudioContext are created or resumed
+- [x] All persistent buses, noise buffers, and the AudioContext are created or resumed
   only inside `unlock()` on a user gesture, preserving autoplay rules
-- [ ] Mute and the settings menu silence music and ambience independently of one-shots
+- [x] Mute and the settings menu silence music and ambience independently of one-shots
 
 **Cues and feedback**
 
-- [ ] Boss exposure, extraction unlock, low-health heartbeat, and victory stingers
-- [ ] Hit feedback scales with damage type: blocked plating, charged release, and a kill
+- [x] Boss exposure, extraction unlock, low-health heartbeat, and victory stingers
+- [x] Hit feedback scales with damage type: blocked plating, charged release, and a kill
   confirm remain distinguishable
-- [ ] A `getAudioDebug()` hook reports the active bed, layer gains, and intensity so the
+- [x] A `getAudioDebug()` hook reports the active bed, layer gains, and intensity so the
   headless suites can assert behavior without listening
-- [ ] No new console errors when audio is locked, muted, or the tab is backgrounded
+- [x] No new console errors when audio is locked, muted, or the tab is backgrounded
 
 **Acceptance:** the full run has continuous ambience and intensity that follows combat;
 every event cue fires once per trigger; no autoplay warnings; `getAudioDebug()` values are

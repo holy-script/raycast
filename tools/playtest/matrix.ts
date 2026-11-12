@@ -10,6 +10,9 @@ import {
   waitForHttp,
 } from "./support";
 import type { HudState, RenderDebug } from "../../src/game";
+import type { AudioDebug } from "../../src/engine/audio";
+import { CAMPAIGN_LEVELS } from "../../src/campaign";
+import { LEVELS } from "../../src/content/levels";
 
 const root = resolve(import.meta.dirname, "../..");
 const outDir = resolve(
@@ -133,8 +136,7 @@ async function main(): Promise<void> {
     const debug = (): Promise<RenderDebug> =>
       evaluate<RenderDebug>("window.__raycast.debug()");
     const hud = (): Promise<Record<string, string>> =>
-      evaluate<Record<string, string>>(`(() => {
-        const text = (id) => (document.getElementById(id)?.textContent ?? "").trim();
+      evaluate<Record<string, string>>(`(() => {        const text = (id) => (document.getElementById(id)?.textContent ?? "").trim();
         return {
           mode: text("hud-mode"),
           pos: text("hud-pos"),
@@ -157,6 +159,9 @@ async function main(): Promise<void> {
           toast: text("toast"),
         };
       })()`);
+
+    const audioMix = (): Promise<AudioDebug> =>
+      evaluate<AudioDebug>("window.__raycast.audioDebug()");
 
     const step = async (seconds: number, dt = 1 / 60): Promise<void> => {
       await evaluate(`window.__raycast.automation.step(${seconds}, ${dt})`);
@@ -200,7 +205,9 @@ async function main(): Promise<void> {
       await step(0);
     };
     const reset = async (): Promise<void> => {
-      // Every scenario starts from the courtyard so level state cannot leak.
+      // Every scenario starts from the courtyard so level and campaign state
+      // cannot leak between runs.
+      await evaluate("window.__raycast.campaign.reset()");
       await loadLevel("courtyard");
     };
     const tapKey = async (code: string, key: string, virtualKey: number): Promise<void> => {
@@ -1216,6 +1223,180 @@ async function main(): Promise<void> {
       check("fuel readout formats the tank", values.fuel === "37%", values.fuel);
     });
 
+    define("ui", "u08-campaign-menu", async () => {
+      type CampaignView = {
+        open: boolean;
+        selected: string | null;
+        cards: Array<{ id: string; locked: boolean; selected: boolean; stats: string }>;
+        briefing: {
+          hidden: boolean;
+          title: string;
+          stats: string;
+          deployDisabled: boolean;
+        };
+      };
+      const view = (): Promise<CampaignView> =>
+        evaluate<CampaignView>("window.__raycast.campaign.view()");
+      const expectedCards = CAMPAIGN_LEVELS.filter((id) =>
+        LEVELS.some((level) => level.id === id),
+      ).length;
+
+      await evaluate("window.__raycast.campaign.reset()");
+      await evaluate("window.__raycast.campaign.open()");
+      await step(0);
+      let menu = await view();
+      const card = (id: string) => menu.cards.find((entry) => entry.id === id);
+      check(
+        "a fresh campaign unlocks only the courtyard",
+        menu.open &&
+          menu.cards.length === expectedCards &&
+          card("courtyard")?.locked === false &&
+          menu.cards
+            .filter((entry) => entry.id !== "courtyard")
+            .every((entry) => entry.locked) &&
+          card("courtyard")?.stats === "NO CLEAR",
+        menu.cards.map((entry) => `${entry.id}:${entry.locked ? "locked" : "open"}`).join(" "),
+      );
+      await evaluate('window.__raycast.campaign.select("district")');
+      menu = await view();
+      check(
+        "a locked card opens its briefing with deploy disabled",
+        !menu.briefing.hidden &&
+          menu.briefing.deployDisabled &&
+          menu.briefing.title === "ROOFTOP DISTRICT" &&
+          menu.briefing.stats.includes("LOCKED"),
+        `${menu.briefing.title} · ${menu.briefing.stats}`,
+      );
+      await capturePage("u08-campaign-menu");
+
+      const lockedDeploy = await evaluate<boolean>(
+        'window.__raycast.campaign.deploy("district")',
+      );
+      check(
+        "a locked level cannot be deployed",
+        lockedDeploy === false,
+        `deploy district returned ${lockedDeploy}`,
+      );
+
+      const deployed = await evaluate<boolean>(
+        'window.__raycast.campaign.deploy("courtyard")',
+      );
+      await step(0);
+      menu = await view();
+      const dbg = await debug();
+      check(
+        "deploying an unlocked level closes the menu and loads it",
+        deployed && !menu.open && dbg.level === "courtyard",
+        `deployed=${deployed} · open=${menu.open} · level=${dbg.level}`,
+      );
+
+      await loadLevel("district");
+      await evaluate("window.__raycast.campaign.open()");
+      await step(0);
+      menu = await view();
+      const stored = await evaluate<{ reached: string[]; lastLevel: string }>(
+        'JSON.parse(localStorage.getItem("raycast.campaign.v1"))',
+      );
+      check(
+        "reaching a level unlocks its card and persists it",
+        card("district")?.locked === false &&
+          card("district")?.stats === "NO CLEAR" &&
+          stored.reached.includes("district") &&
+          stored.lastLevel === "district",
+        `${card("district")?.stats ?? "missing"} · reached ${stored.reached.join(",")}`,
+      );
+      await evaluate("window.__raycast.campaign.close()");
+      await step(0);
+      check(
+        "closing the menu returns to the frozen simulation",
+        (await view()).open === false,
+        "menu closed",
+      );
+    });
+
+    // ----------------------------------------------------------------- audio
+    define("audio", "n01-courtyard-mix", async () => {
+      await step(0.5);
+      const values = await audioMix();
+      check(
+        "the courtyard runs its outdoor ambience bed",
+        values.bed === "courtyard",
+        values.bed,
+      );
+      check(
+        "the music stays calm before any hunting",
+        values.intensity > 0.05 && values.intensity < 0.4,
+        values.intensity.toFixed(3),
+      );
+      check(
+        "every layer scales from the intensity",
+        near(values.bass, 0.18 + values.intensity * 0.3, 1e-6) &&
+          near(values.pad, 0.12 + values.intensity * 0.28, 1e-6) &&
+          near(values.percussion, 0.05 + values.intensity * 0.4, 1e-6),
+        `bass ${values.bass.toFixed(3)} · pad ${values.pad.toFixed(3)} · perc ${values.percussion.toFixed(3)}`,
+      );
+    });
+
+    define("audio", "n02-reactor-bed", async () => {
+      await loadLevel("reactor");
+      await step(0);
+      const values = await audioMix();
+      check(
+        "the reactor deck retunes to its industrial bed",
+        values.bed === "reactor",
+        values.bed,
+      );
+    });
+
+    define("audio", "n03-indoor-bed", async () => {
+      await loadLevel("district");
+      await pose(6.5, 6.5, 0, 0, 0);
+      await step(0);
+      const current = await state();
+      const values = await audioMix();
+      check(
+        "standing under a ceiling switches to the indoor bed",
+        current.ceiling > 0 && values.bed === "indoor",
+        `ceiling ${current.ceiling.toFixed(2)} · ${values.bed}`,
+      );
+    });
+
+    define("audio", "n04-boss-swings-music", async () => {
+      await loadLevel("district");
+      await step(0.2);
+      const hunt = await audioMix();
+      await evaluate(`(() => {
+        const game = window.__raycast.game;
+        for (const actor of game.actors) {
+          if (actor.spec.hostile && !actor.spec.boss) game.damageActor(actor, 999);
+        }
+      })()`);
+      await step(0);
+      const dbg = await debug();
+      const boss = await audioMix();
+      check(
+        "the boss stage drives the mix harder than the hunt",
+        dbg.mission.stage === "boss" && boss.intensity > hunt.intensity,
+        `${dbg.mission.stage} · ${hunt.intensity.toFixed(2)} → ${boss.intensity.toFixed(2)}`,
+      );
+    });
+
+    define("audio", "n05-low-health-heartbeat", async () => {
+      await loadLevel("district");
+      await setHealth(20);
+      await step(0);
+      const weak = await audioMix();
+      check("low health starts the heartbeat", weak.lowHealth, String(weak.lowHealth));
+      await setHealth(90);
+      await step(0);
+      const healthy = await audioMix();
+      check(
+        "healing above a third stops the heartbeat",
+        !healthy.lowHealth,
+        String(healthy.lowHealth),
+      );
+    });
+
     // ---------------------------------------------------------------- routes
     define("routes", "r01-jet-over-wall", async () => {
       await pose(2.5, 2.5, 0, 0, 0);
@@ -2038,10 +2219,30 @@ async function main(): Promise<void> {
         'document.getElementById("victory-stats")?.textContent ?? ""',
       );
       check(
-        "the victory overlay reports the mission clock and kills",
+        "the victory overlay reports the mission clock, kills, and deaths",
         /TIME \d\d:\d\d/.test(victoryStats) &&
-          victoryStats.includes("7 HOSTILES DOWN"),
+          victoryStats.includes("7 HOSTILES DOWN") &&
+          victoryStats.includes("0 DEATHS"),
         victoryStats,
+      );
+      const victoryBest = await evaluate<string>(
+        'document.getElementById("victory-best")?.textContent ?? ""',
+      );
+      check(
+        "a first clear shows the new-best summary",
+        victoryBest.startsWith("NEW BEST ·") && victoryBest.includes("7 KILLS"),
+        victoryBest,
+      );
+      const saved = await evaluate<{
+        lastLevel: string;
+        levels: { district: { cleared: boolean; bestKills: number; bestTime: number } };
+      }>('JSON.parse(localStorage.getItem("raycast.campaign.v1"))');
+      check(
+        "the clear is persisted to the campaign record",
+        saved.levels.district.cleared &&
+          saved.levels.district.bestKills === 7 &&
+          saved.levels.district.bestTime > 0,
+        `district best ${saved.levels.district.bestKills} kills · ${saved.levels.district.bestTime.toFixed(1)} s`,
       );
       await capturePage("l09-victory");
       const result = await interact();

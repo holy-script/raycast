@@ -65,7 +65,8 @@
             <p class="eyebrow">MISSION COMPLETE</p>
             <h2>District cleared</h2>
             <p id="victory-stats" class="victory-stats">--</p>
-            <p class="fine"><kbd>E</kbd> return to the courtyard</p>
+            <p id="victory-best" class="victory-best"></p>
+            <p class="fine"><kbd>E</kbd> return to the courtyard · <kbd>L</kbd> level select</p>
           </div>
         </div>
         <div id="pause" class="hidden" role="dialog" aria-label="Paused settings">
@@ -88,6 +89,7 @@
               <input id="set-mute" type="checkbox" />
             </label>
             <button id="pause-resume" type="button">Resume session</button>
+            <button id="pause-campaign" type="button" class="ghost">Level select</button>
             <p class="fine pause-hints">
               <span><kbd>M</kbd> map</span>
               <span><kbd>F2</kbd> freefly</span>
@@ -116,11 +118,36 @@
             <li><b>6</b> actor states</li>
             <li><b>Jet</b> pack flight</li>
           </ul>
-          <button id="enter" type="button">Enter courtyard</button>
+          <div class="intro-actions">
+            <button id="enter" type="button">Enter courtyard</button>
+            <button id="open-campaign" type="button" class="ghost">Campaign</button>
+          </div>
           <p class="fine">
             <kbd>Space</kbd> ignites the jetpack, <kbd>F</kbd>/click fires a plasma
             bolt, <kbd>E</kbd> interacts. Mouse look is captured on entry;
             <kbd>Esc</kbd> releases it.
+          </p>
+        </div>
+      </div>
+
+      <div id="campaign" class="hidden" role="dialog" aria-label="Campaign level select">
+        <div class="campaign-card">
+          <p class="eyebrow">CAMPAIGN / DEPLOYMENT</p>
+          <h2>Level select</h2>
+          <div id="campaign-cards" class="campaign-cards"></div>
+          <div id="campaign-briefing" class="briefing hidden">
+            <p class="eyebrow">BRIEFING</p>
+            <h3 id="briefing-title">--</h3>
+            <p id="briefing-objective" class="briefing-objective">--</p>
+            <p id="briefing-stats" class="briefing-stats">--</p>
+            <div class="briefing-actions">
+              <button id="briefing-deploy" type="button">Deploy</button>
+              <button id="briefing-back" type="button" class="ghost">Back</button>
+            </div>
+          </div>
+          <button id="campaign-close" type="button" class="ghost wide">Close</button>
+          <p class="fine campaign-hint">
+            <kbd>Tab</kbd>/<kbd>Enter</kbd> select · <kbd>Esc</kbd> close
           </p>
         </div>
       </div>
