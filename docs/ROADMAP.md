@@ -4,7 +4,7 @@ Milestones are ordered. A milestone is complete only when every acceptance crite
 is checked and the verification command passes. Update this file and
 [PROGRESS.md](PROGRESS.md) whenever a milestone starts or finishes.
 
-Current position: **M0–M14 complete; M14 verified locally and awaiting deployment.**
+Current position: **M0–M14 complete and deployed.**
 Ranged combat, interaction, doors/pickups, level transitions, the reactor map, and the
 Rooftop District are playable and covered by 784 deterministic matrix checks (116
 scenarios), a 40-check happy-path run, a 109-check flight sweep, and a 42-check paused-state

@@ -20,7 +20,7 @@ Last updated: **2026-11-12**
 | Rooftop District | M11 | ✅ 64×64 city, 4–12 m legend towers, jetpack roof traversal, elevated sentries, hunt-gated extraction |
 | Combat depth, interiors, slices | M12 | ✅ Muzzle-aligned bolts, 5 destructible crates, 7 cover props, overseer boss; office + vault sectors with ceilings/roofs and indoor flight cap; 4-band stacked-slice billboards on a separate depth atlas |
 | District mission and boss | M13 | ✅ Hunt → boss → extract → clear stages, three-bolt overseer volley, rooftop cover, boss HP bar, mission-complete overlay with `E` continue; panel-clad interior walls and ceilings |
-| Enemy roster and AI | M14 | ✅ Rusher, charged lancer with muzzle telegraph, frontal-armor bulwark; 117 unit tests, 784 matrix checks, all browser suites green |
+| Enemy roster and AI | M14 | ✅ Rusher, charged lancer with muzzle telegraph, frontal-armor bulwark; 117 unit tests, 784 matrix checks, all browser suites green; deployed |
 | Campaign and progression | M15 | 📋 Planned: versioned localStorage campaign, level select/briefings, best time/kills; research complete |
 | Audio and game feel | M16 | 📋 Planned: layered procedural music/ambience, stage-driven intensity, audio debug hook; research complete |
 | Foundry biome | M17 | 📋 Planned: SLAGWORKS 48×48 foundry, cycling slag hazards, coolant collection + foreman boss; research complete |
@@ -90,6 +90,9 @@ Browser verification (2026-11-11, headless Chrome over CDP):
   `index-ifEVNW8L.css`; the happy-path playtest passes 40/40 and the external matrix run
   passes 646/646 assertions across 114 scenarios, including the boss volley, boss HUD,
   victory overlay, and `E` continue.
+- Production run (2026-11-12, M14): the live site serves `index-C6EDvFgC.js` /
+  `index-ifEVNW8L.css`; the deployed build reached Ready in 16 s and the happy-path
+  playtest passes 40/40 with zero console errors.
 - Production harness run (2026-11-11, after the 4-pitch deploy):
   `PLAYTEST_OUT=/tmp/rc-prod-check npm run playtest
   -- --url https://raycast-rosy.vercel.app/` passed 24/24 against the deployed build,

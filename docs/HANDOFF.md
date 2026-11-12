@@ -338,10 +338,10 @@ alone can leave HUD values at `--`.
 
 ## Next task: M14 owner playtest and tuning
 
-M14 is complete locally: the district roster has a fast rusher, a charged lancer with a
-muzzle telegraph, and a frontal-armor bulwark, while the hunt gate stays at seven targets
-plus the overseer. The owner should playtest the three roles and the flanking read before
-starting M15.
+M14 is complete and deployed (production serves `index-C6EDvFgC.js`): the district roster
+has a fast rusher, a charged lancer with a muzzle telegraph, and a frontal-armor bulwark,
+while the hunt gate stays at seven targets plus the overseer. The owner should playtest the
+three roles and the flanking read before starting M15.
 
 1. Tune the new roles in `src/content/actors.ts`: rusher speed/HP, lancer charge/damage/
    cooldown, bulwark HP/armor/melee. Keep `huntTargets` equal to the non-boss hostile count
