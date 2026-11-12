@@ -340,6 +340,24 @@ async function boot(): Promise<void> {
         syncHud();
         return result;
       },
+      cell: (x, y) => {
+        const cellX = Math.floor(x);
+        const cellY = Math.floor(y);
+        if (
+          cellX < 0 ||
+          cellY < 0 ||
+          cellX >= game.world.width ||
+          cellY >= game.world.height
+        ) {
+          return { tile: 1, height: 0, solid: true };
+        }
+        const cell = cellY * game.world.width + cellX;
+        return {
+          tile: game.world.tiles[cell],
+          height: game.world.heights[cell],
+          solid: game.world.tiles[cell] !== 0,
+        };
+      },
       loadLevel: (id) => {
         game.loadLevelById(id);
         syncFrame();
@@ -380,6 +398,11 @@ declare global {
         setHealth: (value: number) => void;
         attack: () => boolean;
         interact: () => "none" | "talk" | "door" | "locked" | "pickup";
+        cell: (x: number, y: number) => {
+          tile: number;
+          height: number;
+          solid: boolean;
+        };
         loadLevel: (id: string) => void;
         setViewmodelVisible: (visible: boolean) => void;
       };

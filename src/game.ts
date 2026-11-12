@@ -31,6 +31,11 @@ import {
 } from "./engine/world";
 import type { ActorSpec } from "./content/actors";
 import {
+  applyCrateDamage,
+  clearCrate,
+  crateCells as findCrateCells,
+} from "./engine/crates";
+import {
   hasLineOfSight,
   projectileHitsActor,
   projectileHitsPlayer,
@@ -73,6 +78,11 @@ const PLAYER_ATTACK_DAMAGE = 45;
 const PLAYER_ATTACK_COOLDOWN = 0.45;
 const PLAYER_BOLT_SPEED = 22;
 const PLAYER_BOLT_LIFE = 0.9;
+// Camera-space muzzle offset so bolts leave the plasma projector instead of
+// the eye. The spawn falls back to the eye when this point is inside geometry.
+const MUZZLE_RIGHT = 0.18;
+const MUZZLE_UP = -0.08;
+const MUZZLE_FORWARD = 0.35;
 const BOLT_IMPACT_LIFE = 0.14;
 const RESPAWN_DELAY = 1.4;
 const DAMAGE_FLASH_TIME = 0.45;
@@ -266,6 +276,8 @@ export class Game {
   private pickups: WorldPickup[] = [];
   private doors: WorldDoor[] = [];
   private exits: ExitSpec[] = [];
+  private crates = new Set<number>();
+  private crateHits = new Map<number, number>();
   private keycard = false;
   private huntKills = 0;
   private time = 0;
@@ -546,7 +558,12 @@ export class Game {
 
       if (actor.state === "attack") {
         actor.stateT += dt;
-        this.faceTowards(actor, this.player.x, this.player.y, dt * 5);
+        this.faceTowards(
+          actor,
+          this.player.x,
+          this.player.y,
+          dt * (actor.spec.turnRate ?? 5),
+        );
         const attack = actor.spec.attack;
         const gun = actor.spec.gun;
         if (!actor.hitLanded && actor.stateT >= ATTACK_IMPACT) {
@@ -598,7 +615,12 @@ export class Game {
 
       if (actor.spec.behavior === "sentry" && actor.spec.gun) {
         const gun = actor.spec.gun;
-        this.faceTowards(actor, this.player.x, this.player.y, dt * 3);
+        this.faceTowards(
+          actor,
+          this.player.x,
+          this.player.y,
+          dt * (actor.spec.turnRate ?? 3),
+        );
         const distance = Math.hypot(
           this.player.x - actor.x,
           this.player.y - actor.y,
@@ -737,12 +759,13 @@ export class Game {
     if (this.player.dead || this.player.attackCooldown > 0) return false;
     this.player.attackCooldown = PLAYER_ATTACK_COOLDOWN;
     const camera = this.cameraState();
+    const origin = this.muzzleOrigin(camera);
     const horizontal = Math.cos(camera.pitch);
     this.bolts.push(
       spawnProjectile(
-        camera.x,
-        camera.y,
-        camera.eyeZ,
+        origin.x,
+        origin.y,
+        origin.z,
         camera.dirX * horizontal,
         camera.dirY * horizontal,
         Math.sin(camera.pitch),
@@ -754,6 +777,61 @@ export class Game {
     );
     this.emit("shot");
     return true;
+  }
+
+  /**
+   * Projects the camera-space muzzle offset (right / up / forward) into world
+   * space. The camera's up vector tilts with pitch, so a raised or lowered aim
+   * still leaves the barrel at the same point on screen. If the offset lands
+   * inside a solid cell we fire from the eye so point-blank wall shots keep the
+   * old absorbed-bolt behaviour.
+   */
+  private muzzleOrigin(camera: CameraState): { x: number; y: number; z: number } {
+    const cosP = Math.cos(camera.pitch);
+    const sinP = Math.sin(camera.pitch);
+    const forwardX = camera.dirX * cosP;
+    const forwardY = camera.dirY * cosP;
+    const forwardZ = sinP;
+    const rightX = -camera.dirY;
+    const rightY = camera.dirX;
+    const upX = -camera.dirX * sinP;
+    const upY = -camera.dirY * sinP;
+    const upZ = cosP;
+    const x =
+      camera.x +
+      rightX * MUZZLE_RIGHT +
+      upX * MUZZLE_UP +
+      forwardX * MUZZLE_FORWARD;
+    const y =
+      camera.y +
+      rightY * MUZZLE_RIGHT +
+      upY * MUZZLE_UP +
+      forwardY * MUZZLE_FORWARD;
+    const z =
+      camera.eyeZ + upZ * MUZZLE_UP + forwardZ * MUZZLE_FORWARD;
+    if (this.insideSolid(x, y, z)) {
+      return { x: camera.x, y: camera.y, z: camera.eyeZ };
+    }
+    return { x, y, z };
+  }
+
+  private insideSolid(x: number, y: number, z: number): boolean {
+    if (z <= 0.02) return true;
+    const cellX = Math.floor(x);
+    const cellY = Math.floor(y);
+    if (
+      cellX < 0 ||
+      cellY < 0 ||
+      cellX >= this.world.width ||
+      cellY >= this.world.height
+    ) {
+      return true;
+    }
+    const cell = cellY * this.world.width + cellX;
+    return (
+      this.world.tiles[cell] !== 0 &&
+      z <= this.world.heights[cell] + 1e-4
+    );
   }
 
   private fireActorBolt(actor: Actor): void {
@@ -797,6 +875,10 @@ export class Game {
           Math.max(0.03, bolt.z - (bolt.vz / speed) * back),
           bolt.fromPlayer,
         );
+        // Only player bolts chip concrete crates; enemy fire leaves cover intact.
+        if (outcome === "wall" && bolt.fromPlayer) {
+          this.damageCrateAt(bolt.x, bolt.y);
+        }
         continue;
       }
 
@@ -856,6 +938,37 @@ export class Game {
   private addImpact(x: number, y: number, z: number, fromPlayer: boolean): void {
     if (this.impacts.length >= 24) this.impacts.shift();
     this.impacts.push({ x, y, z, age: 0, fromPlayer });
+  }
+
+  private damageCrateAt(x: number, y: number): void {
+    const cellX = Math.floor(x);
+    const cellY = Math.floor(y);
+    if (
+      cellX < 0 ||
+      cellY < 0 ||
+      cellX >= this.world.width ||
+      cellY >= this.world.height
+    ) {
+      return;
+    }
+    const cell = cellY * this.world.width + cellX;
+    if (!this.crates.has(cell)) return;
+    const result = applyCrateDamage(this.crateHits.get(cell) ?? 0);
+    this.crateHits.set(cell, result.hits);
+    if (!result.destroyed) return;
+    this.crates.delete(cell);
+    this.crateHits.delete(cell);
+    clearCrate(this.world, cell);
+    // Deterministic debris burst around the block, reusing the impact glow.
+    for (const [ox, oy, oz] of [
+      [-0.24, -0.12, 0.75],
+      [0.22, 0.16, 1.0],
+      [0.06, -0.26, 0.45],
+    ] as const) {
+      this.addImpact(cellX + 0.5 + ox, cellY + 0.5 + oy, oz, true);
+    }
+    this.setToast("CRATE DESTROYED", 1.6);
+    this.emit("hit");
   }
 
   interact(): "none" | "talk" | "door" | "locked" | "pickup" {
@@ -1037,6 +1150,8 @@ export class Game {
     }));
     this.doors = level.doors.map((door) => ({ ...door, open: false }));
     this.exits = level.exits;
+    this.crates = findCrateCells(level.rows);
+    this.crateHits.clear();
     this.bolts = [];
     this.impacts = [];
     this.keycard = false;

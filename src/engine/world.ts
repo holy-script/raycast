@@ -13,6 +13,14 @@ export const WALL_HEIGHT = 1.4;
 export const STEP_UP = 0.3;
 /** Tile id for legend-defined tower cells; renders with the facade texture. */
 export const TOWER_TILE = 4;
+/**
+ * A legend level may use this digit as a 0.6 m cover block resting on the
+ * surface beneath it (e.g. a roof parapet). Heights grow from z = 0, so the
+ * stored height is the supporting surface plus COVER_RISE, not the digit's
+ * absolute 0.6 m. Without a legend the digit keeps its normal platform height.
+ */
+export const COVER_CHAR = "3";
+export const COVER_RISE = 0.6;
 
 const TILE_CHARS: Record<string, number> = {
   "#": 1,
@@ -55,6 +63,8 @@ export function createWorld(
   const width = rows[0]?.length ?? 0;
   const tiles = new Uint8Array(width * height);
   const heights = new Float32Array(width * height);
+  const coverCells: number[] = [];
+  const coverSet = new Set<number>();
 
   for (let y = 0; y < height; y += 1) {
     const row = rows[y];
@@ -64,9 +74,36 @@ export function createWorld(
     for (let x = 0; x < width; x += 1) {
       const char = row[x];
       const cell = y * width + x;
+      const isCover = Boolean(options.heights && char === COVER_CHAR);
       tiles[cell] = charTile(char, options.heights);
-      heights[cell] = charHeight(char, options.heights);
+      // Cover cells get their height from the surface beneath them in a second
+      // pass, once every ordinary cell has been parsed.
+      heights[cell] = isCover ? 0 : charHeight(char, options.heights);
+      if (isCover) {
+        coverCells.push(cell);
+        coverSet.add(cell);
+      }
     }
+  }
+
+  for (const cell of coverCells) {
+    const x = cell % width;
+    const y = Math.floor(cell / width);
+    let base = 0;
+    for (const [dx, dy] of [
+      [-1, 0],
+      [1, 0],
+      [0, -1],
+      [0, 1],
+    ] as const) {
+      const nx = x + dx;
+      const ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+      const neighbor = ny * width + nx;
+      if (coverSet.has(neighbor)) continue;
+      base = Math.max(base, heights[neighbor]);
+    }
+    heights[cell] = base + COVER_RISE;
   }
 
   return { width, height, tiles, heights, spawn };

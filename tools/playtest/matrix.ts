@@ -1578,6 +1578,67 @@ async function main(): Promise<void> {
       await capturePage("f10-enemy-shot");
     });
 
+    define("combat", "f11-muzzle-spawn", async () => {
+      await pose(5.5, 4.5, 0, 0, 0);
+      const fired = await attack();
+      await step(0);
+      const bolt = (await debug()).bolts.find((entry) => entry.fromPlayer);
+      check(
+        "the bolt leaves the projector, not the eye",
+        fired &&
+          Boolean(
+            bolt &&
+              near(bolt.x, 5.85, 0.01) &&
+              near(bolt.y, 4.68, 0.01) &&
+              near(bolt.z, 0.47, 0.01),
+          ),
+        bolt
+          ? `${bolt.x.toFixed(2)}, ${bolt.y.toFixed(2)}, ${bolt.z.toFixed(2)}`
+          : "no bolt",
+      );
+    });
+
+    define("combat", "f12-crate-destroy", async () => {
+      await loadLevel("district");
+      // Stand in the open lane south of the crate at cell (34, 9).
+      await pose(34.5, 13.5, 0, -Math.PI / 2, 0);
+      const cell = (): Promise<{ tile: number; height: number; solid: boolean }> =>
+        evaluate<{ tile: number; height: number; solid: boolean }>(
+          "window.__raycast.automation.cell(34, 9)",
+        );
+      const before = await cell();
+      check(
+        "the district crate starts solid",
+        before.solid && near(before.height, 1.4, 0.001),
+        `tile ${before.tile} · height ${before.height.toFixed(2)}`,
+      );
+      const first = await attack();
+      await step(0.5);
+      const afterOne = await cell();
+      check(
+        "one bolt does not destroy the crate",
+        first && afterOne.solid,
+        `fired=${first} · solid=${afterOne.solid}`,
+      );
+      const second = await attack();
+      await step(0.25);
+      const afterTwo = await cell();
+      const values = await hud();
+      check(
+        "the second bolt clears the crate cell",
+        second &&
+          !afterTwo.solid &&
+          afterTwo.tile === 0 &&
+          afterTwo.height === 0,
+        `fired=${second} · tile ${afterTwo.tile} · height ${afterTwo.height}`,
+      );
+      check(
+        "crate destruction reports a toast",
+        values.toast.includes("CRATE DESTROYED"),
+        values.toast,
+      );
+    });
+
     // ---------------------------------------------------------------- levels
     define("levels", "l01-transition-reactor", async () => {
       await pose(17.5, 9.5, 0, 0, 0);
@@ -1699,14 +1760,20 @@ async function main(): Promise<void> {
       );
       check(
         "the hunt objective starts empty",
-        current.objective.includes("0/7"),
+        current.objective.includes("0/8"),
         current.objective,
       );
       const elevated = dbg.actors.filter((actor) => actor.z > 3);
+      const sentries = elevated.filter((actor) =>
+        actor.name.startsWith("spire"),
+      );
+      const overseer = dbg.actors.find((actor) => actor.name === "overseer");
       check(
-        "four sentries stand on the rooftops",
-        elevated.length === 4 &&
-          elevated.every((actor) => actor.z === 8 || actor.z === 12),
+        "four sentries and the overseer hold the rooftops",
+        elevated.length === 5 &&
+          sentries.length === 4 &&
+          elevated.every((actor) => actor.z === 8 || actor.z === 12) &&
+          Boolean(overseer && overseer.z === 12 && overseer.hostile),
         elevated.map((actor) => `${actor.name}@${actor.z}`).join(", "),
       );
       await saveCanvas("l06-district-spawn", true);
@@ -1767,7 +1834,7 @@ async function main(): Promise<void> {
       dbg = await debug();
       check(
         "killing every hostile fills the hunt counter",
-        dbg.hunt.kills === 7 && dbg.hunt.targets === 7,
+        dbg.hunt.kills === 8 && dbg.hunt.targets === 8,
         `${dbg.hunt.kills}/${dbg.hunt.targets}`,
       );
       await step(0.1);

@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { LEVELS, levelIndexById } from "../src/content/levels";
-import { createWorld, isSolidAt, supportHeight, tileAt } from "../src/engine/world";
+import { hasLineOfSight } from "../src/engine/projectile";
+import {
+  COVER_CHAR,
+  createWorld,
+  isSolidAt,
+  supportHeight,
+  tileAt,
+} from "../src/engine/world";
 
 const SPRITES = new Set(["guardian"]);
 
@@ -99,9 +106,94 @@ describe("level definitions", () => {
   it("gates the district extraction on exactly its hostile roster", () => {
     const district = LEVELS[levelIndexById("district")];
     const hostiles = district.actors.filter((actor) => actor.hostile);
-    expect(district.huntTargets).toBe(7);
-    expect(hostiles.length).toBe(district.huntTargets);
+    expect(district.huntTargets).toBe(8);
+    expect(hostiles.length).toBe(8);
     expect(district.title).toBe("ROOFTOP DISTRICT");
+  });
+
+  it("places the overseer on an outer edge of a 12 m tower", () => {
+    const district = LEVELS[levelIndexById("district")];
+    const world = worldOf(district);
+    const boss = district.actors.find((actor) => actor.name === "overseer");
+    expect(boss).toBeDefined();
+    expect(boss?.hostile).toBe(true);
+    expect(boss?.behavior).toBe("sentry");
+    expect(boss?.hp).toBe(260);
+    expect(boss?.attack).toBeUndefined();
+    expect(boss?.gun).toMatchObject({
+      damage: 7,
+      range: 16,
+      cooldown: 1.3,
+    });
+    expect(boss?.z).toBe(12);
+    expect(supportHeight(world, boss!.x, boss!.y)).toBeCloseTo(12);
+    const bx = Math.floor(boss!.x);
+    const by = Math.floor(boss!.y);
+    const onEdge = [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+    ].some(([dx, dy]) => !isSolidAt(world, bx + dx + 0.5, by + dy + 0.5));
+    expect(onEdge, "boss cell must be on the tower edge").toBe(true);
+  });
+
+  it("stacks 0.6 m cover on the district roofs", () => {
+    const district = LEVELS[levelIndexById("district")];
+    const world = worldOf(district);
+    const heights: number[] = [];
+    for (let y = 0; y < district.rows.length; y += 1) {
+      for (let x = 0; x < district.rows[y].length; x += 1) {
+        if (district.rows[y][x] === COVER_CHAR) {
+          heights.push(supportHeight(world, x + 0.5, y + 0.5));
+        }
+      }
+    }
+    expect(heights.length).toBe(7);
+    const near = (value: number, target: number): boolean =>
+      Math.abs(value - target) < 0.001;
+    const low = heights.filter((height) => near(height, 8.6));
+    const high = heights.filter((height) => near(height, 12.6));
+    const mid = heights.filter((height) => near(height, 6.6));
+    expect(low.length, "two 8 m spire covers").toBeGreaterThanOrEqual(2);
+    expect(high.length, "one cover on each 12 m roof").toBe(4);
+    expect(mid.length, "one mid-rise belt-high cover").toBe(1);
+  });
+
+  it("keeps rooftop cover clear of every sentry sight line", () => {
+    const district = LEVELS[levelIndexById("district")];
+    const world = worldOf(district);
+    const targets: Record<string, { x: number; y: number }> = {
+      "spire-nw": { x: 6.5, y: 25.5 },
+      "spire-ne": { x: 30.5, y: 4.5 },
+      "spire-sw": { x: 11.5, y: 33.5 },
+      "spire-se": { x: 49.5, y: 22.5 },
+      overseer: { x: 40.5, y: 30.5 },
+    };
+    for (const actor of district.actors) {
+      if (
+        actor.behavior !== "sentry" ||
+        !actor.gun ||
+        !actor.hostile ||
+        (actor.z ?? 0) <= 0
+      ) {
+        continue;
+      }
+      const target = targets[actor.name];
+      expect(target, actor.name).toBeDefined();
+      if (!target) continue;
+      const visible = hasLineOfSight(
+        world,
+        actor.x,
+        actor.y,
+        (actor.z ?? 0) + 0.9,
+        target.x,
+        target.y,
+        0.5,
+        actor.gun.range,
+      );
+      expect(visible, actor.name).toBe(true);
+    }
   });
 
   it("builds the district towers from its legend heights", () => {

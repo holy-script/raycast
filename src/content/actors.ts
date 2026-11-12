@@ -27,6 +27,8 @@ export interface ActorSpec {
   attack?: { damage: number; range: number; cooldown: number };
   /** Ranged attack fired from the wind-up pose when the player is in sight. */
   gun?: { damage: number; range: number; cooldown: number; speed: number };
+  /** Overrides the behavior's turn rate (radians per second factor) when set. */
+  turnRate?: number;
   /** Looping dialogue shown when the player uses E nearby. */
   talk?: string[];
 }
@@ -288,6 +290,21 @@ export const ROOFTOP_ACTORS: ActorSpec[] = [
     hostile: true,
     hp: 150,
     attack: { damage: 16, range: 1.7, cooldown: 1.5 },
+  },
+  {
+    name: "overseer",
+    sprite: "guardian",
+    x: 51.5,
+    y: 41.5,
+    z: 12,
+    facing: NORTH,
+    behavior: "sentry",
+    tint: [1.38, 0.7, 0.62],
+    scale: 1.3,
+    hostile: true,
+    hp: 260,
+    gun: { damage: 7, range: 16, cooldown: 1.3, speed: 11 },
+    turnRate: 1.4,
   },
 ];
 

@@ -1,7 +1,9 @@
 // 64x64 rooftop district. Legend towers: a=4 m, b=6 m, c=8 m, d=10 m, e=12 m.
-// '#' is a street wall, 'X' a 1.4 m crate, '.' walkable asphalt. The 8-wide
-// avenue runs north-south through the open plaza band and four tower quadrants
-// with 2-cell alleys offer jetpack routes onto the rooftops.
+// '#' is a street wall, 'X' a 1.4 m destructible crate, '.' walkable asphalt.
+// Digit '3' is a 0.6 m cover block resting on the roof beneath it (parapet
+// corners and a belt-high block on a mid-rise strip). The 8-wide avenue runs
+// north-south through the open plaza band and four tower quadrants with 2-cell
+// alleys offer jetpack routes onto the rooftops.
 export const DISTRICT_HEIGHTS: Record<string, number> = {
   a: 4,
   b: 6,
@@ -13,7 +15,7 @@ export const DISTRICT_HEIGHTS: Record<string, number> = {
 export const DISTRICT_MAP: string[] = [
   "################################################################",
   "#..............................................................#",
-  "#.aaaaaaaaa..bbbbbbbbb...bbb........bbb.aaaaaaaaa..ccccccccc...#",
+  "#.aaaaaaaaa..bbbbbbbbb...3bb........bbb.aaaaaaaaa..ccccccc3c...#",
   "#.aaaaaaaaa..bbbbbbbbb...bbb........bbb.aaaaaaaaa..ccccccccc...#",
   "#.aaaaaaaaa..bbbbbbbbb...bbb........bbb.aaaaaaaaa..ccccccccc...#",
   "#.aaaaaaaaa..bbbbbbbbb...bbb........bbb.aaaaaaaaa..ccccccccc...#",
@@ -24,7 +26,7 @@ export const DISTRICT_MAP: string[] = [
   "#.aaaaaaaaa..bbbbbbbbb...bbb........bbb.aaaaaaaaa..ccccccccc...#",
   "#........................bbb........bbb........................#",
   "#........................bbb.X......bbb........................#",
-  "#.ccccccccc..aaaaaaaaa...bbb........bbb.eeeeeeeee..bbbbbbbbb...#",
+  "#.ccccccc3c..aaaaaaaaa...bbb........bbb.eeeeeee3e..bbbbbbbbb...#",
   "#.ccccccccc..aaaaaaaaa...bbb........bbb.eeeeeeeee..bbbbbbbbb...#",
   "#.ccccccccc..aaaaaaaaa...bbb........bbb.eeeeeeeee..bbbbbbbbb...#",
   "#.ccccccccc..aaaaaaaaa...bbb........bbb.eeeeeeeee..bbbbbbbbb...#",
@@ -59,7 +61,7 @@ export const DISTRICT_MAP: string[] = [
   "#.bbbbbbbbb..ddddddddd...bbb........bbb.ccccccccc..eeeeeeeee...#",
   "#.bbbbbbbbb..ddddddddd...bbb........bbb.ccccccccc..eeeeeeeee...#",
   "#.bbbbbbbbb..ddddddddd...bbb........bbb.ccccccccc..eeeeeeeee...#",
-  "#.bbbbbbbbb..ddddddddd...bbb........bbb.ccccccccc..eeeeeeeee...#",
+  "#.bbbbbbbbb..ddddddddd...bbb........bbb.ccccccccc..eeeeeee3e...#",
   "#.bbbbbbbbb..ddddddddd...bbb........bbb.ccccccccc..eeeeeeeee...#",
   "#........................bbb........bbb........................#",
   "#........................bbbX.......bbb........................#",
@@ -70,7 +72,7 @@ export const DISTRICT_MAP: string[] = [
   "#.eeeeeeeee..ccccccccc...bbb........bbb.aaaaaaaaa..eeeeeeeee...#",
   "#.eeeeeeeee..ccccccccc...bbb......X.bbb.aaaaaaaaa..eeeeeeeee...#",
   "#.eeeeeeeee..ccccccccc...bbb........bbb.aaaaaaaaa..eeeeeeeee...#",
-  "#.eeeeeeeee..ccccccccc...bbb........bbb.aaaaaaaaa..eeeeeeeee...#",
+  "#.3eeeeeeee..ccccccccc...bbb........bbb.aaaaaaaaa..eeeeeee3e...#",
   "#.eeeeeeeee..ccccccccc...bbb........bbb.aaaaaaaaa..eeeeeeeee...#",
   "#..............................................................#",
   "#..............................................................#",
