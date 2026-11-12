@@ -368,8 +368,10 @@ counter.
 `npm run playtest` (40/40), `npm run playtest:matrix` (766/766 across 114 scenarios, 137
 captures), `npm run playtest:flight` (109/109), and `npm run playtest:states` (42/42)
 pass with zero page errors. Captures show the overseer and its boss bar, the mission
-overlay, the panel-clad office walls and ceiling, and the victor overlay. Verified
-2026-11-12 and deployed to https://raycast-rosy.vercel.app.
+overlay, the panel-clad office walls and ceiling, and the victory overlay. Verified
+2026-11-12 and deployed the same day to https://raycast-rosy.vercel.app
+(`index-ClYdKduO.js`); the production playtest passes 40/40 and the external matrix run
+passes 646/646 assertions across 114 scenarios against the live build.
 
 Deferred: dedicated boss art (the overseer reuses the guardian chassis with a red tint),
 phase changes or telegraphed attacks, a mission-select screen, and persistent campaign

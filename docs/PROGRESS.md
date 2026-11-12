@@ -82,6 +82,10 @@ Browser verification (2026-11-11, headless Chrome over CDP):
 - No console errors during the checked session.
 - Production deployment: https://raycast-rosy.vercel.app — HTML, atlas JSON/PNG, and
   textures all return 200; the scene renders with no console errors in headless Chrome.
+- Production run (2026-11-12, M13): the live site serves `index-ClYdKduO.js` /
+  `index-ifEVNW8L.css`; the happy-path playtest passes 40/40 and the external matrix run
+  passes 646/646 assertions across 114 scenarios, including the boss volley, boss HUD,
+  victory overlay, and `E` continue.
 - Production harness run (2026-11-11, after the 4-pitch deploy):
   `PLAYTEST_OUT=/tmp/rc-prod-check npm run playtest
   -- --url https://raycast-rosy.vercel.app/` passed 24/24 against the deployed build,
