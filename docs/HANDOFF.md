@@ -11,14 +11,14 @@ npm run typecheck
 npm test
 npm run build
 npm run playtest   # headless Chrome, 40 checks + screenshots
-npm run playtest:matrix  # 113 deterministic scenarios, 752 checks
+npm run playtest:matrix  # 114 deterministic scenarios, 766 checks
 npm run playtest:flight  # 18 airborne poses + live jetpack, 109 checks
 npm run playtest:states  # 42 state checks, 21 paused-state captures
 npm run dev        # http://localhost:5173
 ```
 
-Expected: typecheck clean, 108 tests passing across 11 files, Vite build succeeds, playtest
-40/40, matrix 752/752, flight 109/109, state gallery 42/42 with zero console errors.
+Expected: typecheck clean, 112 tests passing across 11 files, Vite build succeeds, playtest
+40/40, matrix 766/766, flight 109/109, state gallery 42/42 with zero console errors.
 Click the canvas,
 move with WASD, hold Space to jetpack up to 18 m outdoors (or below the ceiling indoors),
 and look down to see the top-pitch
@@ -37,12 +37,22 @@ M11 loop: use the courtyard beacon at (2.5, 22.5) to enter the 64×64 Rooftop Di
 From the south avenue spawn (32.5, 58.5), advance into the plaza, kill the two street
 gunners and the plaza bruiser, jetpack onto the 4/6/8/10/12 m towers, and clear the four
 rooftop sentries. The beacon at the plaza centre (32.5, 32.5) returns to the courtyard
-only after all eight hostiles are dead; until then it toasts the remaining hunt count.
+only after the seven rooftop hostiles and the overseer are dead; until then it toasts the
+remaining hunt count or the active overseer (see the M13 loop below).
 
 M12 additions: walk through the west doorway at (2, 6) into the security office for a
 medkit under a 3 m ceiling; the south doorway at (55, 60) enters the vault for fuel. Five
 `X` crates take two bolts each and toast `CRATE DESTROYED`; seven `3` risers give 0.6 m of
 shooting cover. The 260 HP overseer patrols the 12 m roof at (51.5, 41.5).
+
+M13 loop: the district is a four-stage mission. Clear the seven non-boss hostiles while
+the HUD objective tracks `killed/7`; the exit stays locked and toasts the remaining
+hunters. Once the hunt clears, the objective switches to the overseer and its HP row
+appears within 24 m. The overseer fires three-bolt volleys (5 damage each, 18 m range) —
+use the two 12.6 m cover risers at (54, 42) and (56, 44) or jetpack sideways. After the
+overseer dies the extraction objective appears; step on the plaza beacon to raise the
+mission-complete overlay (time, hostile count) and press `E` to return to the courtyard.
+Interior walls and ceilings now use the panel material instead of the windowed facade.
 
 Asset pipeline after a fresh clone (raw renders are gitignored):
 
@@ -107,7 +117,7 @@ flight.
 
 `?screenshot` hides the intro overlay for headless captures. Prefer the harnesses:
 `npm run playtest` is the happy-path browser check, `npm run playtest:matrix` walks
-113 deterministic state/route scenarios (752 checks, labelled contact sheet, golden
+114 deterministic state/route scenarios (766 checks, labelled contact sheet, golden
 frames), `npm run playtest:states` pauses the sim in every player/guardian body state
 for 21 gallery captures (42 checks), and `npm run playtest:flight` sweeps 18
 altitude/pitch poses plus a live jetpack flight (109 checks) while asserting no sky
@@ -278,8 +288,9 @@ alone can leave HUD values at `--`.
   sunken floors/pits, overhangs, multi-storey interiors, or interior stairs. Legend
   characters (`a`–`e`) create solid towers up to 12 m; rooms are single-volume sectors with
   a `ceilingZ` and a separate `roofZ`. Interiors exist only where a level declares
-  `rooms` (the district office and vault), and their wall faces reuse the exterior facade
-  texture, so lit windows can appear indoors.
+  `rooms` (the district office and vault). Interior wall faces and ceilings sample the
+  shared panel texture on a world grid, so they show riveted cladding instead of windows;
+  the roof and lintel keep the exterior materials.
 - Actors are non-blocking (no player/actor or actor/actor collision). Hostiles deal melee
   contact damage and gunners/sentries fire bolts; both can be killed. Bolts are straight,
   gravity-free, and do not penetrate or bounce. Player bolts spawn at the viewmodel muzzle
@@ -307,26 +318,28 @@ alone can leave HUD values at `--`.
   (`raycast.settings.v1`) and fail open when storage is blocked.
 - No license file yet.
 
-## Next task: M12 owner playtest and tuning
+## Next task: M13 owner playtest and tuning
 
-M12 is complete locally: combat depth (muzzle spawn, destructible crates, cover, the
-overseer boss), tower interiors (office and vault sectors with ceilings, roofs, and an
-indoor flight cap), and stacked-slice sprites are covered by `playtest` (40),
-`playtest:matrix` (752 across 113 scenarios), `playtest:flight` (109),
-`playtest:states` (42), and 108 unit tests. The owner should playtest the crate fight,
-indoor flight, and the overseer before the next design step.
+M13 is complete locally: the district runs hunt → boss → extract → clear, the overseer
+fires a three-bolt volley from behind new rooftop cover, the HUD shows the boss row and
+stage objective, and the beacon raises a mission-complete overlay with `E` to continue.
+Verification passes `playtest` (40), `playtest:matrix` (766 across 114 scenarios),
+`playtest:flight` (109), `playtest:states` (42), and 112 unit tests. The owner should
+playtest the full district loop — especially volley dodging from the 12.6 m cover — before
+the next design step.
 
-1. Tune in `src/engine/crates.ts` / `src/content/actors.ts`: crate hit count, the
-   overseer's HP/damage/turn rate, and the seven cover risers. Keep `huntTargets` equal to
-   the hostile count (8).
-2. If rooms move, update `DISTRICT_ROOMS`, the level's indoor pickups, and the `l12`–`l17`
-   doorway/pose coordinates; rerun `tests/levels.test.ts` so sector bounds and the roof
-   stay valid.
+1. Tune in `src/content/actors.ts` / `src/content/district-map.ts`: the overseer's HP,
+   volley damage/spread/cooldown, and the nine cover cells. Keep `huntTargets` equal to the
+   non-boss hostile count (7).
+2. If rooms or cover move, update `DISTRICT_ROOMS`, the level's indoor pickups, and the
+   `l12`–`l17` doorway/pose coordinates; rerun `tests/levels.test.ts` so sector bounds,
+   cover heights, and the roof stay valid.
 3. If a visual change lands, rerun `npm run playtest:matrix -- --update-golden`, inspect
    the first mismatching run before committing, then run typecheck/tests/build, both
    playtests, flight, states, and check Vercel.
-4. Deferred: interior-specific wall/ceiling art, stairs between floors, projectile
-   drop/penetration, per-band slice lighting, and an AutoSprite/Gamelabs adapter.
+4. Deferred: dedicated overseer art and telegraphed attacks, mission select/campaign
+   persistence, stairs between floors, projectile drop/penetration, per-band slice
+   lighting, and an AutoSprite/Gamelabs adapter.
 
 If a design choice could go either way, record it in [DECISIONS.md](DECISIONS.md) with the
 tradeoff, then proceed.

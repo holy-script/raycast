@@ -138,8 +138,13 @@ candidate surfaces to the per-pixel DDA walk:
   it the doorway would show sky through the building.
 - **Ceiling plane** — when the eye is below `ceilingZ` and `rayZ > 0`, the ray crosses the
   underside: `ceilingT = (ceilingZ − eyeZ) / rayZ`, accepted inside the cell. Sampled with
-  the facade texture and reported in `stats.ceilingPixels`.
+  the panel texture on a 2 m world grid at 0.78 shade and reported in
+  `stats.ceilingPixels`.
 
+Walls whose hit cell is inside a room sample the panel texture on a 1.5 m world grid
+instead of the exterior facade, with a 1.15 ambient lift and no window band; these pixels
+count as `stats.interiorPixels` and not `stats.wallPixels`. The roof and lintel keep the
+top/facade materials so the building still reads correctly from the street and the air.
 All three share the pixel depth test, so a nearer wall still wins. Indoor flight clamps
 `maxAltitude` to `ceilingZ − PLAYER_HEIGHT`, and `stepProjectile` plus `hasLineOfSight`
 treat the slab as solid: a bolt fired upward indoors hits the ceiling and stops.
@@ -305,7 +310,7 @@ every transition — the demo loop is one-way per visit.
 
 Three levels ship: the 24×24 courtyard, the 24×24 reactor deck, and the 64×64 Rooftop
 District. The district declares legend heights, asphalt floors, roof tops,
-`rooms: DISTRICT_ROOMS`, and `huntTargets: 8`; its actors, pickups, and exits can carry a
+`rooms: DISTRICT_ROOMS`, and `huntTargets: 7`; its actors, pickups, and exits can carry a
 `z` altitude. Two rooms are carved: the NW security office (x 2–8, y 4–8, ceiling 3 m
 under a 4 m roof) and the SE vault (x 51–57, y 54–59, ceiling 3 m under the 12 m tower),
 each with a doorway and an indoor pickup. Grounded content validates against open floor,
@@ -328,7 +333,7 @@ inward, the parapet clips their own downward sight line. Once within reach, chas
 | Marauder gun | 11 dmg, 9 m range, 1.7 s cooldown, 9 m/s bolt |
 | District street gunner | 8 dmg, 13 m range, 1.7 s cooldown, 9 m/s bolt |
 | District roof sentry | 9–10 dmg, 18–20 m range, 1.9–2.0 s cooldown, 10 m/s bolt |
-| District overseer (boss) | 260 HP, 7 dmg, 16 m range, 1.3 s cooldown, 11 m/s bolt, 1.4 rad/s turn |
+| District overseer (boss) | 260 HP, 5 dmg × 3-bolt volley (±0.12 rad), 18 m range, 1.7 s cooldown, 11 m/s bolt, 1.4 rad/s turn |
 | Destructible crate | 1.4 m tall, 2 player bolts, `CRATE DESTROYED` toast |
 | Interaction radius | talk/door 2.4 m, pickup 0.5 m, exit pad 0.6 m |
 
@@ -346,21 +351,32 @@ second hit, `clearCrate` zeroes the tile and height so movement and raycasts agr
 kill emits debris from the hit point and toasts `CRATE DESTROYED`. Crates are part of the
 level grid, so they reset on reload like doors.
 
-Hostiles with a `gun` spec (the courtyard marauder, the district gunners, and the rooftop
-sentries) check distance, cooldown, and a 3D-sampled `hasLineOfSight` before entering
-`attack`; at `ATTACK_IMPACT` (0.20 s) they fire a bolt aimed at the player's chest. A
-`sentry` holds position and faces the player; a `chase` hostile with a gun keeps closing
-in and falls back to melee inside `attack.range`. Gun-only hostiles omit `attack` entirely.
-Enemy bolts do not lead the target.
+Hostiles with a `gun` spec (the courtyard marauder, the district gunners, the rooftop
+sentries, and the overseer) check distance, cooldown, and a 3D-sampled `hasLineOfSight`
+before entering `attack`; at `ATTACK_IMPACT` (0.20 s) they fire a bolt aimed at the
+player's chest. A `sentry` holds position and faces the player; a `chase` hostile with a
+gun keeps closing in and falls back to melee inside `attack.range`. Gun-only hostiles omit
+`attack` entirely. A gun with `volley` fires that many horizontal bolts fanned by
+`spread`: `volleyAngles` centres the fan on the aim angle, and the shared vertical slope
+(`Δz / horizontal distance`) is passed per horizontal metre so every bolt still crosses
+the player's chest height. Enemy bolts do not lead the target.
 
-`interact()` returns `none | talk | door | locked | pickup`. Doors are grid cells marked
-`D` with a `DoorSpec`; opening one clears both the tile id and its height so movement and
-raycasts agree, and a door with `requires: "keycard"` refuses until the player has one.
-Pickups are billboards collected within a 0.5 m 3D radius: keycard sets the flag, medkit
-heals, fuel refills. Exits compare horizontal distance and the player's altitude to the
-pad's `z`, so a beacon on a roof cannot be triggered from the street. A level with
-`huntTargets` keeps every exit locked until that many hostiles die; the HUD objective
-appends the live `killed/targets` count and a refused exit toasts the remaining hunters.
+Mission state is derived, not stored as a counter machine: `missionStage()` returns
+`hunt` while the non-boss kill count is below `huntTargets`, `boss` while the overseer
+lives, `extract` once both are satisfied, and `clear` after victory. Only non-boss
+hostiles increment `huntKills`, so killing the boss early cannot skip the hunt. A level
+with `huntTargets` keeps every exit locked until the hunt is complete **and** the boss is
+gone; a refused exit names the remaining hunter count or the active overseer. Reaching an
+unlocked beacon sets `victory`, which freezes the simulation and mission clock and raises
+a mission-complete overlay; `E` on that overlay loads the courtyard. The HUD also exposes
+the live stage objective and, within 24 m, the overseer's name, HP, and distance.
+
+`interact()` returns `none | talk | door | locked | pickup | continue`. Doors are grid
+cells marked `D` with a `DoorSpec`; opening one clears both the tile id and its height so
+movement and raycasts agree, and a door with `requires: "keycard"` refuses until the
+player has one. Pickups are billboards collected within a 0.5 m 3D radius: keycard sets
+the flag, medkit heals, fuel refills. Exits compare horizontal distance and the player's
+altitude to the pad's `z`, so a beacon on a roof cannot be triggered from the street.
 The HUD surfaces the current prompt (`E · talk`, `E · sealed — keycard required`, …) and a
 transient toast for outcomes.
 
@@ -491,7 +507,7 @@ Screenshots and a JSON report land in `docs/screenshots/playtest/`.
 The companion harnesses share `tools/playtest/support.ts` (contact sheets, sky-row
 classification, image metrics):
 
-- `playtest:matrix` — 113 deterministic scenarios, 752 checks, golden-frame comparison.
+- `playtest:matrix` — 114 deterministic scenarios, 766 checks, golden-frame comparison.
 - `playtest:states` — paused player/guardian animation gallery, 42 checks.
 - `playtest:flight` — 18 altitude/pitch poses plus a live jetpack flight, 109 checks. It
   classifies every canvas pixel against the sky gradient, flags enclosed sky holes, fits the

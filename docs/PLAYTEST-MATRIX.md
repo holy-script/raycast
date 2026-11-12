@@ -1,9 +1,9 @@
 # Playtest matrix
 
 `npm run playtest:matrix` drives the same headless-Chrome/CDP harness as
-`npm run playtest`, but instead of one happy path it walks the game through 113
+`npm run playtest`, but instead of one happy path it walks the game through 114
 deterministic state, interaction, combat, level, district, interior, route, and viewmodel
-scenarios: 752 checks (assertions plus golden-frame comparisons) and 134 captures
+scenarios: 766 checks (assertions plus golden-frame comparisons) and 137 captures
 (canvas frames plus full-page UI overlays).
 
 The point is coverage the owner should not have to repeat by hand — every movement axis,
@@ -75,8 +75,8 @@ Two harness details matter when extending it:
 | UI | `u01`–`u07` | Minimap toggle, HUD minimal mode, pause freeze, pause/resume, HUD values, fuel readout. |
 | Routes | `r01`–`r05` | Jet over a wall, jet forward climb, aerial look-down, mid-air respawn, sprint route. |
 | Interaction | `i01`–`i07` | Keycard pickup + toast, locked door refusal, door unlock (tile cleared), talk-line cycle, medkit heal, fuel refill, empty interact. |
-| Combat | `f01`–`f12` | Bolt hit, kill → corpse, fired-away miss, 4 m bolt travel, hostile melee damage overlay, player death → redeploy, cooldown gate, enemy wind-up timing, wall absorption, marauder gunner shot + damage, muzzle-aligned spawn, two-bolt crate destruction. |
-| Levels | `l01`–`l17` | Courtyard → reactor transition, vault return with reloaded state, terrace climb, reactor hover actor, beacon loop, district arrival/landing/sentry/hunt gate/gate entry, and office/vault interiors with ceilings and roofs. |
+| Combat | `f01`–`f13` | Bolt hit, kill → corpse, fired-away miss, 4 m bolt travel, hostile melee damage overlay, player death → redeploy, cooldown gate, enemy wind-up timing, wall absorption, marauder gunner shot + damage, muzzle-aligned spawn, two-bolt crate destruction, and the overseer volley/boss HUD/cover/stage transition. |
+| Levels | `l01`–`l17` | Courtyard → reactor transition, vault return with reloaded state, terrace climb, reactor hover actor, beacon loop, district arrival/landing/sentry/hunt gate with victory overlay/gate entry, and office/vault interiors with ceilings, panel walls, and roofs. |
 
 Every scenario also runs universal checks: finite player/render state, sane projected
 sprite rectangles, populated HUD, a non-blank rendered frame, and (for canvas captures) a
@@ -243,6 +243,29 @@ cover the combat-depth track, six cover interiors from the street, the air, and 
 The first M12 run caught a duplicate-medkit lookup: `l13` matched the rooftop medkit at the
 same `x = 6.5`, so the check now matches both `x` and `y`. Interior captures also confirmed
 that the sky visible through a room is the open doorway sightline, not an enclosed hole.
+
+## M13 mission and boss extension (2026-11-12)
+
+M13 adds `f13-boss-encounter` and extends existing scenarios (matrix now 114 scenarios /
+766 checks / 137 captures):
+
+| Scenario | Assertion |
+| --- | --- |
+| `f13-boss-encounter` | Standing on the overseer's 12 m roof facing it yields ≥3 inbound bolts above the roof, the boss row reads `OVERSEER` at ≤260 HP within 24 m, both cover risers are solid at 12.6 m, and killing the seven non-boss hostiles flips the stage to `boss` with an overseer objective. |
+| `l09-hunt-gate` | The locked beacon names the seven remaining hunters; killing them raises the victory overlay (`TIME mm:ss · 7 HOSTILES DOWN`); `E` returns `"continue"` and loads the courtyard. |
+| `l12-office-entry` | Adds an interior wall pose: 73k+ panel pixels, zero exterior-facing wall pixels, zero ceiling/top pixels. |
+| `f12-crate-destroy` | Adds a first-hit check: one bolt leaves the crate standing, toasts `CRATE CRACKED`, and emits two impact puffs. |
+| `f10` / `l08` | Re-assert enemy bolt flight after the volley change: the marauder's bolt and the rooftop sentry's high bolt both survive long enough to be observed. |
+
+The first M13 run caught a real trajectory regression. The volley refactor passed a unit
+horizontal direction with the unscaled vertical delta, so `spawnProjectile` normalized the
+steep component and every enemy bolt nosed into the floor within ~0.5 s. `f10`, `f13`, and
+`l08` all reported zero/near-zero bolts in flight; a scratch CDP probe showed bolt `z`
+dropping `0.73 → 0.12` while the player stayed at 100 HP. `fireActorBolt` now divides the
+vertical delta by the horizontal distance, restoring the shallow aim. Two test defects
+were fixed at the same time: the `f13` kill loop read `actor.hostile` instead of
+`actor.spec.hostile`, and `l09` checked the victory overlay before the 0.67 s boss death
+animation finished.
 
 ## Extending it
 

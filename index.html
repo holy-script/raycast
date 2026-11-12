@@ -43,6 +43,13 @@
           <div class="row detail"><span class="k">SPRITE</span><span id="hud-sprite">--</span></div>
           <div class="row"><span class="k">HP</span><span id="hud-health">--</span></div>
           <div class="health" aria-hidden="true"><span id="hud-health-fill"></span></div>
+          <div class="row boss-row hidden" id="hud-boss-row">
+            <span class="k" id="hud-boss-name">BOSS</span>
+            <span id="hud-boss">--</span>
+          </div>
+          <div class="boss hidden" id="hud-boss-bar" aria-hidden="true">
+            <span id="hud-boss-fill"></span>
+          </div>
           <div class="row"><span class="k">LEVEL</span><span id="hud-level">--</span></div>
           <div id="hud-objective" class="objective detail">--</div>
           <div class="row detail">
@@ -53,6 +60,14 @@
         <canvas id="minimap" aria-label="Minimap"></canvas>
         <div id="prompt" aria-live="polite"></div>
         <div id="toast" aria-live="polite"></div>
+        <div id="victory" class="hidden" role="dialog" aria-label="District cleared">
+          <div class="victory-card">
+            <p class="eyebrow">MISSION COMPLETE</p>
+            <h2>District cleared</h2>
+            <p id="victory-stats" class="victory-stats">--</p>
+            <p class="fine"><kbd>E</kbd> return to the courtyard</p>
+          </div>
+        </div>
         <div id="pause" class="hidden" role="dialog" aria-label="Paused settings">
           <div class="pause-card">
             <p class="eyebrow">SESSION PAUSED</p>

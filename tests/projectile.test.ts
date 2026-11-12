@@ -6,6 +6,7 @@ import {
   projectileHitsPlayer,
   spawnProjectile,
   stepProjectile,
+  volleyAngles,
   type Projectile,
   type ProjectileOutcome,
 } from "../src/engine/projectile";
@@ -86,6 +87,24 @@ describe("stepProjectile", () => {
     const bolt = spawnProjectile(1.5, 1.5, 0.2, 1, 0, 0, 10, 45, 2, true);
     expect(advance(bolt, LEDGE)).toBe("wall");
     expect(bolt.x).toBeLessThan(4);
+  });
+});
+
+describe("volleyAngles", () => {
+  it("returns the base angle for a single shot", () => {
+    expect(volleyAngles(0.4, 1, 0.12)).toEqual([0.4]);
+  });
+
+  it("fans a three-shot volley symmetrically around the aim", () => {
+    const angles = volleyAngles(0, 3, 0.12);
+    expect(angles).toHaveLength(3);
+    expect(angles[0]).toBeCloseTo(-0.12, 6);
+    expect(angles[1]).toBeCloseTo(0, 6);
+    expect(angles[2]).toBeCloseTo(0.12, 6);
+  });
+
+  it("treats non-positive counts as one shot", () => {
+    expect(volleyAngles(1, 0, 0.2)).toEqual([1]);
   });
 });
 

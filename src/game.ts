@@ -44,6 +44,7 @@ import {
   projectileHitsPlayer,
   spawnProjectile,
   stepProjectile,
+  volleyAngles,
   type Projectile,
 } from "./engine/projectile";
 import {
@@ -95,6 +96,8 @@ const INTERACT_RANGE = 2.4;
 const TALK_RANGE = 2.4;
 const PICKUP_RADIUS = 0.5;
 const EXIT_RADIUS = 0.6;
+/** Distance at which the overseer's health bar stays on screen. */
+const BOSS_HUD_RANGE = 24;
 
 const ATTACK_IMPACT = 0.2;
 const ATTACK_STATE_TIME = 0.4;
@@ -184,6 +187,8 @@ interface WorldDoor extends DoorSpec {
   open: boolean;
 }
 
+export type MissionStage = "hunt" | "boss" | "extract" | "clear";
+
 export interface HudState {
   x: number;
   y: number;
@@ -208,6 +213,16 @@ export interface HudState {
   damageFlash: number;
   levelTitle: string;
   objective: string;
+  /** Live boss encounter data; null when no boss is in range. */
+  boss: { name: string; hp: number; maxHp: number; distance: number } | null;
+  /** Gated missions expose their stage and clock; other levels report null. */
+  mission: {
+    stage: MissionStage;
+    time: number;
+    kills: number;
+    targets: number;
+  } | null;
+  victory: boolean;
   huntKills: number;
   huntTargets: number;
   prompt: string;
@@ -240,6 +255,7 @@ export interface RenderDebug {
   };
   level: string;
   hunt: { kills: number; targets: number };
+  mission: { stage: MissionStage; time: number; victory: boolean };
   viewmodel: { pose: string; dx: number; dy: number };
   actors: Array<{
     name: string;
@@ -290,6 +306,8 @@ export class Game {
   private keycard = false;
   private huntKills = 0;
   private time = 0;
+  private victory = false;
+  private victoryTime = 0;
   private toastText = "";
   private toastT = 0;
   private events: GameEvent[] = [];
@@ -342,7 +360,13 @@ export class Game {
     return this.level.id;
   }
 
+  get victoryShown(): boolean {
+    return this.victory;
+  }
+
   update(dt: number): void {
+    // The victory overlay freezes the mission clock and all simulation.
+    if (this.victory) return;
     this.time += dt;
     this.toastT = Math.max(0, this.toastT - dt);
     this.player.hitFlash = Math.max(0, this.player.hitFlash - dt);
@@ -879,20 +903,30 @@ export class Game {
     if (!gun) return;
     const muzzleZ = actor.z + 0.9;
     const targetZ = this.player.z + 0.5;
-    this.bolts.push(
-      spawnProjectile(
-        actor.x,
-        actor.y,
-        muzzleZ,
-        this.player.x - actor.x,
-        this.player.y - actor.y,
-        targetZ - muzzleZ,
-        gun.speed,
-        gun.damage,
-        gun.range / gun.speed + 0.25,
-        false,
-      ),
-    );
+    const aim = Math.atan2(this.player.y - actor.y, this.player.x - actor.x);
+    // Horizontal dir components are unit length, so the vertical slope has to
+    // be expressed per metre travelled to keep the bolt aimed at the player.
+    const aimDistance =
+      Math.hypot(this.player.x - actor.x, this.player.y - actor.y) || 1;
+    const slope = (targetZ - muzzleZ) / aimDistance;
+    // A volley fans horizontally so the boss covers a dodge lane, but every
+    // bolt still aims at the player's height.
+    for (const angle of volleyAngles(aim, gun.volley ?? 1, gun.spread ?? 0)) {
+      this.bolts.push(
+        spawnProjectile(
+          actor.x,
+          actor.y,
+          muzzleZ,
+          Math.cos(angle),
+          Math.sin(angle),
+          slope,
+          gun.speed,
+          gun.damage,
+          gun.range / gun.speed + 0.25,
+          false,
+        ),
+      );
+    }
     this.emit("enemy-shot");
   }
 
@@ -958,8 +992,18 @@ export class Game {
     this.emit("hit");
     if (actor.hp <= 0) {
       actor.state = "death";
-      if (actor.spec.hostile) this.huntKills += 1;
-      this.setToast(`${actor.spec.name.toUpperCase()} DOWN`, 1.6);
+      if (actor.spec.hostile && !actor.spec.boss) this.huntKills += 1;
+      if (actor.spec.boss) {
+        this.setToast("OVERSEER DOWN · EXTRACTION UNLOCKED", 3);
+      } else if (
+        this.level.huntTargets !== undefined &&
+        this.huntKills === this.level.huntTargets &&
+        this.bossActor()
+      ) {
+        this.setToast("HUNT COMPLETE · OVERSEER EXPOSED", 2.4);
+      } else {
+        this.setToast(`${actor.spec.name.toUpperCase()} DOWN`, 1.6);
+      }
       this.emit("kill");
       return;
     }
@@ -995,7 +1039,19 @@ export class Game {
     if (!this.crates.has(cell)) return;
     const result = applyCrateDamage(this.crateHits.get(cell) ?? 0);
     this.crateHits.set(cell, result.hits);
-    if (!result.destroyed) return;
+    if (!result.destroyed) {
+      // The first chip must read as progress: a small dust burst and a toast
+      // distinguish "hit but intact" from a bolt that missed entirely.
+      for (const [ox, oy, oz] of [
+        [-0.16, 0.1, 0.82],
+        [0.13, -0.1, 0.58],
+      ] as const) {
+        this.addImpact(cellX + 0.5 + ox, cellY + 0.5 + oy, oz, true);
+      }
+      this.setToast("CRATE CRACKED", 1.1);
+      this.emit("hit");
+      return;
+    }
     this.crates.delete(cell);
     this.crateHits.delete(cell);
     clearCrate(this.world, cell);
@@ -1011,7 +1067,11 @@ export class Game {
     this.emit("hit");
   }
 
-  interact(): "none" | "talk" | "door" | "locked" | "pickup" {
+  interact(): "none" | "talk" | "door" | "locked" | "pickup" | "continue" {
+    if (this.victory) {
+      this.loadLevel(levelIndexById("courtyard"), "ENTERING COURTYARD");
+      return "continue";
+    }
     if (this.player.dead) return "none";
 
     const npc = this.nearestTalkable();
@@ -1130,8 +1190,19 @@ export class Game {
     }
   }
 
+  private bossActor(): Actor | null {
+    return this.actors.find((actor) => actor.alive && actor.spec.boss) ?? null;
+  }
+
+  private missionStage(): MissionStage {
+    if (this.victory) return "clear";
+    if (this.huntKills < (this.level.huntTargets ?? 0)) return "hunt";
+    return this.bossActor() ? "boss" : "extract";
+  }
+
   private exitsUnlocked(): boolean {
-    return !this.level.huntTargets || this.huntKills >= this.level.huntTargets;
+    if (this.level.huntTargets === undefined) return true;
+    return this.huntKills >= this.level.huntTargets && !this.bossActor();
   }
 
   private checkExits(): void {
@@ -1150,11 +1221,21 @@ export class Game {
         if (this.toastT <= 0) {
           const left = (this.level.huntTargets ?? 0) - this.huntKills;
           this.setToast(
-            `EXTRACTION LOCKED · ${left} HUNTER${left === 1 ? "" : "S"} REMAIN`,
+            left > 0
+              ? `EXTRACTION LOCKED · ${left} HUNTER${left === 1 ? "" : "S"} REMAIN`
+              : "EXTRACTION LOCKED · OVERSEER ACTIVE",
             2,
           );
         }
         continue;
+      }
+      if (this.level.huntTargets !== undefined) {
+        // The mission ends on the pad: the overlay reports the clock and the
+        // player leaves on E instead of being cut straight back to the city.
+        this.victory = true;
+        this.victoryTime = this.time;
+        this.emit("level");
+        return;
       }
       const index = levelIndexById(exit.target);
       this.emit("level");
@@ -1196,6 +1277,8 @@ export class Game {
     this.impacts = [];
     this.keycard = false;
     this.huntKills = 0;
+    this.victory = false;
+    this.victoryTime = 0;
     this.placeAtSpawn();
     this.toastText = "";
     this.toastT = 0;
@@ -1588,6 +1671,34 @@ export class Game {
       this.player.z,
     );
 
+    let boss: HudState["boss"] = null;
+    const bossActor = this.actors.find(
+      (actor) => actor.alive && actor.spec.name === "overseer",
+    );
+    if (bossActor) {
+      const distance = Math.hypot(camera.x - bossActor.x, camera.y - bossActor.y);
+      if (distance <= BOSS_HUD_RANGE) {
+        boss = {
+          name: bossActor.spec.name.toUpperCase(),
+          hp: Math.max(0, bossActor.hp),
+          maxHp: bossActor.maxHp,
+          distance,
+        };
+      }
+    }
+
+    const stage = this.missionStage();
+    const objective =
+      this.level.huntTargets === undefined
+        ? this.level.objective
+        : stage === "hunt"
+          ? `${this.level.objective} · ${this.huntKills}/${this.level.huntTargets}`
+          : stage === "boss"
+            ? "Defeat the overseer on the 12 m rooftop."
+            : stage === "extract"
+              ? "Reach the extraction beacon."
+              : this.level.objective;
+
     return {
       x: this.player.x,
       y: this.player.y,
@@ -1611,10 +1722,18 @@ export class Game {
       dead: this.player.dead,
       damageFlash: this.player.hitFlash / DAMAGE_FLASH_TIME,
       levelTitle: this.level.title,
-      objective:
+      objective,
+      boss,
+      mission:
         this.level.huntTargets !== undefined
-          ? `${this.level.objective} · ${this.huntKills}/${this.level.huntTargets}`
-          : this.level.objective,
+          ? {
+              stage,
+              time: this.victory ? this.victoryTime : this.time,
+              kills: this.huntKills,
+              targets: this.level.huntTargets,
+            }
+          : null,
+      victory: this.victory,
       huntKills: this.huntKills,
       huntTargets: this.level.huntTargets ?? 0,
       prompt: this.interactionPrompt(),
@@ -1670,6 +1789,11 @@ export class Game {
       },
       level: this.level.id,
       hunt: { kills: this.huntKills, targets: this.level.huntTargets ?? 0 },
+      mission: {
+        stage: this.missionStage(),
+        time: this.victory ? this.victoryTime : this.time,
+        victory: this.victory,
+      },
       viewmodel: this.viewmodelState(),
       actors: this.actors.map((actor) => {
         const selection = this.spriteSelection(actor, camera);

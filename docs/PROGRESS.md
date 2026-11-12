@@ -19,6 +19,7 @@ Last updated: **2026-11-12**
 | Ranged plasma combat | M10 | ✅ Camera-aimed projectiles, marauder gunner with line of sight, impact flash, depth-tested glow billboards |
 | Rooftop District | M11 | ✅ 64×64 city, 4–12 m legend towers, jetpack roof traversal, elevated sentries, hunt-gated extraction |
 | Combat depth, interiors, slices | M12 | ✅ Muzzle-aligned bolts, 5 destructible crates, 7 cover props, overseer boss; office + vault sectors with ceilings/roofs and indoor flight cap; 4-band stacked-slice billboards on a separate depth atlas |
+| District mission and boss | M13 | ✅ Hunt → boss → extract → clear stages, three-bolt overseer volley, rooftop cover, boss HP bar, mission-complete overlay with `E` continue; panel-clad interior walls and ceilings |
 
 ## Verification snapshot
 
@@ -27,10 +28,10 @@ Run from a clean checkout:
 ```bash
 npm ci
 npm run typecheck   # passes
-npm test            # 11 files, 108 tests pass
-npm run build       # tsc + vite build (64.01 kB JS / 21.66 kB gzip)
+npm test            # 11 files, 112 tests pass
+npm run build       # tsc + vite build (66.86 kB JS / 22.63 kB gzip)
 npm run playtest    # 40/40 browser checks pass
-npm run playtest:matrix  # 113 scenarios, 752/752 checks, 134 captures, 0 console errors
+npm run playtest:matrix  # 114 scenarios, 766/766 checks, 137 captures, 0 console errors
 npm run playtest:flight  # 18 poses + live jetpack, 109/109 checks, 30 captures
 npm run playtest:states  # 42/42 state checks, 21 captures, 0 console errors
 npm run assets:verify -- --min-iou 0.4  # 1,216-frame guardian atlas; min IoU 0.43, mean 0.90
@@ -608,11 +609,15 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
 
 ## Immediate next steps
 
-1. Owner playtest of M12: fire from the muzzle at a crate twice, fly the jetpack inside the
-   office and vault, land on the vault roof, and fight the 260 HP overseer. Check that
-   close-range actor silhouettes still read with the 4-band slices.
-2. If interior windows look wrong, add a dedicated interior wall texture (or sample the
-   facade without windows indoors) rather than reusing the exterior facade.
-3. Optional: stairs between interior floors and a second room per building; extend
+1. Owner playtest of M13: clear the seven rooftop hostiles, watch the objective change to
+   the boss stage, dodge/cover the overseer's three-bolt volleys, then reach the beacon and
+   confirm the victory overlay and `E` return to the courtyard. Also re-check close-range
+   slices and the panel-clad office walls.
+2. Tune the encounter in `src/content/actors.ts` (overseer HP, volley spread/cooldown) and
+   `src/content/district-map.ts` (cover cells). Keep `huntTargets` equal to the non-boss
+   hostile count (7).
+3. Optional: dedicated overseer art and a telegraphed heavy attack so the boss reads
+   differently from a tinted sentry.
+4. Optional: stairs between interior floors and a second room per building; extend
    `RoomSpec` with an entry side and a per-room floor texture.
-4. Optional: AutoSprite/Gamelabs adapter behind the same CLI/workflow boundary.
+5. Optional: AutoSprite/Gamelabs adapter behind the same CLI/workflow boundary.

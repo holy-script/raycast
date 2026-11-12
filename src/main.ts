@@ -40,11 +40,18 @@ async function boot(): Promise<void> {
   const hudSprite = byId<HTMLSpanElement>("hud-sprite");
   const hudHealth = byId<HTMLSpanElement>("hud-health");
   const hudHealthFill = byId<HTMLSpanElement>("hud-health-fill");
+  const hudBossRow = byId<HTMLDivElement>("hud-boss-row");
+  const hudBossName = byId<HTMLSpanElement>("hud-boss-name");
+  const hudBoss = byId<HTMLSpanElement>("hud-boss");
+  const hudBossBar = byId<HTMLDivElement>("hud-boss-bar");
+  const hudBossFill = byId<HTMLSpanElement>("hud-boss-fill");
   const hudLevel = byId<HTMLSpanElement>("hud-level");
   const hudObjective = byId<HTMLDivElement>("hud-objective");
   const hudKeycard = byId<HTMLSpanElement>("hud-keycard");
   const prompt = byId<HTMLDivElement>("prompt");
   const toast = byId<HTMLDivElement>("toast");
+  const victory = byId<HTMLDivElement>("victory");
+  const victoryStats = byId<HTMLParagraphElement>("victory-stats");
   const damage = byId<HTMLDivElement>("damage");
   const thrust = byId<HTMLDivElement>("thrust");
 
@@ -228,6 +235,13 @@ async function boot(): Promise<void> {
     hudHealth.textContent = `${Math.round(state.health)} / ${state.maxHealth}`;
     hudHealthFill.style.width = `${(state.health / state.maxHealth) * 100}%`;
     hudHealthFill.classList.toggle("critical", state.health <= 34);
+    hudBossRow.classList.toggle("hidden", !state.boss);
+    hudBossBar.classList.toggle("hidden", !state.boss);
+    if (state.boss) {
+      hudBossName.textContent = state.boss.name;
+      hudBoss.textContent = `${Math.round(state.boss.hp)} / ${state.boss.maxHp}`;
+      hudBossFill.style.width = `${(state.boss.hp / state.boss.maxHp) * 100}%`;
+    }
     hudLevel.textContent = state.levelTitle;
     hudObjective.textContent = state.objective;
     hudKeycard.textContent = state.keycard ? "ACQUIRED" : "--";
@@ -236,6 +250,12 @@ async function boot(): Promise<void> {
     prompt.classList.toggle("visible", state.prompt !== "");
     toast.textContent = state.toast;
     toast.classList.toggle("visible", state.toast !== "");
+    victory.classList.toggle("hidden", !state.victory);
+    if (state.victory && state.mission) {
+      const seconds = Math.floor(state.mission.time);
+      const clock = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+      victoryStats.textContent = `TIME ${clock} · ${state.mission.targets} HOSTILES DOWN`;
+    }
     hud.classList.toggle("minimal", !game.hudDetailVisible);
   };
 
@@ -397,7 +417,8 @@ declare global {
         setFuel: (value: number) => void;
         setHealth: (value: number) => void;
         attack: () => boolean;
-        interact: () => "none" | "talk" | "door" | "locked" | "pickup";
+        interact: () =>
+          "none" | "talk" | "door" | "locked" | "pickup" | "continue";
         cell: (x: number, y: number) => {
           tile: number;
           height: number;

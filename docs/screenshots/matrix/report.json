@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-12T05:55:08.974Z",
+  "generatedAt": "2026-11-12T06:12:05.509Z",
   "url": "http://127.0.0.1:5201/?screenshot",
-  "durationMs": 12833,
+  "durationMs": 13158,
   "scenarios": [
     "g01-spawn-idle",
     "g02-walk-forward",
@@ -99,6 +99,7 @@
     "f10-enemy-gun",
     "f11-muzzle-spawn",
     "f12-crate-destroy",
+    "f13-boss-encounter",
     "l01-transition-reactor",
     "l02-vault-return",
     "l03-terrace-climb",
@@ -117,7 +118,7 @@
     "l16-ceiling-jet-cap",
     "l17-roof-over-vault"
   ],
-  "passed": 752,
+  "passed": 766,
   "failed": 0,
   "checks": [
     {
@@ -3086,7 +3087,7 @@
       "group": "ui",
       "name": "resuming advances the simulation",
       "ok": true,
-      "detail": "patrol dx 0.37, 22 frames, paused=false, 6.40% pixels changed"
+      "detail": "patrol dx 0.38, 22 frames, paused=false, 6.43% pixels changed"
     },
     {
       "scenario": "u05-pause-resume",
@@ -4386,6 +4387,13 @@
     {
       "scenario": "f12-crate-destroy",
       "group": "combat",
+      "name": "the first bolt reports a crack toast",
+      "ok": true,
+      "detail": "CRATE CRACKED"
+    },
+    {
+      "scenario": "f12-crate-destroy",
+      "group": "combat",
       "name": "the second bolt clears the crate cell",
       "ok": true,
       "detail": "fired=true · tile 0 · height 0"
@@ -4431,6 +4439,55 @@
       "name": "HUD is populated",
       "ok": true,
       "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "f13-boss-encounter",
+      "group": "combat",
+      "name": "the overseer fires a three-bolt volley",
+      "ok": true,
+      "detail": "4 inbound bolts"
+    },
+    {
+      "scenario": "f13-boss-encounter",
+      "group": "combat",
+      "name": "the boss bar reports the overseer",
+      "ok": true,
+      "detail": "OVERSEER 260 / 260 · 5.8 m"
+    },
+    {
+      "scenario": "f13-boss-encounter",
+      "group": "combat",
+      "name": "two cover risers flank the overseer's roof",
+      "ok": true,
+      "detail": "12.60 m · 12.60 m"
+    },
+    {
+      "scenario": "f13-boss-encounter",
+      "group": "combat",
+      "name": "clearing the hunt exposes the boss stage",
+      "ok": true,
+      "detail": "boss · 7/7 · Defeat the overseer on the 12 m rooftop."
+    },
+    {
+      "scenario": "f13-boss-encounter",
+      "group": "combat",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "54.50, 46.50, 12.00, 1.00, 384.00, 7608.00, 32835.00"
+    },
+    {
+      "scenario": "f13-boss-encounter",
+      "group": "combat",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "18 rects"
+    },
+    {
+      "scenario": "f13-boss-encounter",
+      "group": "combat",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "PERCH · 12.0 m · fuel 100%"
     },
     {
       "scenario": "l01-transition-reactor",
@@ -4731,7 +4788,7 @@
       "group": "levels",
       "name": "the hunt objective starts empty",
       "ok": true,
-      "detail": "Hunt the eight hostiles, then reach the extraction beacon. · 0/8"
+      "detail": "Hunt the rooftop hostiles, then defeat the overseer. · 0/7"
     },
     {
       "scenario": "l06-district-arrival",
@@ -4913,21 +4970,35 @@
       "group": "levels",
       "name": "the beacon refuses extraction before the hunt",
       "ok": true,
-      "detail": "district · EXTRACTION LOCKED · 8 HUNTERS REMAIN"
+      "detail": "district · EXTRACTION LOCKED · 7 HUNTERS REMAIN"
     },
     {
       "scenario": "l09-hunt-gate",
       "group": "levels",
-      "name": "killing every hostile fills the hunt counter",
+      "name": "killing the sentries fills the hunt counter",
       "ok": true,
-      "detail": "8/8"
+      "detail": "7/7"
     },
     {
       "scenario": "l09-hunt-gate",
       "group": "levels",
-      "name": "the unlocked beacon extracts to the courtyard",
+      "name": "the cleared beacon raises the victory overlay instead of leaving",
       "ok": true,
-      "detail": "courtyard · COURTYARD"
+      "detail": "district · clear · victory shown"
+    },
+    {
+      "scenario": "l09-hunt-gate",
+      "group": "levels",
+      "name": "the victory overlay reports the mission clock and kills",
+      "ok": true,
+      "detail": "TIME 00:00 · 7 HOSTILES DOWN"
+    },
+    {
+      "scenario": "l09-hunt-gate",
+      "group": "levels",
+      "name": "E on the victory overlay returns to the courtyard",
+      "ok": true,
+      "detail": "continue · courtyard"
     },
     {
       "scenario": "l09-hunt-gate",
@@ -5088,7 +5159,35 @@
       "group": "levels",
       "name": "l12-office-interior renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 52.5"
+      "detail": "512 colors, mean luma 57.5"
+    },
+    {
+      "scenario": "l12-office-entry",
+      "group": "levels",
+      "name": "indoor partition walls paint the panel material",
+      "ok": true,
+      "detail": "73380 interior px · 0 exterior wall px"
+    },
+    {
+      "scenario": "l12-office-entry",
+      "group": "levels",
+      "name": "the indoor wall pass still records ceiling and top stats",
+      "ok": true,
+      "detail": "0 ceiling px · 0 top px"
+    },
+    {
+      "scenario": "l12-office-entry",
+      "group": "levels",
+      "name": "l12-office-wall matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l12-office-entry",
+      "group": "levels",
+      "name": "l12-office-wall renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 52.7"
     },
     {
       "scenario": "l12-office-entry",
@@ -5102,21 +5201,21 @@
       "group": "levels",
       "name": "l12-office-entry renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 52.5"
+      "detail": "512 colors, mean luma 52.7"
     },
     {
       "scenario": "l12-office-entry",
       "group": "levels",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "6.30, 6.50, 0.00, 1.00, 384.00, 18048.00, 0.00"
+      "detail": "5.50, 6.50, 0.00, 1.00, 384.00, 0.00, 0.00"
     },
     {
       "scenario": "l12-office-entry",
       "group": "levels",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "15 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "l12-office-entry",
@@ -5144,14 +5243,14 @@
       "group": "levels",
       "name": "l13-office-medkit renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 73.6"
+      "detail": "512 colors, mean luma 61.0"
     },
     {
       "scenario": "l13-office-medkit",
       "group": "levels",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "6.50, 4.50, 0.00, 1.00, 384.00, 69797.00, 18592.00"
+      "detail": "6.50, 4.50, 0.00, 1.00, 384.00, 0.00, 18592.00"
     },
     {
       "scenario": "l13-office-medkit",
@@ -5186,7 +5285,7 @@
       "group": "levels",
       "name": "l14-vault-interior renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 56.8"
+      "detail": "512 colors, mean luma 57.4"
     },
     {
       "scenario": "l14-vault-entry",
@@ -5200,14 +5299,14 @@
       "group": "levels",
       "name": "l14-vault-entry renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 56.8"
+      "detail": "512 colors, mean luma 57.4"
     },
     {
       "scenario": "l14-vault-entry",
       "group": "levels",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "55.50, 58.80, 0.00, 1.00, 384.00, 92160.00, 0.00"
+      "detail": "55.50, 58.80, 0.00, 1.00, 384.00, 0.00, 0.00"
     },
     {
       "scenario": "l14-vault-entry",
@@ -5242,14 +5341,14 @@
       "group": "levels",
       "name": "l15-vault-fuel renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 61.1"
+      "detail": "512 colors, mean luma 54.3"
     },
     {
       "scenario": "l15-vault-fuel",
       "group": "levels",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "54.50, 55.50, 0.00, 1.00, 384.00, 64228.00, 0.00"
+      "detail": "54.50, 55.50, 0.00, 1.00, 384.00, 0.00, 0.00"
     },
     {
       "scenario": "l15-vault-fuel",
@@ -5291,7 +5390,7 @@
       "group": "levels",
       "name": "l16-ceiling-cap renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 59.8"
+      "detail": "512 colors, mean luma 52.1"
     },
     {
       "scenario": "l16-ceiling-jet-cap",
@@ -5305,14 +5404,14 @@
       "group": "levels",
       "name": "l16-ceiling-jet-cap renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 59.8"
+      "detail": "512 colors, mean luma 52.1"
     },
     {
       "scenario": "l16-ceiling-jet-cap",
       "group": "levels",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "5.50, 6.50, 0.00, 1.00, 384.00, 69168.00, 99.00"
+      "detail": "5.50, 6.50, 0.00, 1.00, 384.00, 0.00, 99.00"
     },
     {
       "scenario": "l16-ceiling-jet-cap",
@@ -5368,7 +5467,7 @@
       "group": "levels",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "18 rects"
+      "detail": "20 rects"
     },
     {
       "scenario": "l17-roof-over-vault",
@@ -6026,6 +6125,11 @@
       "baseline": "compared"
     },
     {
+      "name": "f13-boss-encounter",
+      "kind": "page",
+      "baseline": "skipped"
+    },
+    {
       "name": "l01-reactor-spawn",
       "kind": "canvas",
       "diff": 0,
@@ -6104,6 +6208,11 @@
       "baseline": "compared"
     },
     {
+      "name": "l09-victory",
+      "kind": "page",
+      "baseline": "skipped"
+    },
+    {
       "name": "l09-hunt-gate",
       "kind": "canvas",
       "diff": 0,
@@ -6123,6 +6232,12 @@
     },
     {
       "name": "l12-office-interior",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l12-office-wall",
       "kind": "canvas",
       "diff": 0,
       "baseline": "compared"

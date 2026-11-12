@@ -145,6 +145,14 @@ async function main(): Promise<void> {
           health: text("hud-health"),
           level: text("hud-level"),
           keycard: text("hud-keycard"),
+          objective: text("hud-objective"),
+          bossName: text("hud-boss-name"),
+          boss: text("hud-boss"),
+          victory:
+            document.getElementById("victory")?.classList.contains("hidden") === false
+              ? "shown"
+              : "",
+          victoryStats: text("victory-stats"),
           prompt: text("prompt"),
           toast: text("toast"),
         };
@@ -1620,6 +1628,12 @@ async function main(): Promise<void> {
         first && afterOne.solid,
         `fired=${first} · solid=${afterOne.solid}`,
       );
+      const chipped = await hud();
+      check(
+        "the first bolt reports a crack toast",
+        chipped.toast.includes("CRATE CRACKED"),
+        chipped.toast,
+      );
       const second = await attack();
       await step(0.25);
       const afterTwo = await cell();
@@ -1636,6 +1650,67 @@ async function main(): Promise<void> {
         "crate destruction reports a toast",
         values.toast.includes("CRATE DESTROYED"),
         values.toast,
+      );
+    });
+
+    // ------------------------------------------------------- mission boss
+    define("combat", "f13-boss-encounter", async () => {
+      await loadLevel("district");
+      // Stand on the overseer's 12 m roof, well inside its 18 m envelope, and
+      // face the boss so the capture frames the encounter.
+      await pose(54.5, 46.5, 12, Math.atan2(41.5 - 46.5, 51.5 - 54.5), 0);
+      await step(0.45);
+      const dbg = await debug();
+      const current = await state();
+      const values = await hud();
+      const volley = dbg.bolts.filter((bolt) => !bolt.fromPlayer && bolt.z > 11);
+      check(
+        "the overseer fires a three-bolt volley",
+        volley.length >= 3,
+        `${volley.length} inbound bolts`,
+      );
+      check(
+        "the boss bar reports the overseer",
+        current.boss?.name === "OVERSEER" &&
+          current.boss.maxHp === 260 &&
+          current.boss.hp <= 260 &&
+          current.boss.hp > 0 &&
+          values.bossName === "OVERSEER" &&
+          values.boss.includes("/ 260"),
+        current.boss
+          ? `${values.bossName} ${values.boss} · ${current.boss.distance.toFixed(1)} m`
+          : "no boss in range",
+      );
+      const coverA = await evaluate<{ solid: boolean; height: number }>(
+        "window.__raycast.automation.cell(54, 42)",
+      );
+      const coverB = await evaluate<{ solid: boolean; height: number }>(
+        "window.__raycast.automation.cell(56, 44)",
+      );
+      check(
+        "two cover risers flank the overseer's roof",
+        coverA.solid &&
+          coverB.solid &&
+          near(coverA.height, 12.6, 0.01) &&
+          near(coverB.height, 12.6, 0.01),
+        `${coverA.height.toFixed(2)} m · ${coverB.height.toFixed(2)} m`,
+      );
+      await capturePage("f13-boss-encounter");
+      await evaluate(`(() => {
+        const game = window.__raycast.game;
+        for (const actor of game.actors) {
+          if (actor.spec.hostile && !actor.spec.boss) game.damageActor(actor, 999);
+        }
+      })()`);
+      await step(0);
+      const staged = await debug();
+      const stagedHud = await hud();
+      check(
+        "clearing the hunt exposes the boss stage",
+        staged.mission.stage === "boss" &&
+          staged.hunt.kills === 7 &&
+          stagedHud.objective.includes("overseer"),
+        `${staged.mission.stage} · ${staged.hunt.kills}/${staged.hunt.targets} · ${stagedHud.objective}`,
       );
     });
 
@@ -1760,7 +1835,7 @@ async function main(): Promise<void> {
       );
       check(
         "the hunt objective starts empty",
-        current.objective.includes("0/8"),
+        current.objective.includes("0/7"),
         current.objective,
       );
       const elevated = dbg.actors.filter((actor) => actor.z > 3);
@@ -1833,17 +1908,37 @@ async function main(): Promise<void> {
       await step(0);
       dbg = await debug();
       check(
-        "killing every hostile fills the hunt counter",
-        dbg.hunt.kills === 8 && dbg.hunt.targets === 8,
+        "killing the sentries fills the hunt counter",
+        dbg.hunt.kills === 7 && dbg.hunt.targets === 7,
         `${dbg.hunt.kills}/${dbg.hunt.targets}`,
       );
-      await step(0.1);
+      await step(0.8);
       dbg = await debug();
       values = await hud();
       check(
-        "the unlocked beacon extracts to the courtyard",
-        dbg.level === "courtyard" && values.level === "COURTYARD",
-        `${dbg.level} · ${values.level}`,
+        "the cleared beacon raises the victory overlay instead of leaving",
+        dbg.level === "district" &&
+          dbg.mission.stage === "clear" &&
+          values.victory === "shown",
+        `${dbg.level} · ${dbg.mission.stage} · victory ${values.victory}`,
+      );
+      const victoryStats = await evaluate<string>(
+        'document.getElementById("victory-stats")?.textContent ?? ""',
+      );
+      check(
+        "the victory overlay reports the mission clock and kills",
+        /TIME \d\d:\d\d/.test(victoryStats) &&
+          victoryStats.includes("7 HOSTILES DOWN"),
+        victoryStats,
+      );
+      await capturePage("l09-victory");
+      const result = await interact();
+      await step(0);
+      const after = await debug();
+      check(
+        "E on the victory overlay returns to the courtyard",
+        result === "continue" && after.level === "courtyard",
+        `${result} · ${after.level}`,
       );
     });
 
@@ -1916,6 +2011,24 @@ async function main(): Promise<void> {
         `${pixels} ceiling pixels`,
       );
       await saveCanvas("l12-office-interior", true);
+
+      // Face the office's north wall from two and a half metres out. Interior
+      // partitions must sample the panel material, never the lit-window
+      // facade that the exterior shell uses.
+      await pose(5.5, 6.5, 0, Math.PI / 2, 0);
+      await step(0);
+      const wall = (await debug()).stats;
+      check(
+        "indoor partition walls paint the panel material",
+        wall.interiorPixels > 20000 && wall.wallPixels === 0,
+        `${wall.interiorPixels} interior px · ${wall.wallPixels} exterior wall px`,
+      );
+      check(
+        "the indoor wall pass still records ceiling and top stats",
+        wall.ceilingPixels === 0 && wall.topPixels === 0,
+        `${wall.ceilingPixels} ceiling px · ${wall.topPixels} top px`,
+      );
+      await saveCanvas("l12-office-wall", true);
     });
 
     define("levels", "l13-office-medkit", async () => {

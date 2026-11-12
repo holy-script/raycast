@@ -4,9 +4,9 @@ Milestones are ordered. A milestone is complete only when every acceptance crite
 is checked and the verification command passes. Update this file and
 [PROGRESS.md](PROGRESS.md) whenever a milestone starts or finishes.
 
-Current position: **M0–M12 complete and deployed.** Ranged combat, interaction, doors/pickups,
+Current position: **M0–M13 complete and deployed.** Ranged combat, interaction, doors/pickups,
 level transitions, the reactor map, and the Rooftop District are playable and covered by
-752 deterministic matrix checks (113 scenarios), a 40-check happy-path run, a 109-check
+766 deterministic matrix checks (114 scenarios), a 40-check happy-path run, a 109-check
 flight sweep, and a 42-check paused-state gallery. The guardian is the only shipped
 chassis, with all six states in a 16×4×19 atlas; the scout and brute prototypes were
 removed until their art pass exists. M8 delivered procedural audio, a pause/settings menu
@@ -19,8 +19,9 @@ own pitch-static frame, and removed the near-wall double silhouette. M11 takes t
 movement and combat into a 64×64 city: legend-height towers, jetpack rooftop traversal,
 elevated sentries, and a hunt-gated extraction. M11 shipped on 2026-11-12. M12 adds combat
 depth (muzzle-aligned bolts, destructible crates, a district boss), enterable tower
-interiors with ceilings and roofs, and stacked-slice sprite impostors. M12 is complete
-locally.
+interiors with ceilings and roofs, and stacked-slice sprite impostors. M13 turns the
+district into a staged mission: hunt, boss, extraction, and a victory overlay, with a
+three-bolt overseer volley and rooftop cover. M13 is complete locally.
 
 ## M0 — Foundation
 
@@ -280,8 +281,8 @@ buildings can be entered, and sprites gain real volume at close range.
   debris, and the HUD toasts `CRATE DESTROYED`; crates reset with the level
 - [x] Rooftop cover props (`3`): seven 0.6 m cover risers on support surfaces, walk-over
   height, usable as shooting cover
-- [x] District boss `overseer` at 12 m: 260 HP, 7-damage gun with 16 m range, 1.3 s
-  cooldown, and a 1.4 rad/s turn rate; the hunt now requires 8 hostiles
+- [x] District boss `overseer` at 12 m: 260 HP with a 1.4 rad/s turn rate; the hunt
+  requires seven non-boss hostiles (M13 extends the gun into a three-bolt volley)
 - [x] Muzzle spawn (`f11`) and crate destruction (`f12`) matrix scenarios
 
 **Tower interiors**
@@ -318,6 +319,58 @@ guardian close-ups without slice seams. Verified 2026-11-12. Deployed the same d
 https://raycast-rosy.vercel.app (`index-C8-wHYwk.js`); the production playtest passes 40/40
 against the live build and serves manifest v2 with `slices.png`.
 
-Deferred: interior-specific wall/ceiling art (interior faces currently reuse the facade
-texture), stairs between floors, multi-room buildings, projectile drop/penetration, and
-per-band slice lighting.
+Deferred: interior-specific wall/ceiling art beyond the shared panel cladding, stairs
+between floors, multi-room buildings, projectile drop/penetration, and per-band slice
+lighting.
+
+## M13 — District mission and boss encounter ✅
+
+Goal: give the district a beginning, a climax, and a clean exit instead of a single hunt
+counter.
+
+**Mission stages**
+
+- [x] `MissionStage = "hunt" | "boss" | "extract" | "clear"` derived from the non-boss
+  kill count, the live overseer, and the victory flag
+- [x] The HUD objective follows the stage: live `killed/targets` during the hunt, a boss
+  directive once the hunt clears, the extraction objective after the overseer falls, and
+  the level objective when the mission is complete
+- [x] A refused exit names the blocker (`N HUNTERS REMAIN` or `OVERSEER ACTIVE`)
+- [x] Exits unlock only when the hunt is complete **and** the overseer is no longer alive
+- [x] Reaching the unlocked beacon raises a mission-complete overlay (clock and hostile
+  count) instead of instantly leaving; `E` continues to the courtyard
+- [x] The victory overlay freezes simulation, mission clock, and input so the result
+  cannot be lost to a stray enemy bolt
+
+**Boss encounter**
+
+- [x] The overseer fires a three-bolt horizontal volley (5 dmg, 18 m range, 1.7 s
+  cooldown, 11 m/s, ±0.12 rad fan) aimed at the player's chest
+- [x] `volleyAngles` fans shots symmetrically around the aim angle and is unit tested
+- [x] Two 12.6 m cover risers flank the overseer's 12 m roof; the district carries nine
+  cover cells in total
+- [x] A boss HUD row shows name, HP, and distance within 24 m
+- [x] The overseer is excluded from `huntKills`, so the boss stage cannot be skipped
+- [x] First crate hit emits debris and toasts `CRATE CRACKED` before the destroying shot
+
+**Verification**
+
+- [x] `tests/levels.test.ts` locks the mission gate (7 hunt targets, 8 hostiles, 1 boss),
+  the volley gun spec, and the nine cover cells; `tests/projectile.test.ts` covers the
+  volley fan
+- [x] Matrix `f13-boss-encounter` asserts the volley, boss HUD, cover heights, and the
+  hunt→boss stage transition; `l09-hunt-gate` asserts the victory overlay, its stats,
+  and `E` returning to the courtyard
+- [x] Enemy bolts keep their shallow trajectory after the volley refactor: the vertical
+  slope is computed per horizontal metre so shots no longer nose into the floor
+
+**Acceptance:** `npm run typecheck`, 112 unit tests, `npm run build` (66.86 kB JS),
+`npm run playtest` (40/40), `npm run playtest:matrix` (766/766 across 114 scenarios, 137
+captures), `npm run playtest:flight` (109/109), and `npm run playtest:states` (42/42)
+pass with zero page errors. Captures show the overseer and its boss bar, the mission
+overlay, the panel-clad office walls and ceiling, and the victor overlay. Verified
+2026-11-12 and deployed to https://raycast-rosy.vercel.app.
+
+Deferred: dedicated boss art (the overseer reuses the guardian chassis with a red tint),
+phase changes or telegraphed attacks, a mission-select screen, and persistent campaign
+progress.

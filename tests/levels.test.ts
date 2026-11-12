@@ -159,11 +159,14 @@ describe("level definitions", () => {
     }
   });
 
-  it("gates the district extraction on exactly its hostile roster", () => {
+  it("gates the district extraction on the hunt plus the boss", () => {
     const district = LEVELS[levelIndexById("district")];
     const hostiles = district.actors.filter((actor) => actor.hostile);
-    expect(district.huntTargets).toBe(8);
+    const bosses = hostiles.filter((actor) => actor.boss);
+    expect(district.huntTargets).toBe(7);
     expect(hostiles.length).toBe(8);
+    expect(bosses.length).toBe(1);
+    expect(bosses[0].name).toBe("overseer");
     expect(district.title).toBe("ROOFTOP DISTRICT");
   });
 
@@ -173,13 +176,16 @@ describe("level definitions", () => {
     const boss = district.actors.find((actor) => actor.name === "overseer");
     expect(boss).toBeDefined();
     expect(boss?.hostile).toBe(true);
+    expect(boss?.boss).toBe(true);
     expect(boss?.behavior).toBe("sentry");
     expect(boss?.hp).toBe(260);
     expect(boss?.attack).toBeUndefined();
     expect(boss?.gun).toMatchObject({
-      damage: 7,
-      range: 16,
-      cooldown: 1.3,
+      damage: 5,
+      range: 18,
+      cooldown: 1.7,
+      volley: 3,
+      spread: 0.12,
     });
     expect(boss?.z).toBe(12);
     expect(supportHeight(world, boss!.x, boss!.y)).toBeCloseTo(12);
@@ -205,14 +211,14 @@ describe("level definitions", () => {
         }
       }
     }
-    expect(heights.length).toBe(7);
+    expect(heights.length).toBe(9);
     const near = (value: number, target: number): boolean =>
       Math.abs(value - target) < 0.001;
     const low = heights.filter((height) => near(height, 8.6));
     const high = heights.filter((height) => near(height, 12.6));
     const mid = heights.filter((height) => near(height, 6.6));
     expect(low.length, "two 8 m spire covers").toBeGreaterThanOrEqual(2);
-    expect(high.length, "one cover on each 12 m roof").toBe(4);
+    expect(high.length, "three covers on the 12 m roofs").toBe(6);
     expect(mid.length, "one mid-rise belt-high cover").toBe(1);
   });
 

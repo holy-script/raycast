@@ -23,6 +23,22 @@ export type ProjectileOutcome = "fly" | "wall" | "floor" | "ceiling" | "expired"
 
 export const BOLT_SUBSTEP = 0.08;
 
+/**
+ * Horizontal fan for a ranged volley. A single shot returns the base angle
+ * unchanged; larger counts spread symmetrically around it.
+ */
+export function volleyAngles(
+  baseAngle: number,
+  count: number,
+  spread: number,
+): number[] {
+  const shots = Math.max(1, Math.trunc(count));
+  return Array.from(
+    { length: shots },
+    (_, i) => baseAngle + (i - (shots - 1) / 2) * spread,
+  );
+}
+
 export function spawnProjectile(
   x: number,
   y: number,

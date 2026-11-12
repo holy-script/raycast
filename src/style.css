@@ -260,6 +260,34 @@ body {
   background: linear-gradient(90deg, #e07a6a, #e2b077);
 }
 
+#hud .boss-row {
+  margin-top: 3px;
+}
+
+#hud #hud-boss-name {
+  color: #e2a08f;
+}
+
+#hud .boss {
+  height: 4px;
+  margin: 1px 0 2px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(120, 58, 52, 0.7);
+  overflow: hidden;
+}
+
+#hud .boss span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #b44536, #e2b077);
+  transition: width 120ms linear;
+}
+
+#hud .hidden {
+  display: none;
+}
+
 #hud #hud-objective {
   margin-top: 4px;
   padding-top: 5px;
@@ -433,6 +461,48 @@ body {
   white-space: nowrap;
 }
 
+#victory {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: radial-gradient(ellipse at 50% 45%, rgba(8, 14, 18, 0.7), rgba(4, 5, 9, 0.9));
+  backdrop-filter: blur(2px);
+  z-index: 7;
+  pointer-events: none;
+}
+
+.victory-card {
+  width: min(360px, 92%);
+  padding: 26px 28px 20px;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(12, 22, 24, 0.97), rgba(8, 10, 16, 0.97));
+  border: 1px solid rgba(127, 215, 164, 0.6);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6);
+}
+
+.victory-card h2 {
+  margin: 4px 0 10px;
+  font-size: 22px;
+  letter-spacing: 0.08em;
+  color: #7fd7a4;
+}
+
+.victory-stats {
+  margin: 0 0 14px;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--cyan);
+}
+
+.victory-card .fine {
+  margin: 0;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
 #intro {
   position: absolute;
   inset: 0;
@@ -454,6 +524,7 @@ body {
 
 #intro.hidden,
 #pause.hidden,
+#victory.hidden,
 #loading.hidden {
   display: none;
 }

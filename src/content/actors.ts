@@ -23,10 +23,21 @@ export interface ActorSpec {
   hover?: { height: number; bob: number; speed: number };
   /** Hostile actors take and deal damage; friendly actors only talk. */
   hostile?: boolean;
+  /** Mission boss: tracked separately from the hunt counter and HUD bar. */
+  boss?: true;
   hp?: number;
   attack?: { damage: number; range: number; cooldown: number };
   /** Ranged attack fired from the wind-up pose when the player is in sight. */
-  gun?: { damage: number; range: number; cooldown: number; speed: number };
+  gun?: {
+    damage: number;
+    range: number;
+    cooldown: number;
+    speed: number;
+    /** Bolts per trigger pull; they fan symmetrically around the aim. */
+    volley?: number;
+    /** Radians between neighbouring bolts in a volley. */
+    spread?: number;
+  };
   /** Overrides the behavior's turn rate (radians per second factor) when set. */
   turnRate?: number;
   /** Looping dialogue shown when the player uses E nearby. */
@@ -302,8 +313,16 @@ export const ROOFTOP_ACTORS: ActorSpec[] = [
     tint: [1.38, 0.7, 0.62],
     scale: 1.3,
     hostile: true,
+    boss: true,
     hp: 260,
-    gun: { damage: 7, range: 16, cooldown: 1.3, speed: 11 },
+    gun: {
+      damage: 5,
+      range: 18,
+      cooldown: 1.7,
+      speed: 11,
+      volley: 3,
+      spread: 0.12,
+    },
     turnRate: 1.4,
   },
 ];

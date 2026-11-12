@@ -341,7 +341,42 @@ character meshes would each change core contracts and the asset pipeline.
 
 **Consequences:** Interiors cost no new collision code and no atlas rebuild; cover and
 crates behave like geometry at every altitude. Near walls cut through the correct band of
-an actor up to 8 m, where the base quad takes over. Tradeoffs: interiors reuse the facade
-texture indoors, rooms are single-volume (no interior stairs), the slice atlas adds a
-second 1,216-frame image to load, and the muzzle fallback can still put a bolt at the eye
-when the player stands inside a wall.
+an actor up to 8 m, where the base quad takes over. Interiors originally reused the
+facade texture; M13 now samples the shared panel texture on a 1.5 m wall grid and a 2 m
+ceiling grid, so cladding reads indoors without a new atlas. Remaining tradeoffs: rooms
+are single-volume (no interior stairs), the slice atlas adds a second 1,216-frame image
+to load, and the muzzle fallback can still put a bolt at the eye when the player stands
+inside a wall.
+
+## ADR-020 — Derive mission stages and fan boss volleys around the aim
+
+**Context:** M12's district ended the moment the hunt counter filled, and its overseer
+fired a single bolt. M13 needed a climax (boss), a denouement (extraction + result
+screen), and a boss attack that reads differently from a sentry without adding a new
+projectile system.
+
+**Decision:**
+
+- Mission progress is derived on demand from `huntKills`, `huntTargets`, the live boss,
+  and a `victory` flag. There is no second mutable stage machine to desync.
+- Only non-boss hostiles increment `huntKills`. The boss is excluded by `boss: true`, so
+  killing it early cannot satisfy the hunt. Exits require both a completed hunt and a dead
+  overseer.
+- Reaching an unlocked beacon sets `victory` instead of loading the next level. `update()`
+  returns immediately while `victory` is true, freezing movement, the mission clock, and
+  enemy fire; `interact()` returns the new `continue` action and only then loads the
+  courtyard. This makes the result screen stable and dismissible on the player's terms.
+- A volley is the same projectile with a fanned horizontal angle, not a new entity type.
+  `volleyAngles` returns symmetric angles around the aim; `fireActorBolt` passes a shared
+  vertical slope computed per horizontal metre. The slope scaling is essential because
+  `spawnProjectile` normalizes the 3D direction — passing the raw height delta makes
+  bolts dive into the floor.
+- The boss HUD row only appears within 24 m so distant actors do not leak the boss's
+  identity or HP before the encounter.
+
+**Consequences:** The district has a readable arc and a safe end state, and the boss
+dodges differently from a single-shot sentry without new projectile code. Stages are
+cheap to reason about in tests and the debugger. Tradeoffs: victory deliberately stops
+the simulation, so future post-game actions need an explicit exit from that state; boss
+variety is limited to fan geometry until a telegraphed attack or phase system exists;
+and the overseer still uses the guardian sprite with a red tint.

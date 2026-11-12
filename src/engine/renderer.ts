@@ -9,6 +9,8 @@ const FOG_B = 30;
 const NEAR_PLANE = 0.01;
 /** World height of one facade window row before the texture repeats. */
 const FACADE_STOREY = 3;
+/** Interior cladding repeats on a 1.5 m grid so close walls keep detail. */
+const INTERIOR_PANEL = 1.5;
 
 /** Stacked depth slices are only worth their extra sampling cost up close. */
 export const SLICE_LOD_DISTANCE = 8;
@@ -136,6 +138,8 @@ export interface RenderStats {
   topPixels: number;
   /** Pixels of interior slab undersides, drawn only below a ceiling plane. */
   ceilingPixels: number;
+  /** Interior wall and ceiling pixels sampled from the panel texture. */
+  interiorPixels: number;
   viewmodelPixels: number;
   spriteRects: SpriteScreenRect[];
 }
@@ -150,6 +154,7 @@ export class Renderer {
     wallPixels: 0,
     topPixels: 0,
     ceilingPixels: 0,
+    interiorPixels: 0,
     viewmodelPixels: 0,
     spriteRects: [],
   };
@@ -207,6 +212,7 @@ export class Renderer {
     this.stats.wallPixels = 0;
     this.stats.topPixels = 0;
     this.stats.ceilingPixels = 0;
+    this.stats.interiorPixels = 0;
     this.stats.viewmodelPixels = 0;
     this.stats.spriteRects = [];
     this.drawSky();
@@ -274,6 +280,7 @@ export class Renderer {
     let wallPixels = 0;
     let topPixels = 0;
     let ceilingPixels = 0;
+    let interiorPixels = 0;
     const cameraCell =
       Math.floor(cam.y) * world.width + Math.floor(cam.x);
     // A ray that starts inside a sector must not treat the camera's own cell as
@@ -328,6 +335,9 @@ export class Renderer {
         let hitU = 0;
         let hitHeight = 0;
         let hitTile = 0;
+        // A face reached through interior cells is the room's own wall; it
+        // samples the panel texture instead of the exterior facade.
+        let hitInterior = false;
 
         let mapX = Math.floor(cam.x);
         let mapY = Math.floor(cam.y);
@@ -431,6 +441,7 @@ export class Renderer {
               if (side === 1 && rayY < 0) hitU = 1 - hitU;
               hitHeight = cellHeight;
               hitTile = tile;
+              hitInterior = interiorBefore;
               break;
             }
             if (cam.eyeZ > cellHeight + 1e-3 && rayZ < -1e-6) {
@@ -468,74 +479,103 @@ export class Renderer {
         }
 
         if (hitT < Infinity) {
-          const texture = textures[hitTile] ?? textures[1];
+          const interior = hitKind === 1 && hitInterior;
+          const panelTexture = textures[2];
+          const wallTexture =
+            interior && panelTexture ? panelTexture : textures[hitTile] ?? textures[1];
+          const texture = hitKind === 1 ? wallTexture : topTexture;
           if (texture) {
             let src: number;
-            let dst = idx * 4;
+            const dst = idx * 4;
             if (hitKind === 1) {
-              const facade = hitTile === TOWER_TILE;
-              const texX = Math.min(
-                texture.width - 1,
-                Math.floor(clamp(hitU, 0.0001, 0.9999) * texture.width),
-              );
+              const facade = !interior && hitTile === TOWER_TILE;
+              const wallZ = cam.eyeZ + hitT * rayZ;
+              let column: number;
+              let texY: number;
+              if (interior) {
+                // World-space u keeps the 1.5 m cladding grid continuous across
+                // partition cells; hitU's per-cell flip would break the seams.
+                const wallU =
+                  hitSide === 0 ? cam.y + hitT * rayY : cam.x + hitT * rayX;
+                column = Math.min(
+                  texture.width - 1,
+                  Math.floor(fract(wallU / INTERIOR_PANEL) * texture.width),
+                );
+                texY = clamp(
+                  Math.floor((1 - fract(wallZ / INTERIOR_PANEL)) * texture.height),
+                  0,
+                  texture.height - 1,
+                );
+              } else {
+                const texX = Math.min(
+                  texture.width - 1,
+                  Math.floor(clamp(hitU, 0.0001, 0.9999) * texture.width),
+                );
+                column = facade
+                  ? (texX + mapX * 37 + mapY * 59) % texture.width
+                  : texX;
+                const v = facade
+                  ? fract(wallZ / FACADE_STOREY)
+                  : hitHeight > 0
+                    ? clamp(wallZ / hitHeight, 0, 1)
+                    : 0;
+                texY = clamp(
+                  Math.floor((1 - v) * texture.height),
+                  0,
+                  texture.height - 1,
+                );
+              }
               // Facades repeat one texture every 3 m of tower height, so a 12 m
               // tower reads as four storeys instead of one stretched pane. The
               // per-cell column shift keeps neighbouring buildings from sharing
-              // an identical window pattern.
-              const wallZ = cam.eyeZ + hitT * rayZ;
-              const v = facade
-                ? fract(wallZ / FACADE_STOREY)
-                : hitHeight > 0
-                  ? clamp(wallZ / hitHeight, 0, 1)
-                  : 0;
-              const column = facade
-                ? (texX + mapX * 37 + mapY * 59) % texture.width
-                : texX;
-              const texY = clamp(
-                Math.floor((1 - v) * texture.height),
-                0,
-                texture.height - 1,
-              );
+              // an identical window pattern. Interiors use the panel cladding
+              // instead: a partition is not a storey stack, and indoors there
+              // must be no lit windows.
               src = (texY * texture.width + column) * 4;
               const sideShade = hitSide === 0 ? 1 : 0.76;
               const shade =
-                clamp(1 / (1 + hitT * 0.085 * fogScale), 0.08, 1) * sideShade;
+                clamp(1 / (1 + hitT * 0.085 * fogScale), 0.08, 1) *
+                sideShade *
+                (interior ? 1.15 : 1);
               const fog = 1 - shade;
               pixels[dst] = texture.data[src] * shade + FOG_R * fog;
               pixels[dst + 1] = texture.data[src + 1] * shade + FOG_G * fog;
               pixels[dst + 2] = texture.data[src + 2] * shade + FOG_B * fog;
               pixels[dst + 3] = 255;
-              wallPixels += 1;
+              if (interior) interiorPixels += 1;
+              else wallPixels += 1;
             } else {
               const worldX = cam.x + hitT * rayX;
               const worldY = cam.y + hitT * rayY;
-              const fx = fract(worldX);
-              const fy = fract(worldY);
+              const scaled = hitKind === 3 ? 0.5 : 1;
+              const fx = fract(worldX * scaled);
+              const fy = fract(worldY * scaled);
               const texX = Math.min(
-                topTexture.width - 1,
-                Math.floor(fx * topTexture.width),
+                texture.width - 1,
+                Math.floor(fx * texture.width),
               );
               const texY = Math.min(
-                topTexture.height - 1,
-                Math.floor(fy * topTexture.height),
+                texture.height - 1,
+                Math.floor(fy * texture.height),
               );
-              src = (texY * topTexture.width + texX) * 4;
+              src = (texY * texture.width + texX) * 4;
               const edgeDistance = Math.min(fx, 1 - fx, fy, 1 - fy);
               const bevel = 0.9 + clamp(edgeDistance / 0.06, 0, 1) * 0.1;
-              // Roofs share the wall-top shading; ceilings are the same slab
-              // seen from underneath, so they reuse the texture with a darker
-              // interior light instead of a second asset.
+              // Roofs keep the slab bevel. Ceilings are the panel material
+              // seen from underneath: an even, darker interior light with the
+              // larger grid so the surface reads as a ceiling, not a roof.
               const shade =
                 clamp(1 / (1 + hitT * 0.075 * fogScale), 0.06, 1) *
-                (hitKind === 3 ? 0.64 : 0.95) *
-                bevel;
+                (hitKind === 3 ? 0.78 : 0.95 * bevel);
               const fog = 1 - shade;
-              pixels[dst] = topTexture.data[src] * shade + FOG_R * fog;
-              pixels[dst + 1] = topTexture.data[src + 1] * shade + FOG_G * fog;
-              pixels[dst + 2] = topTexture.data[src + 2] * shade + FOG_B * fog;
+              pixels[dst] = texture.data[src] * shade + FOG_R * fog;
+              pixels[dst + 1] = texture.data[src + 1] * shade + FOG_G * fog;
+              pixels[dst + 2] = texture.data[src + 2] * shade + FOG_B * fog;
               pixels[dst + 3] = 255;
-              if (hitKind === 3) ceilingPixels += 1;
-              else topPixels += 1;
+              if (hitKind === 3) {
+                ceilingPixels += 1;
+                interiorPixels += 1;
+              } else topPixels += 1;
             }
             depth[idx] = hitT;
             paintedColumns[x] = 1;
@@ -562,6 +602,7 @@ export class Renderer {
     this.stats.wallPixels = wallPixels;
     this.stats.topPixels = topPixels;
     this.stats.ceilingPixels = ceilingPixels;
+    this.stats.interiorPixels = interiorPixels;
   }
 
   private drawSprites(cam: CameraState, sprites: SpriteDraw[]): void {

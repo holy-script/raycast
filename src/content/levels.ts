@@ -118,7 +118,7 @@ export const LEVELS: LevelSpec[] = [
   {
     id: "district",
     title: "ROOFTOP DISTRICT",
-    objective: "Hunt the eight hostiles, then reach the extraction beacon.",
+    objective: "Hunt the rooftop hostiles, then defeat the overseer.",
     rows: DISTRICT_MAP,
     heights: DISTRICT_HEIGHTS,
     rooms: DISTRICT_ROOMS,
@@ -138,7 +138,7 @@ export const LEVELS: LevelSpec[] = [
     ],
     doors: [],
     exits: [{ id: "extraction", x: 32.5, y: 32.5, target: "courtyard" }],
-    huntTargets: 8,
+    huntTargets: 7,
   },
 ];
 

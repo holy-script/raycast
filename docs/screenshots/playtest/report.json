@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-12T05:44:41.957Z",
+  "generatedAt": "2026-11-12T06:15:16.350Z",
   "url": "http://127.0.0.1:5199/?screenshot",
   "passed": 40,
   "failed": 0,
@@ -67,7 +67,7 @@
     {
       "name": "jetpack produces sustained lift",
       "ok": true,
-      "detail": "alt 4.85 m, fuel 0.82"
+      "detail": "alt 4.76 m, fuel 0.82"
     },
     {
       "name": "player lands and refuels",
@@ -112,7 +112,7 @@
     {
       "name": "midair altitude registers",
       "ok": true,
-      "detail": "alt 7.15 m, sprite pitch 3"
+      "detail": "alt 7.14 m, sprite pitch 3"
     },
     {
       "name": "FOV stays fixed from the ground to the ceiling",
@@ -122,7 +122,7 @@
     {
       "name": "wall faces stay opaque while airborne",
       "ok": true,
-      "detail": "384 cols, 48315 wall px"
+      "detail": "384 cols, 47802 wall px"
     },
     {
       "name": "close wall fills the screen instead of vanishing",
@@ -182,7 +182,7 @@
     {
       "name": "stepped blocks render their top surfaces",
       "ok": true,
-      "detail": "47705 top px, 38643 wall px"
+      "detail": "47700 top px, 38648 wall px"
     },
     {
       "name": "a 0.6 crate blocks walking without a jump",
@@ -192,7 +192,7 @@
     {
       "name": "the crate occludes the scholar behind it",
       "ok": true,
-      "detail": "257 drawn, 1988 occluded px"
+      "detail": "274 drawn, 1993 occluded px"
     },
     {
       "name": "landing on the crate stops at its 0.6 surface",
