@@ -23,3 +23,6 @@ artifacts/
 
 # Raw viewmodel renders; packed frames live in public/assets/sprites/player/
 assets-src/viewmodel/raw/
+
+# Agent worktrees (nested checkouts of this repo)
+.qoder/worktrees/
