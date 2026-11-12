@@ -4,7 +4,7 @@ Milestones are ordered. A milestone is complete only when every acceptance crite
 is checked and the verification command passes. Update this file and
 [PROGRESS.md](PROGRESS.md) whenever a milestone starts or finishes.
 
-Current position: **M0–M17 complete.**
+Current position: **M0–M17 complete and deployed (2026-11-12).**
 Ranged combat, interaction, doors/pickups, level transitions, the reactor map, the
 Rooftop District, the SLAGWORKS foundry, campaign persistence, and the stage-driven audio
 director are playable and covered by 743 deterministic matrix assertions (127 scenarios,

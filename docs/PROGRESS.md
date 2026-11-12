@@ -93,6 +93,11 @@ Browser verification (2026-11-11, headless Chrome over CDP):
 - Production run (2026-11-12, M14): the live site serves `index-C6EDvFgC.js` /
   `index-ifEVNW8L.css`; the deployed build reached Ready in 16 s and the happy-path
   playtest passes 40/40 with zero console errors.
+- Production run (2026-11-12, M17): the live site serves `index-B1q8EU2d.js` /
+  `index-BAHy215h.css`; Vercel deployment `raycast-rmj7ew67s` reached Ready in 16 s. The
+  external matrix passes 743/743 assertions across 127 scenarios (including all five
+  foundry scenarios) and the happy-path playtest passes 40/40, both with zero console
+  errors.
 - Production harness run (2026-11-11, after the 4-pitch deploy):
   `PLAYTEST_OUT=/tmp/rc-prod-check npm run playtest
   -- --url https://raycast-rosy.vercel.app/` passed 24/24 against the deployed build,
@@ -215,6 +220,9 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
   with goldens) across 127 scenarios (156 captures, zero console errors), `playtest`
   40/40, `flight` 109/109, `states` 42/42, build 85.17 kB JS / 28.30 kB gzip. Goldens
   regenerated for every changed harness.
+- Deployment: pushed `main` (`cc05433`, `e3ce16b`); Vercel built `raycast-rmj7ew67s` in
+  16 s. Production serves `index-B1q8EU2d.js` / `index-BAHy215h.css`; the external matrix
+  passes 743/743 assertions and the production happy path 40/40, zero console errors.
 
 ### 2026-11-12 — M16 audio director and game feel
 

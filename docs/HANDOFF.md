@@ -389,7 +389,7 @@ alone can leave HUD values at `--`.
 
 ## Next task: M15–M17 owner playtest and tuning
 
-M15–M17 are complete: campaign
+M15–M17 are complete and deployed (production serves `index-B1q8EU2d.js`): campaign
 persistence and level select, the layered audio director, and the SLAGWORKS foundry with
 cycling slag channels, a coolant gate, and the foreman. The owner playtest is the next
 step.
