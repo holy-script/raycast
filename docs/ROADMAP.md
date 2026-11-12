@@ -4,7 +4,7 @@ Milestones are ordered. A milestone is complete only when every acceptance crite
 is checked and the verification command passes. Update this file and
 [PROGRESS.md](PROGRESS.md) whenever a milestone starts or finishes.
 
-Current position: **M0–M12 complete locally.** Ranged combat, interaction, doors/pickups,
+Current position: **M0–M12 complete and deployed.** Ranged combat, interaction, doors/pickups,
 level transitions, the reactor map, and the Rooftop District are playable and covered by
 752 deterministic matrix checks (113 scenarios), a 40-check happy-path run, a 109-check
 flight sweep, and a 42-check paused-state gallery. The guardian is the only shipped
@@ -314,7 +314,9 @@ buildings can be entered, and sprites gain real volume at close range.
 captures), `npm run playtest:flight` (109/109), and `npm run playtest:states` (42/42)
 pass with zero page errors. Captures show the office ceiling and floor, the capped indoor
 jetpack, the roof over the vault, a destroyed crate, the muzzle-aligned bolt, and clean
-guardian close-ups without slice seams. Verified 2026-11-12.
+guardian close-ups without slice seams. Verified 2026-11-12. Deployed the same day to
+https://raycast-rosy.vercel.app (`index-C8-wHYwk.js`); the production playtest passes 40/40
+against the live build and serves manifest v2 with `slices.png`.
 
 Deferred: interior-specific wall/ceiling art (interior faces currently reuse the facade
 texture), stairs between floors, multi-room buildings, projectile drop/penetration, and

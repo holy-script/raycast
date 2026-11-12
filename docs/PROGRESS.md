@@ -193,6 +193,10 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
 - Known approximations: interior wall faces reuse the exterior facade texture (lit
   windows appear indoors), and the vault entry captures face a nearby partition. Deferred:
   interior-specific art, stairs between floors, projectile drop/penetration.
+- Shipped to https://raycast-rosy.vercel.app: the production bundle is
+  `assets/index-C8-wHYwk.js` (matches the local build), manifest v2 with `slices.png` is
+  served, and `npm run playtest -- --url https://raycast-rosy.vercel.app` passed 40/40 with
+  zero page errors. Production captures went to `/tmp/rc-prod-check`, not the repo.
 
 ### 2026-11-12 — M11 Rooftop District
 
