@@ -577,7 +577,7 @@ Screenshots and a JSON report land in `docs/screenshots/playtest/`.
 The companion harnesses share `tools/playtest/support.ts` (contact sheets, sky-row
 classification, image metrics):
 
-- `playtest:matrix` — 127 deterministic scenarios, 874 checks (740 assertions + goldens),
+- `playtest:matrix` — 127 deterministic scenarios, 879 checks (743 assertions + goldens),
   golden-frame comparison.
 - `playtest:states` — paused player/guardian animation gallery, 42 checks.
 - `playtest:flight` — 18 altitude/pitch poses plus a live jetpack flight, 109 checks. It

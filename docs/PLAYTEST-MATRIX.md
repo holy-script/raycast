@@ -3,8 +3,8 @@
 `npm run playtest:matrix` drives the same headless-Chrome/CDP harness as
 `npm run playtest`, but instead of one happy path it walks the game through 127
 deterministic state, interaction, combat, level, district, interior, foundry, route, and
-viewmodel scenarios: 874 checks (740 assertions plus 134 golden-frame comparisons) and
-154 captures (canvas frames plus full-page UI overlays).
+viewmodel scenarios: 879 checks (743 assertions plus 136 golden-frame comparisons) and
+156 captures (canvas frames plus full-page UI overlays).
 
 The point is coverage the owner should not have to repeat by hand — every movement axis,
 vertical state, camera pitch band, collision surface, actor behavior, NPC/pickup/door
@@ -296,15 +296,15 @@ timing dependencies.
 M15 and M16 added the level-select/campaign scenarios (`n01`–`n05` cover the audio beds
 and heartbeat; the campaign round-trip is asserted directly through
 `window.__raycast.campaign`). M17 adds five foundry scenarios, taking the suite to
-**127 scenarios / 874 checks (740 assertions + 134 goldens) / 154 captures**:
+**127 scenarios / 879 checks (743 assertions + 136 goldens) / 156 captures**:
 
 | Scenario | Assertion |
 | --- | --- |
 | `l18-foundry-arrival` | The courtyard beacon at `(21.5, 22.5)` loads `foundry` / `SLAGWORKS`, spawns at `(24.5, 44.5)`, reads `0/6`, reports the foreman at 320 HP, places the cinder-lancer at 3 m and the catwalk-gunner at 6 m, and exposes `hazard { hotNow: true, standing: false, coolant: 0/3 }`. |
 | `l19-hot-channel-burns` | With every hostile dead, standing in the south slag channel during the hot phase steps 1.2 s and drops health from 100 into 70–95, sets `hazardHot`, and toasts `SLAG BURN`. |
-| `l20-cold-channel-safe` | The same pose during the cold phase steps 0.8 s with health still 100, then 1.6 s more re-enters the hot phase and damages the player. |
-| `l21-coolant-cell` | `interact()` at the first coolant cell returns `"pickup"`, increments the gate to 1/3, removes the billboard, and toasts `COOLANT CELL 1/3`. |
-| `l22-foundry-clear` | The keycard opens the control-room door, three coolant pickups flip the stage to `boss`, the six non-boss kills keep it there, the foreman's 0.67 s death topple flips it to `extract`, and the sealed beacon then reports `clear` with the victory overlay, the `Foundry cleared` heading, and a campaign record (`reached`, `cleared`, `bestKills = 6`, `bestTime > 0`). `E` returns to the courtyard. |
+| `l20-cold-channel-safe` | The same pose during the cold phase steps 0.8 s with health still 100, 1.6 s more re-enters the hot phase and damages the player, and a final 1.6 s cools the channel so the scenario capture documents the safe floor. |
+| `l21-coolant-cell` | A pre-pickup capture from two metres west shows the canister; `interact()` on the cell then returns `"pickup"`, increments the gate to 1/3, removes the billboard, and toasts `COOLANT CELL 1/3`. |
+| `l22-foundry-clear` | The keycard opens the control-room door, three coolant pickups flip the stage to `boss`, the six non-boss kills keep it there, the foreman's 0.67 s death topple flips it to `extract`, and the sealed beacon then reports `clear` with the victory overlay, the `Foundry cleared` heading, and a campaign record (`reached`, `cleared`, `bestKills = 6`, `bestTime > 0`). `l22-foundry-extract` captures the beacon scene before `E` returns to the courtyard. |
 
 `l19`/`l20` deliberately batch damage: the hazard applies 12 dps in ≥0.25 s chunks, so a
 1.2 s crossing can lose 12–13 HP rather than exactly 14.4. Assert ranges, not exact

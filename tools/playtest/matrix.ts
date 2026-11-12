@@ -2545,6 +2545,14 @@ async function main(): Promise<void> {
         hot.health < 100 && hot.hazardHot,
         `health ${hot.health.toFixed(1)} · hot ${hot.hazardHot}`,
       );
+      // End on the cold phase so the scenario capture documents the safe floor.
+      await step(1.6);
+      const cooled = await state();
+      check(
+        "the channel cools again after the hot window",
+        !cooled.hazardHot,
+        `hot ${cooled.hazardHot}`,
+      );
     });
 
     define("levels", "l21-coolant-cell", async () => {
@@ -2556,6 +2564,10 @@ async function main(): Promise<void> {
         }
       })()`);
       await step(0);
+      // Stand back so the canister is in frame before it is collected.
+      await pose(6.6, 24.5, 0, 0, 0);
+      await step(0);
+      await saveCanvas("l21-coolant-canister", true);
       await pose(8.5, 24.5, 0, 0, 0);
       const result = await interact();
       await step(0.05);
@@ -2668,6 +2680,9 @@ async function main(): Promise<void> {
         `reached ${saved.reached.join(",")} · best ${saved.levels.foundry.bestKills} kills · ${(saved.levels.foundry.bestTime ?? 0).toFixed(1)} s`,
       );
       await capturePage("l22-foundry-victory");
+      await pose(32.5, 8.4, 0, -Math.PI / 2, -0.3);
+      await step(0);
+      await saveCanvas("l22-foundry-extract", true);
       const result = await interact();
       await step(0);
       const after = await debug();

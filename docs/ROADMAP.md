@@ -7,8 +7,8 @@ is checked and the verification command passes. Update this file and
 Current position: **M0–M17 complete.**
 Ranged combat, interaction, doors/pickups, level transitions, the reactor map, the
 Rooftop District, the SLAGWORKS foundry, campaign persistence, and the stage-driven audio
-director are playable and covered by 740 deterministic matrix assertions (127 scenarios,
-874 checks with goldens), a 40-check happy-path run, a 109-check flight sweep, and a
+director are playable and covered by 743 deterministic matrix assertions (127 scenarios,
+879 checks with goldens), a 40-check happy-path run, a 109-check flight sweep, and a
 42-check paused-state gallery. The guardian is the only shipped chassis, with all six
 states in a 16×4×19 atlas;
 the scout and brute prototypes were removed until their art pass exists. M8 delivered
@@ -529,6 +529,6 @@ Implemented 2026-11-12.
 
 **Acceptance:** the foundry loads with no missing textures, hazards cycle and damage on
 schedule, the collection gate and boss stage work end to end, and every existing suite
-stays green. Verified 2026-11-12: 145 unit tests, 740/740 matrix assertions across 127
-scenarios (874 checks with goldens), 40/40 happy path, 109/109 flight, 42/42 paused states,
+stays green. Verified 2026-11-12: 145 unit tests, 743/743 matrix assertions across 127
+scenarios (879 checks with goldens), 40/40 happy path, 109/109 flight, 42/42 paused states,
 and a clean production build (`index-B1q8EU2d.js`, 85.17 kB / 28.30 kB gzip).

@@ -23,7 +23,7 @@ Last updated: **2026-11-12**
 | Enemy roster and AI | M14 | ✅ Rusher, charged lancer with muzzle telegraph, frontal-armor bulwark; 117 unit tests, 784 matrix checks, all browser suites green; deployed |
 | Campaign and progression | M15 | ✅ Versioned `raycast.campaign.v1` record, unlock/best-time/kills persistence, keyboard level select with briefings, `NEW BEST` victory summary; 125 unit tests |
 | Audio and game feel | M16 | ✅ Pure audio mix director, per-level ambience beds, stage-driven bass/pad/percussion, boss/extract/victory cues, low-health heartbeat, `audioDebug()` hook; 133 unit tests |
-| Foundry biome | M17 | ✅ SLAGWORKS 48×48 foundry, cycling slag channels, coolant collection gate, foreman boss, foundry palette; stage audio extended; 145 unit tests, 874 matrix checks |
+| Foundry biome | M17 | ✅ SLAGWORKS 48×48 foundry, cycling slag channels, coolant collection gate, foreman boss, foundry palette; stage audio extended; 145 unit tests, 879 matrix checks |
 
 ## Verification snapshot
 
@@ -35,7 +35,7 @@ npm run typecheck   # passes
 npm test            # 14 files, 145 tests pass
 npm run build       # tsc + vite build (85.17 kB JS / 28.30 kB gzip)
 npm run playtest    # 40/40 browser checks pass
-npm run playtest:matrix  # 127 scenarios, 874/874 checks (740 assertions + 134 goldens), 154 captures, 0 console errors
+npm run playtest:matrix  # 127 scenarios, 879/879 checks (743 assertions + 136 goldens), 156 captures, 0 console errors
 npm run playtest:flight  # 18 poses + live jetpack, 109/109 checks, 30 captures
 npm run playtest:states  # 42/42 state checks, 21 captures, 0 console errors
 npm run assets:verify -- --min-iou 0.4  # 1,216-frame guardian atlas; min IoU 0.43, mean 0.90
@@ -206,8 +206,13 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
   and the sealed beacon. Matrix adds `l18`–`l22`: arrival, hot-channel burn, cold-channel
   wait and reignition, coolant pickup, and the full keycard → coolant → foreman → beacon
   clear with campaign-record assertions.
-- Verification: typecheck clean, **145 unit tests**, matrix 740/740 assertions (874 checks
-  with goldens) across 127 scenarios (154 captures, zero console errors), `playtest`
+- The visual review flagged three capture-timing gaps, not rendering defects: `l20` ended
+  after the channel reignited, `l21` captured after the pickup, and `l22` captured after
+  returning to the courtyard. `l20` now ends on the cold phase, `l21` saves
+  `l21-coolant-canister` from two metres before collecting, and `l22` saves
+  `l22-foundry-extract` at the beacon before `E`.
+- Verification: typecheck clean, **145 unit tests**, matrix 743/743 assertions (879 checks
+  with goldens) across 127 scenarios (156 captures, zero console errors), `playtest`
   40/40, `flight` 109/109, `states` 42/42, build 85.17 kB JS / 28.30 kB gzip. Goldens
   regenerated for every changed harness.
 

@@ -11,14 +11,14 @@ npm run typecheck
 npm test
 npm run build
 npm run playtest   # headless Chrome, 40 checks + screenshots
-npm run playtest:matrix  # 127 deterministic scenarios, 874 checks (740 assertions + goldens)
+npm run playtest:matrix  # 127 deterministic scenarios, 879 checks (743 assertions + goldens)
 npm run playtest:flight  # 18 airborne poses + live jetpack, 109 checks
 npm run playtest:states  # 42 state checks, 21 paused-state captures
 npm run dev        # http://localhost:5173
 ```
 
 Expected: typecheck clean, 145 tests passing across 14 files, Vite build succeeds (85.17 kB
-JS), playtest 40/40, matrix 874/874 (740 assertions + 134 goldens), flight 109/109, state
+JS), playtest 40/40, matrix 879/879 (743 assertions + 136 goldens), flight 109/109, state
 gallery 42/42 with zero console errors.
 Click the canvas,
 move with WASD, hold Space to jetpack up to 18 m outdoors (or below the ceiling indoors),
@@ -149,7 +149,7 @@ flight. `debug().actors[]` also reports `charge` (0–1 during a charged wind-up
 
 `?screenshot` hides the intro overlay for headless captures. Prefer the harnesses:
 `npm run playtest` is the happy-path browser check, `npm run playtest:matrix` walks
-127 deterministic state/route scenarios (874 checks with goldens, 740 assertions,
+127 deterministic state/route scenarios (879 checks with goldens, 743 assertions,
 labelled contact sheet), `npm run playtest:states` pauses the sim in every
 player/guardian body state
 for 21 gallery captures (42 checks), and `npm run playtest:flight` sweeps 18

@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-12T08:03:21.446Z",
+  "generatedAt": "2026-11-12T08:09:11.938Z",
   "url": "http://127.0.0.1:5201/?screenshot",
-  "durationMs": 12324,
+  "durationMs": 12766,
   "scenarios": [
     "g01-spawn-idle",
     "g02-walk-forward",
@@ -131,7 +131,7 @@
     "l21-coolant-cell",
     "l22-foundry-clear"
   ],
-  "passed": 874,
+  "passed": 879,
   "failed": 0,
   "checks": [
     {
@@ -3100,7 +3100,7 @@
       "group": "ui",
       "name": "resuming advances the simulation",
       "ok": true,
-      "detail": "patrol dx 0.37, 22 frames, paused=false, 6.40% pixels changed"
+      "detail": "patrol dx 0.38, 22 frames, paused=false, 6.43% pixels changed"
     },
     {
       "scenario": "u05-pause-resume",
@@ -6080,6 +6080,13 @@
     {
       "scenario": "l20-cold-channel-safe",
       "group": "levels",
+      "name": "the channel cools again after the hot window",
+      "ok": true,
+      "detail": "hot false"
+    },
+    {
+      "scenario": "l20-cold-channel-safe",
+      "group": "levels",
       "name": "l20-cold-channel-safe matches baseline",
       "ok": true,
       "detail": "0.00% of pixels differ"
@@ -6089,7 +6096,7 @@
       "group": "levels",
       "name": "l20-cold-channel-safe renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 63.9"
+      "detail": "512 colors, mean luma 39.9"
     },
     {
       "scenario": "l20-cold-channel-safe",
@@ -6111,6 +6118,20 @@
       "name": "HUD is populated",
       "ok": true,
       "detail": "WALK · LIVE · fuel 100%"
+    },
+    {
+      "scenario": "l21-coolant-cell",
+      "group": "levels",
+      "name": "l21-coolant-canister matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l21-coolant-cell",
+      "group": "levels",
+      "name": "l21-coolant-canister renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 33.9"
     },
     {
       "scenario": "l21-coolant-cell",
@@ -6202,6 +6223,20 @@
       "name": "the foundry clear is persisted with its furnace record",
       "ok": true,
       "detail": "reached courtyard,foundry · best 6 kills · 0.9 s"
+    },
+    {
+      "scenario": "l22-foundry-clear",
+      "group": "levels",
+      "name": "l22-foundry-extract matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l22-foundry-clear",
+      "group": "levels",
+      "name": "l22-foundry-extract renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 52.8"
     },
     {
       "scenario": "l22-foundry-clear",
@@ -7142,6 +7177,12 @@
       "baseline": "compared"
     },
     {
+      "name": "l21-coolant-canister",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
       "name": "l21-coolant-cell",
       "kind": "canvas",
       "diff": 0,
@@ -7151,6 +7192,12 @@
       "name": "l22-foundry-victory",
       "kind": "page",
       "baseline": "skipped"
+    },
+    {
+      "name": "l22-foundry-extract",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "l22-foundry-clear",
