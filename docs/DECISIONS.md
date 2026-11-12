@@ -380,3 +380,36 @@ cheap to reason about in tests and the debugger. Tradeoffs: victory deliberately
 the simulation, so future post-game actions need an explicit exit from that state; boss
 variety is limited to fan geometry until a telegraphed attack or phase system exists;
 and the overseer still uses the guardian sprite with a red tint.
+
+## ADR-021 — Charged wind-ups and direction-aware frontal armor
+
+**Context:** M13's district hostiles all fired on the same 0.2 s beat and took damage the
+same way, so the roster read as one enemy with different tints. M14 needed distinct threats
+that reuse the existing gun, chase, and sprite systems without new assets or a second
+damage pipeline.
+
+**Decision:**
+
+- A charged shot is a `gun.charge` duration added to the existing wind-up: the bolt fires
+  at `ATTACK_IMPACT + charge`, and the attack state lasts 0.2 s past release. Instant guns
+  and melee keep the original timing, so existing actors and tests are unchanged.
+- The charge is telegraphed rather than hidden: `chargeProgress` drives a swelling orange
+  glow at the muzzle (reusing `glowSprite`), emits a `charge` audio event when the attack
+  starts, and exposes 0–1 progress through `getRenderDebug().actors[].charge`.
+- Armor is a front-arc damage scale, not an HP pool or hit-location system. `damageActor`
+  receives the hit source position; `frontalArmorScale` compares facing against the source
+  direction with a dot product > 0.34. Side and rear hits bypass it; blocked hits round to
+  at least 1 damage and throttle the deflection toast to one per 2.5 s.
+- Omitting the source position (automation kill loops, boss-gate helpers) applies full
+  damage. Scripted mission checks must not depend on where a synthetic hit comes from.
+- The three roles are spec-only: a rusher is a fast low-HP chaser with no gun, a lancer is
+  a sentry with `charge`, and a bulwark is a slow chaser with `armor`. The guardian atlas,
+  behavior union, and projectile code are untouched.
+
+**Consequences:** The district now asks for different responses (kite the rusher, break
+line of sight against the lancer, flank the bulwark) with one new math helper, one timing
+branch, and no new art. Tradeoffs: a charged actor is locked in its wind-up and cannot
+feint; armor only models the horizontal front arc (an elevated shot from directly above
+counts as a front hit if the horizontal dot product agrees); and the lancer's strength is
+tuned by spec, not by a special AI. The timing constants remain global, so per-actor
+recovery times would need another spec field.

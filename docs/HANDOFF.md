@@ -11,14 +11,14 @@ npm run typecheck
 npm test
 npm run build
 npm run playtest   # headless Chrome, 40 checks + screenshots
-npm run playtest:matrix  # 114 deterministic scenarios, 767 checks
+npm run playtest:matrix  # 116 deterministic scenarios, 784 checks
 npm run playtest:flight  # 18 airborne poses + live jetpack, 109 checks
 npm run playtest:states  # 42 state checks, 21 paused-state captures
 npm run dev        # http://localhost:5173
 ```
 
-Expected: typecheck clean, 113 tests passing across 11 files, Vite build succeeds, playtest
-40/40, matrix 767/767, flight 109/109, state gallery 42/42 with zero console errors.
+Expected: typecheck clean, 117 tests passing across 11 files, Vite build succeeds, playtest
+40/40, matrix 784/784, flight 109/109, state gallery 42/42 with zero console errors.
 Click the canvas,
 move with WASD, hold Space to jetpack up to 18 m outdoors (or below the ceiling indoors),
 and look down to see the top-pitch
@@ -34,8 +34,8 @@ click fires a plasma bolt at whatever is under the crosshair. Medkits and fuel c
 are picked up by walking over them.
 
 M11 loop: use the courtyard beacon at (2.5, 22.5) to enter the 64×64 Rooftop District.
-From the south avenue spawn (32.5, 58.5), advance into the plaza, kill the two street
-gunners and the plaza bruiser, jetpack onto the 4/6/8/10/12 m towers, and clear the four
+From the south avenue spawn (32.5, 58.5), advance into the plaza, kill the street gunner,
+the rusher, and the plaza bulwark, jetpack onto the 4/6/8/10/12 m towers, and clear the four
 rooftop sentries. The beacon at the plaza centre (32.5, 32.5) returns to the courtyard
 only after the seven rooftop hostiles and the overseer are dead; until then it toasts the
 remaining hunt count or the active overseer (see the M13 loop below).
@@ -53,6 +53,14 @@ use the two 12.6 m cover risers at (54, 42) and (56, 44) or jetpack sideways. Af
 overseer dies the extraction objective appears; step on the plaza beacon to raise the
 mission-complete overlay (time, hostile count) and press `E` to return to the courtyard.
 Interior walls and ceilings now use the panel material instead of the windowed facade.
+
+M14 loop: the district roster now has three responses. `rusher-north` (45 HP, 2.6 m/s)
+closes fast and hits for 6 — kill it early or backpedal. The `spire-se` lancer charges for
+0.9 s with a swelling orange muzzle glow before firing a 20-damage bolt (24 m range) —
+break line of sight or move during the glow. The `bulwark` (180 HP) soaks 50% of damage
+from its front arc and toasts `PLATING DEFLECTED · FLANK IT`; circle it or shoot from
+behind. The other gunners, the seven-target hunt gate, and the overseer stage are
+unchanged.
 
 Asset pipeline after a fresh clone (raw renders are gitignored):
 
@@ -113,11 +121,12 @@ actor's resolved yaw, pitch index, and sprite id, which is how directional selec
 verified. `debug()` exposes `renderer.stats.wallColumns`, `wallPixels`, `topPixels`,
 per-sprite `contentW/contentH/pixels/occluded`, and the live `bolts` array
 (`x, y, z, fromPlayer`) so the harness can assert on what was actually drawn and in
-flight.
+flight. `debug().actors[]` also reports `charge` (0–1 during a charged wind-up, else
+`null`), which `f14-lancer-charge` uses to prove the telegraph.
 
 `?screenshot` hides the intro overlay for headless captures. Prefer the harnesses:
 `npm run playtest` is the happy-path browser check, `npm run playtest:matrix` walks
-114 deterministic state/route scenarios (767 checks, labelled contact sheet, golden
+116 deterministic state/route scenarios (784 checks, labelled contact sheet, golden
 frames), `npm run playtest:states` pauses the sim in every player/guardian body state
 for 21 gallery captures (42 checks), and `npm run playtest:flight` sweeps 18
 altitude/pitch poses plus a live jetpack flight (109 checks) while asserting no sky
@@ -245,6 +254,13 @@ alone can leave HUD values at `--`.
   true when a bolt spawns, not when it hits; the projectile step owns damage. The cooldown
   resets in `placeAtSpawn()`/`loadLevel()` — a leaked cooldown silently swallows the first
   shot of the next scenario (this was a real matrix failure).
+- **Charged wind-up:** a gun's `charge` is added to `ATTACK_IMPACT` for the fire beat and
+  to the attack state's minimum duration. Firing at the flat 0.2 s impact would skip the
+  lancer's telegraph and its 0.9 s glow. `chargeProgress` returns null once `hitLanded`, so
+  the glow stops on release rather than lingering through recovery.
+- **Armor source:** `damageActor(actor, amount, from?)` only applies plating when a source
+  position is supplied. Player bolts pass the player position; automation kill loops omit
+  it and must stay full damage, or the hunt-gate checks stop being deterministic.
 - **Combat reset:** `loadLevel()` clears `bolts` and `impacts`; carrying them across a
   transition leaves stray projectiles and flashes in the new map.
 - **Doors and exits:** opening a door clears both its tile id and height so movement and
@@ -292,9 +308,11 @@ alone can leave HUD values at `--`.
   shared panel texture on a world grid, so they show riveted cladding instead of windows;
   the roof and lintel keep the exterior materials.
 - Actors are non-blocking (no player/actor or actor/actor collision). Hostiles deal melee
-  contact damage and gunners/sentries fire bolts; both can be killed. Bolts are straight,
-  gravity-free, and do not penetrate or bounce. Player bolts spawn at the viewmodel muzzle
-  with an eye fallback when the muzzle point is inside solid geometry.
+  contact damage and gunners/sentries fire bolts; both can be killed. The district roster
+  adds a fast rusher, a charged lancer, and a frontal-armor bulwark via spec fields, not
+  new behavior types. Bolts are straight, gravity-free, and do not penetrate or bounce.
+  Player bolts spawn at the viewmodel muzzle with an eye fallback when the muzzle point is
+  inside solid geometry.
 - Destructible crates are grid cells, so they block movement and line of sight until the
   second player bolt clears them; they reset with the level. Cover risers (`3`) sit 0.6 m
   above their tallest neighbour and are walk-over.
@@ -318,28 +336,27 @@ alone can leave HUD values at `--`.
   (`raycast.settings.v1`) and fail open when storage is blocked.
 - No license file yet.
 
-## Next task: M13 owner playtest and tuning
+## Next task: M14 owner playtest and tuning
 
-M13 is complete locally: the district runs hunt → boss → extract → clear, the overseer
-fires a three-bolt volley from behind new rooftop cover, the HUD shows the boss row and
-stage objective, and the beacon raises a mission-complete overlay with `E` to continue.
-Verification passes `playtest` (40), `playtest:matrix` (767 across 114 scenarios),
-`playtest:flight` (109), `playtest:states` (42), and 113 unit tests. The owner should
-playtest the full district loop — especially volley dodging from the 12.6 m cover — before
-the next design step.
+M14 is complete locally: the district roster has a fast rusher, a charged lancer with a
+muzzle telegraph, and a frontal-armor bulwark, while the hunt gate stays at seven targets
+plus the overseer. The owner should playtest the three roles and the flanking read before
+starting M15.
 
-1. Tune in `src/content/actors.ts` / `src/content/district-map.ts`: the overseer's HP,
-   volley damage/spread/cooldown, and the nine cover cells. Keep `huntTargets` equal to the
-   non-boss hostile count (7).
-2. If rooms or cover move, update `DISTRICT_ROOMS`, the level's indoor pickups, and the
-   `l12`–`l17` doorway/pose coordinates; rerun `tests/levels.test.ts` so sector bounds,
-   cover heights, and the roof stay valid.
-3. If a visual change lands, rerun `npm run playtest:matrix -- --update-golden`, inspect
-   the first mismatching run before committing, then run typecheck/tests/build, both
+1. Tune the new roles in `src/content/actors.ts`: rusher speed/HP, lancer charge/damage/
+   cooldown, bulwark HP/armor/melee. Keep `huntTargets` equal to the non-boss hostile count
+   (7) and leave the overseer spec alone unless the encounter needs it.
+2. The armor arc is `frontalArmorScale` in `src/engine/math.ts` (dot > 0.34). If flanking
+   feels too forgiving or too harsh, change the threshold and the unit tests together.
+3. If a visual change lands, run `npm run playtest:matrix`; only use `--update-golden`
+   after inspecting the first mismatching run. Then run typecheck/tests/build, both
    playtests, flight, states, and check Vercel.
-4. Deferred: dedicated overseer art and telegraphed attacks, mission select/campaign
-   persistence, stairs between floors, projectile drop/penetration, per-band slice
-   lighting, and an AutoSprite/Gamelabs adapter.
+4. Then start M15 (campaign persistence and level select) from the roadmap, followed by
+   M16 (audio/game feel) and M17 (SLAGWORKS foundry). Research for all three is parked in
+   [ROADMAP.md](ROADMAP.md); M17 should land last because it touches hazards, textures, and
+   mission gating.
+5. Deferred: dedicated overseer art, campaign persistence, music, hazards, stairs between
+   floors, projectile drop/penetration, and an AutoSprite/Gamelabs adapter.
 
 If a design choice could go either way, record it in [DECISIONS.md](DECISIONS.md) with the
 tradeoff, then proceed.

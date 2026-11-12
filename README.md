@@ -11,7 +11,9 @@ reproducible pipeline for multi-angle character sprites, based on
 > first-person viewmodel with attack animation, M12 adds muzzle-aligned bolts,
 > destructible crates, a district boss, enterable tower interiors, and stacked-slice
 > impostors, and M13 turns the district into a staged mission with a three-bolt overseer
-> volley, boss HP bar, and a mission-complete overlay. The guardian is the only shipped
+> volley, boss HP bar, and a mission-complete overlay. M14 gives the district a roster: a
+> fast rusher, a charged-shot lancer with a visible muzzle telegraph, and a frontal-armor
+> bulwark that must be flanked. The guardian is the only shipped
 > chassis, so every actor renders through its six-state atlas
 > (idle/walk/attack/hurt/death/talk).
 
@@ -39,14 +41,17 @@ overseer guards the district roof with three-bolt volleys. A 64×64 Rooftop Dist
 extends the same movement and combat onto 4–12 m towers, with jetpack traversal, rooftop
 sentries, enterable office and vault interiors under 3 m ceilings, and a staged mission:
 clear seven hostiles, defeat the overseer, then reach the extraction beacon for the
-mission-complete screen. Actor billboards carry four depth bands from a separate slice
-atlas, so near walls cut through the correct part of a sprite.
+mission-complete screen. The district fields three distinct roles: a fast low-HP rusher, a
+lancer whose orange muzzle glow telegraphs a 20-damage charged bolt, and a slow bulwark
+whose frontal plating halves damage until the player flanks it. Actor billboards carry four
+depth bands from a separate slice atlas, so near walls cut through the correct part of a
+sprite.
 
 **Status:** playable build with three levels, ranged and melee combat with hurt/death
 states, NPC dialogue, doors, keycard/medkit/fuel pickups, level transitions, a 64×64
 Rooftop District with 4–12 m towers, enterable interiors, and a boss-gated extraction,
-synthesized audio, and a pause/settings menu. Verification runs a 114-scenario
-deterministic matrix (767 checks), a 40-check happy-path browser run, an 18-pose airborne
+synthesized audio, and a pause/settings menu. Verification runs a 116-scenario
+deterministic matrix (784 checks), a 40-check happy-path browser run, an 18-pose airborne
 flight sweep with a live jetpack sequence (109 checks), and a 42-check paused-state gallery
 capturing every body state.
 The M6 AI stylization infrastructure (Blender depth/normal controls, ComfyUI
@@ -65,7 +70,7 @@ npm test           # unit tests
 npm run typecheck
 npm run build      # static build in dist/
 npm run playtest   # headless Chrome: input, physics, atlas, viewmodel, screenshot checks
-npm run playtest:matrix  # 114 deterministic state/interaction/combat/level/district scenarios
+npm run playtest:matrix  # 116 deterministic state/interaction/combat/level/district scenarios
 npm run playtest:flight  # 18 airborne poses + live jetpack sweep, wall/sky/sprite analysis
 npm run playtest:states  # paused-state gallery: 42 checks, 21 captures
 ```

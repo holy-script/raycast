@@ -327,14 +327,17 @@ inward, the parapet clips their own downward sight line. Once within reach, chas
 
 | Timing | Value |
 | --- | --- |
-| Enemy attack impact / total | 0.20 s / 0.40 s |
+| Enemy attack impact / total | 0.20 s / 0.40 s (charged guns add `gun.charge` to both) |
 | Hurt / death state time | 0.25 s / 0.67 s |
 | Player bolt | 45 dmg, 22 m/s, 0.9 s life, 0.45 s cooldown |
 | Player max health / redeploy | 100 / 1.4 s |
-| Hostile melee (wind-up) | 8–14 per hit |
+| Hostile melee (wind-up) | 6–18 per hit |
 | Marauder gun | 11 dmg, 9 m range, 1.7 s cooldown, 9 m/s bolt |
 | District street gunner | 8 dmg, 13 m range, 1.7 s cooldown, 9 m/s bolt |
 | District roof sentry | 9–10 dmg, 18–20 m range, 1.9–2.0 s cooldown, 10 m/s bolt |
+| Rusher (`rusher-north`) | 45 HP, 2.6 m/s, 6 dmg melee, no gun |
+| Lancer (`spire-se`) | 95 HP, 0.9 s charge, 20 dmg, 24 m range, 18 m/s bolt |
+| Bulwark (`bulwark`) | 180 HP, 0.85 m/s, 18 dmg melee, 50% frontal damage reduction |
 | District overseer (boss) | 260 HP, 5 dmg × 3-bolt volley (±0.12 rad), 18 m range, 1.7 s cooldown, 11 m/s bolt, 1.4 rad/s turn |
 | Destructible crate | 1.4 m tall, 2 player bolts, `CRATE DESTROYED` toast |
 | Interaction radius | talk/door 2.4 m, pickup 0.5 m, exit pad 0.6 m |
@@ -358,12 +361,22 @@ level grid, so they reset on reload like doors.
 Hostiles with a `gun` spec (the courtyard marauder, the district gunners, the rooftop
 sentries, and the overseer) check distance, cooldown, and a 3D-sampled `hasLineOfSight`
 before entering `attack`; at `ATTACK_IMPACT` (0.20 s) they fire a bolt aimed at the
-player's chest. A `sentry` holds position and faces the player; a `chase` hostile with a
-gun keeps closing in and falls back to melee inside `attack.range`. Gun-only hostiles omit
-`attack` entirely. A gun with `volley` fires that many horizontal bolts fanned by
-`spread`: `volleyAngles` centres the fan on the aim angle, and the shared vertical slope
-(`Δz / horizontal distance`) is passed per horizontal metre so every bolt still crosses
-the player's chest height. Enemy bolts do not lead the target.
+player's chest. A gun with `charge` holds the wind-up until `ATTACK_IMPACT + charge`,
+raising the `charge` event when the attack begins and rendering a swelling orange glow at
+the muzzle; `getRenderDebug().actors[].charge` exposes the 0–1 progress. A `sentry` holds
+position and faces the player; a `chase` hostile with a gun keeps closing in and falls
+back to melee inside `attack.range`. Gun-only hostiles omit `attack` entirely. A gun with
+`volley` fires that many horizontal bolts fanned by `spread`: `volleyAngles` centres the
+fan on the aim angle, and the shared vertical slope (`Δz / horizontal distance`) is passed
+per horizontal metre so every bolt still crosses the player's chest height. Enemy bolts do
+not lead the target.
+
+An actor with `armor.front` absorbs that fraction of damage when the hit source lies in
+its forward arc (`frontalArmorScale`: facing/source dot product > 0.34, roughly 140°).
+Side and rear hits land full damage, blocked hits round to at least 1 and emit `blocked`,
+and the HUD toasts `PLATING DEFLECTED · FLANK IT` at most once every 2.5 s. Damage calls
+without a source position (the automation kill loop) always land full damage, which keeps
+the mission gate deterministic. The district bulwark is the only plated actor.
 
 Mission state is derived, not stored as a counter machine: `missionStage()` returns
 `hunt` while the non-boss kill count is below `huntTargets`, `boss` while the overseer
@@ -511,7 +524,7 @@ Screenshots and a JSON report land in `docs/screenshots/playtest/`.
 The companion harnesses share `tools/playtest/support.ts` (contact sheets, sky-row
 classification, image metrics):
 
-- `playtest:matrix` — 114 deterministic scenarios, 767 checks, golden-frame comparison.
+- `playtest:matrix` — 116 deterministic scenarios, 784 checks, golden-frame comparison.
 - `playtest:states` — paused player/guardian animation gallery, 42 checks.
 - `playtest:flight` — 18 altitude/pitch poses plus a live jetpack flight, 109 checks. It
   classifies every canvas pixel against the sky gradient, flags enclosed sky holes, fits the

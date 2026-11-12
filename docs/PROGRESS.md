@@ -20,6 +20,10 @@ Last updated: **2026-11-12**
 | Rooftop District | M11 | ✅ 64×64 city, 4–12 m legend towers, jetpack roof traversal, elevated sentries, hunt-gated extraction |
 | Combat depth, interiors, slices | M12 | ✅ Muzzle-aligned bolts, 5 destructible crates, 7 cover props, overseer boss; office + vault sectors with ceilings/roofs and indoor flight cap; 4-band stacked-slice billboards on a separate depth atlas |
 | District mission and boss | M13 | ✅ Hunt → boss → extract → clear stages, three-bolt overseer volley, rooftop cover, boss HP bar, mission-complete overlay with `E` continue; panel-clad interior walls and ceilings |
+| Enemy roster and AI | M14 | ✅ Rusher, charged lancer with muzzle telegraph, frontal-armor bulwark; 117 unit tests, 784 matrix checks, all browser suites green |
+| Campaign and progression | M15 | 📋 Planned: versioned localStorage campaign, level select/briefings, best time/kills; research complete |
+| Audio and game feel | M16 | 📋 Planned: layered procedural music/ambience, stage-driven intensity, audio debug hook; research complete |
+| Foundry biome | M17 | 📋 Planned: SLAGWORKS 48×48 foundry, cycling slag hazards, coolant collection + foreman boss; research complete |
 
 ## Verification snapshot
 
@@ -28,10 +32,10 @@ Run from a clean checkout:
 ```bash
 npm ci
 npm run typecheck   # passes
-npm test            # 11 files, 113 tests pass
-npm run build       # tsc + vite build (67.00 kB JS / 22.66 kB gzip)
+npm test            # 11 files, 117 tests pass
+npm run build       # tsc + vite build (68.09 kB JS / 23.15 kB gzip)
 npm run playtest    # 40/40 browser checks pass
-npm run playtest:matrix  # 114 scenarios, 767/767 checks, 137 captures, 0 console errors
+npm run playtest:matrix  # 116 scenarios, 784/784 checks, 140 captures, 0 console errors
 npm run playtest:flight  # 18 poses + live jetpack, 109/109 checks, 30 captures
 npm run playtest:states  # 42/42 state checks, 21 captures, 0 console errors
 npm run assets:verify -- --min-iou 0.4  # 1,216-frame guardian atlas; min IoU 0.43, mean 0.90
@@ -162,6 +166,26 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
 - Artifacts: `docs/screenshots/states/contact-sheet.png`, 43 PNGs, `report.json`.
 
 ## Session log
+
+### 2026-11-12 — M14 enemy roster and AI
+
+- Roster: `ActorSpec` gained `gun.charge` and `armor.front`. The district's
+  `gunner-north` became `rusher-north` (45 HP, 2.6 m/s, 6-damage melee, no gun),
+  `spire-se` became a lancer (95 HP, 0.9 s charged shot, 20 damage, 24 m range, 18 m/s),
+  and `bruiser` became `bulwark` (180 HP, 0.85 m/s, 18-damage melee, 50% frontal
+  reduction). The hunt gate is still seven non-boss hostiles plus the overseer.
+- Charged wind-up: a gun's `charge` is added to `ATTACK_IMPACT` for the fire beat and to
+  the attack-state minimum, so the lancer holds its pose for 1.1 s before release. The
+  attack start emits a `charge` event (rising synth cue), `chargeProgress` drives a
+  swelling orange muzzle glow, and `getRenderDebug().actors[].charge` exposes 0–1.
+- Frontal armor: `frontalArmorScale` compares the actor facing with the hit source
+  (dot > 0.34, roughly a 140° cone). Blocked hits round to at least 1, emit `blocked`
+  (metallic ping), and toast `PLATING DEFLECTED · FLANK IT` at most once per 2.5 s.
+  `damageActor` takes an optional source position; player bolts pass the player position,
+  while automation kills omit it and stay full damage.
+- Tests: `tests/math.test.ts` covers front/side/rear/zero-length/over-armored armor cases
+  and `tests/levels.test.ts` locks the three role specs (117 unit tests total). Matrix adds
+  `f14-lancer-charge` and `f15-bulwark-armor`.
 
 ### 2026-11-12 — M12 combat depth, tower interiors, stacked slices
 
@@ -613,15 +637,19 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
 
 ## Immediate next steps
 
-1. Owner playtest of M13: clear the seven rooftop hostiles, watch the objective change to
-   the boss stage, dodge/cover the overseer's three-bolt volleys, then reach the beacon and
-   confirm the victory overlay and `E` return to the courtyard. Also re-check close-range
-   slices and the panel-clad office walls.
-2. Tune the encounter in `src/content/actors.ts` (overseer HP, volley spread/cooldown) and
-   `src/content/district-map.ts` (cover cells). Keep `huntTargets` equal to the non-boss
-   hostile count (7).
-3. Optional: dedicated overseer art and a telegraphed heavy attack so the boss reads
+1. Owner playtest of M14: fight the district roster and confirm the three roles read
+   differently — rush the fast `rusher-north`, watch the lancer's muzzle glow before its
+   heavy bolt, and flank the `bulwark` after the `PLATING DEFLECTED` toast. Confirm the
+   hunt still clears at 7/7 and the overseer stage is unchanged.
+2. Tune the new roles in `src/content/actors.ts` (rusher speed, lancer charge/damage,
+   bulwark HP/armor) without changing `huntTargets` (7 non-boss hostiles).
+3. Start M15 (campaign and progression): versioned `raycast.campaign.v1` storage, level
+   select/briefings, best time/kills, and the victory summary. The design is in
+   [ROADMAP.md](ROADMAP.md#m15--campaign-and-progression).
+4. Then M16 (audio/game feel) and M17 (foundry biome). Research for all three is parked in
+   the roadmap; M17 touches hazards, textures, and mission gating, so it should land last.
+5. Optional: dedicated overseer art and a telegraphed heavy attack so the boss reads
    differently from a tinted sentry.
-4. Optional: stairs between interior floors and a second room per building; extend
+6. Optional: stairs between interior floors and a second room per building; extend
    `RoomSpec` with an entry side and a per-room floor texture.
-5. Optional: AutoSprite/Gamelabs adapter behind the same CLI/workflow boundary.
+7. Optional: AutoSprite/Gamelabs adapter behind the same CLI/workflow boundary.

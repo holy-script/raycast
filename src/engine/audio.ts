@@ -106,9 +106,17 @@ export class Soundscape {
         this.tone("sawtooth", 420, 140, 0.16, 0.06);
         this.burst(0.1, 0.05, 800, 1.2);
         break;
+      case "charge":
+        this.tone("sine", 240, 900, 0.9, 0.05);
+        this.tone("sawtooth", 120, 320, 0.9, 0.03);
+        break;
       case "hit":
         this.tone("square", 160, 70, 0.12, 0.12);
         this.burst(0.08, 0.1, 700, 1);
+        break;
+      case "blocked":
+        this.tone("square", 760, 520, 0.09, 0.06);
+        this.burst(0.07, 0.05, 1600, 0.7);
         break;
       case "kill":
         this.tone("sawtooth", 120, 40, 0.35, 0.14);

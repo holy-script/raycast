@@ -170,6 +170,26 @@ describe("level definitions", () => {
     expect(district.title).toBe("ROOFTOP DISTRICT");
   });
 
+  it("fields a rusher, a charged lancer, and an armored bulwark", () => {
+    const district = LEVELS[levelIndexById("district")];
+    const spec = (name: string) =>
+      district.actors.find((actor) => actor.name === name);
+    const rusher = spec("rusher-north");
+    expect(rusher?.behavior).toBe("chase");
+    expect(rusher?.hostile).toBe(true);
+    expect(rusher?.gun).toBeUndefined();
+    expect(rusher?.chase?.speed).toBeGreaterThan(2);
+    expect(rusher?.hp).toBeLessThan(70);
+    const lancer = spec("spire-se");
+    expect(lancer?.behavior).toBe("sentry");
+    expect(lancer?.gun?.charge).toBeCloseTo(0.9);
+    expect(lancer?.gun?.damage).toBeGreaterThan(15);
+    const bulwark = spec("bulwark");
+    expect(bulwark?.armor).toEqual({ front: 0.5 });
+    expect(bulwark?.hp).toBeGreaterThan(150);
+    expect(bulwark?.attack?.damage).toBeGreaterThan(15);
+  });
+
   it("places the overseer on an outer edge of a 12 m tower", () => {
     const district = LEVELS[levelIndexById("district")];
     const world = worldOf(district);

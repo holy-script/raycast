@@ -4,24 +4,28 @@ Milestones are ordered. A milestone is complete only when every acceptance crite
 is checked and the verification command passes. Update this file and
 [PROGRESS.md](PROGRESS.md) whenever a milestone starts or finishes.
 
-Current position: **M0–M13 complete and deployed.** Ranged combat, interaction, doors/pickups,
-level transitions, the reactor map, and the Rooftop District are playable and covered by
-767 deterministic matrix checks (114 scenarios), a 40-check happy-path run, a 109-check
-flight sweep, and a 42-check paused-state gallery. The guardian is the only shipped
-chassis, with all six states in a 16×4×19 atlas; the scout and brute prototypes were
-removed until their art pass exists. M8 delivered procedural audio, a pause/settings menu
-(sensitivity, FOV, mute) with persisted settings, a profiled render loop, and a clean
-five-minute production session. M9 added the first-person viewmodel and the
-visual-stability pass. M10 made the plasma projector fire straight projectiles, added a
-marauder gunner with line of sight, and rendered depth-tested glow impacts. The playtest
-follow-up re-authored the death animation as a flat backward topple, gave the corpse its
-own pitch-static frame, and removed the near-wall double silhouette. M11 takes the same
-movement and combat into a 64×64 city: legend-height towers, jetpack rooftop traversal,
-elevated sentries, and a hunt-gated extraction. M11 shipped on 2026-11-12. M12 adds combat
-depth (muzzle-aligned bolts, destructible crates, a district boss), enterable tower
-interiors with ceilings and roofs, and stacked-slice sprite impostors. M13 turns the
-district into a staged mission: hunt, boss, extraction, and a victory overlay, with a
-three-bolt overseer volley and rooftop cover. M13 is complete locally.
+Current position: **M0–M14 complete; M14 verified locally and awaiting deployment.**
+Ranged combat, interaction, doors/pickups, level transitions, the reactor map, and the
+Rooftop District are playable and covered by 784 deterministic matrix checks (116
+scenarios), a 40-check happy-path run, a 109-check flight sweep, and a 42-check paused-state
+gallery. The guardian is the only shipped chassis, with all six states in a 16×4×19 atlas;
+the scout and brute prototypes were removed until their art pass exists. M8 delivered
+procedural audio, a pause/settings menu (sensitivity, FOV, mute) with persisted settings,
+a profiled render loop, and a clean five-minute production session. M9 added the
+first-person viewmodel and the visual-stability pass. M10 made the plasma projector fire
+straight projectiles, added a marauder gunner with line of sight, and rendered
+depth-tested glow impacts. The playtest follow-up re-authored the death animation as a
+flat backward topple, gave the corpse its own pitch-static frame, and removed the near-wall
+double silhouette. M11 takes the same movement and combat into a 64×64 city:
+legend-height towers, jetpack rooftop traversal, elevated sentries, and a hunt-gated
+extraction. M11 shipped on 2026-11-12. M12 adds combat depth (muzzle-aligned bolts,
+destructible crates, a district boss), enterable tower interiors with ceilings and roofs,
+and stacked-slice sprite impostors. M13 turns the district into a staged mission: hunt,
+boss, extraction, and a victory overlay, with a three-bolt overseer volley and rooftop
+cover. M13 is complete and deployed. M14 adds a three-role enemy roster: a fast rusher, a
+charged-shot lancer with a visible muzzle telegraph, and a frontal-armor bulwark that must
+be flanked. M15–M17 are documented plans (campaign persistence, an audio/game-feel pass,
+and a fourth foundry biome); their research is parked in the sections below.
 
 ## M0 — Foundation
 
@@ -379,3 +383,139 @@ passes 646/646 assertions across 114 scenarios against the live build.
 Deferred: dedicated boss art (the overseer reuses the guardian chassis with a red tint),
 phase changes or telegraphed attacks, a mission-select screen, and persistent campaign
 progress.
+
+## M14 — Enemy roster and AI ✅
+
+Goal: make the district fight read as a roster instead of a row of identical gunners.
+
+**Roles**
+
+- [x] `ActorSpec` gains `armor?: { front: number }` and `gun.charge?: number`
+- [x] Rusher (`rusher-north`): 45 HP, 2.6 m/s chase, 6-damage melee, no gun — closes
+  distance fast and dies quickly
+- [x] Lancer (`spire-se`): 95 HP, 0.9 s charged shot, 20 damage, 24 m range, 18 m/s —
+  trades rate of fire for a punishing telegraphed bolt
+- [x] Bulwark (`bulwark`): 180 HP, 0.85 m/s, 18-damage melee, 50% frontal damage
+  reduction — the player must flank or eat the slow fight
+- [x] The mission gate is untouched: seven non-boss hunt targets plus the overseer
+
+**Telegraph and armor**
+
+- [x] Charged guns fire at `ATTACK_IMPACT + charge` and hold the attack pose 0.2 s past
+  release; instant guns and melee keep the original beat
+- [x] Charge progress drives a swelling orange glow at the muzzle, exposed in
+  `getRenderDebug().actors[].charge` and emitted as the `charge` audio/event cue
+- [x] Frontal plating uses the dot product between actor facing and the hit source
+  (forward arc ≈ 140°); blocked hits round to at least 1 damage, emit `blocked`, and
+  toast `PLATING DEFLECTED · FLANK IT` at most once every 2.5 s
+- [x] Automation damage without a source position stays full damage so scripted kills and
+  the mission gate remain deterministic
+
+**Verification**
+
+- [x] `tests/math.test.ts` covers front/side/rear armor cases; `tests/levels.test.ts`
+  locks the three role specs
+- [x] Matrix `f14-lancer-charge` asserts the telegraph, release timing, and 20-damage
+  landing; `f15-bulwark-armor` asserts 80→140 HP from the front, 80→60 from behind, and
+  the deflection toast
+
+**Acceptance:** `npm run typecheck`, 117 unit tests, `npm run build` (68.09 kB JS), and
+`npm run playtest:matrix` (116 scenarios, 784/784 checks, 140 captures, zero console
+errors) pass. Captures show the lancer's muzzle glow, the charged bolt, the bulwark
+vignette, and no regression in the district spawn roster. `npm run playtest` (40/40),
+`npm run playtest:flight` (109/109), and `npm run playtest:states` (42/42) stay green.
+Verified 2026-11-12.
+
+## M15 — Campaign and progression
+
+Goal: let a session survive a reload and give the district a reason to be replayed.
+
+Research complete; implementation not started.
+
+**Persistent campaign**
+
+- [ ] Versioned localStorage record `raycast.campaign.v1` holding unlocked levels, best
+  time, best kills, deaths, and the last selected level
+- [ ] Load/save helpers validate shape, clamp numbers, ignore malformed JSON, and migrate
+  older versions; unit tests cover round-trip, corruption, and clamping
+- [ ] Records update only on mission clear (victory overlay), never on a mid-run death
+- [ ] A corrupt or missing record falls back to the current default spawn without a crash
+
+**Level select and briefings**
+
+- [ ] Title menu lists courtyard, district, and reactor cards with objective, best time,
+  best kills, and a locked state
+- [ ] Selecting a card opens a briefing panel with the mission objective and a deploy
+  action; the existing pause menu stays unchanged
+- [ ] The victory overlay gains a mission summary: time, hostiles, deaths, and a
+  `NEW BEST` badge when a record improves
+- [ ] `E` continues to the courtyard as today; the summary adds a level-select action
+- [ ] Keyboard-only flow (arrows/Tab/Enter) and the current settings persistence are
+  preserved
+
+**Acceptance:** campaign state round-trips through a page reload; level select and
+briefings are playable by keyboard; a completed district run records best time/kills and
+shows the badge; corrupt storage is handled; unit and matrix coverage for persistence and
+menu flow; all existing suites stay green.
+
+## M16 — Audio and game feel
+
+Goal: make the moment-to-moment loop sound alive without shipping audio files.
+
+Research complete; implementation not started.
+
+**Music and ambience**
+
+- [ ] A procedural music director with layered voices (bass pulse, pad, percussion) whose
+  intensity follows mission stage and nearby hostiles; layers crossfade through gain nodes
+- [ ] Per-level ambience beds: courtyard wind/hum, reactor drone, district wind, and an
+  indoor variant that damps the outdoor bed
+- [ ] All persistent buses, noise buffers, and the AudioContext are created or resumed
+  only inside `unlock()` on a user gesture, preserving autoplay rules
+- [ ] Mute and the settings menu silence music and ambience independently of one-shots
+
+**Cues and feedback**
+
+- [ ] Boss exposure, extraction unlock, low-health heartbeat, and victory stingers
+- [ ] Hit feedback scales with damage type: blocked plating, charged release, and a kill
+  confirm remain distinguishable
+- [ ] A `getAudioDebug()` hook reports the active bed, layer gains, and intensity so the
+  headless suites can assert behavior without listening
+- [ ] No new console errors when audio is locked, muted, or the tab is backgrounded
+
+**Acceptance:** the full run has continuous ambience and intensity that follows combat;
+every event cue fires once per trigger; no autoplay warnings; `getAudioDebug()` values are
+covered by unit/matrix checks; all existing suites stay green.
+
+## M17 — Foundry biome
+
+Goal: a fourth level with a new material palette, a movement hazard, and a
+collection objective.
+
+Research complete; implementation not started.
+
+**SLAGWORKS map**
+
+- [ ] 48×48 `src/content/foundry-map.ts` with a furnace hall and control-room sectors,
+  `a`/`b` legend blocks at 3 m and 6 m, and a foundry palette
+- [ ] `HazardSpec[]` on `LevelSpec`: one-cell slag channels that cycle 2 s hot / 2 s cold,
+  dealing 12 dps while hot; steam vents mark the chokepoints
+- [ ] Per-cell hazard grid stamped like rooms, ticked from `update()` through
+  `damagePlayer(dps * dt)`; the floor tints while a channel is hot and steam plumes use
+  the existing glow/prop path
+- [ ] Deterministic textures generated in `make-textures.ts` and loaded in `main.ts`;
+  the stale texture list in `docs/PIPELINE.md` is corrected
+
+**Objective**
+
+- [ ] Keycard gate, three coolant cells, six hostiles plus a foreman boss, then extraction
+  to the courtyard
+- [ ] The HUD names the coolant count and the foreman stage; the beacon refuses extraction
+  until the cells and boss are cleared
+- [ ] Unit tests cover the map legend, hazard cycle, spawn/exit surfaces, and mission gate;
+  matrix scenarios cover a hot-channel crossing, a coolant pickup, and the boss clear
+- [ ] Route remains jetpack-safe: no hazard cell blocks the only path when cold
+
+**Acceptance:** the foundry loads with no missing textures, hazards cycle and damage on
+schedule, the collection gate and boss stage work end to end, and every existing suite
+stays green.

@@ -1734,6 +1734,98 @@ async function main(): Promise<void> {
       );
     });
 
+    define("combat", "f14-lancer-charge", async () => {
+      await loadLevel("district");
+      // Isolate the lancer so its charged shot is the only inbound threat.
+      await evaluate(`(() => {
+        const game = window.__raycast.game;
+        for (const actor of game.actors) {
+          if (actor.spec.hostile && actor.spec.name !== "spire-se") {
+            game.damageActor(actor, 999);
+          }
+        }
+      })()`);
+      // Stand on the lancer's own roof so the charge glow reads at close range;
+      // the level south of its north-edge perch keeps the sight line clear.
+      await pose(55.5, 47.5, 12, -Math.PI / 2, 0);
+      await setHealth(100);
+      await step(0.5);
+      const winding = (await debug()).actors.find(
+        (actor) => actor.name === "spire-se",
+      );
+      const charge = winding?.charge ?? 0;
+      check(
+        "the lancer telegraphs a charged shot",
+        winding?.state === "attack" && charge > 0.2 && charge < 1,
+        `state=${winding?.state ?? "missing"} · charge=${charge.toFixed(2)}`,
+      );
+      await saveCanvas("f14-lancer-charge", true);
+      await step(0.45);
+      const beforeShot = await debug();
+      check(
+        "the bolt is held until the telegraph completes",
+        beforeShot.bolts.every((bolt) => bolt.fromPlayer),
+        `${beforeShot.bolts.length} bolts before release`,
+      );
+      await step(0.25);
+      const firing = await debug();
+      check(
+        "the bolt releases after the telegraph",
+        firing.bolts.some((bolt) => !bolt.fromPlayer),
+        `${firing.bolts.filter((bolt) => !bolt.fromPlayer).length} inbound bolts`,
+      );
+      await step(1);
+      const current = await state();
+      check(
+        "the charged bolt lands for heavy damage",
+        near(current.health, 80, 1),
+        `hp=${current.health}`,
+      );
+      await capturePage("f14-lancer-shot");
+    });
+
+    define("combat", "f15-bulwark-armor", async () => {
+      await loadLevel("district");
+      const result = await evaluate<{
+        facing: number;
+        afterFront: number;
+        afterBack: number;
+      } | null>(`(() => {
+        const game = window.__raycast.game;
+        const actor = game.actors.find((entry) => entry.spec.name === "bulwark");
+        if (!actor) return null;
+        const ahead = {
+          x: actor.x + Math.cos(actor.facing) * 2,
+          y: actor.y + Math.sin(actor.facing) * 2,
+        };
+        const behind = {
+          x: actor.x - Math.cos(actor.facing) * 2,
+          y: actor.y - Math.sin(actor.facing) * 2,
+        };
+        game.damageActor(actor, 80, ahead);
+        const afterFront = actor.hp;
+        game.damageActor(actor, 80, behind);
+        return { facing: actor.facing, afterFront, afterBack: actor.hp };
+      })()`);
+      check(
+        "frontal plating halves incoming damage",
+        result !== null && near(result.afterFront, 140, 0.01),
+        `hp ${result?.afterFront ?? "?"} after a frontal 80`,
+      );
+      check(
+        "flank hits bypass the plating",
+        result !== null && near(result.afterBack, 60, 0.01),
+        `hp ${result?.afterBack ?? "?"} after a rear 80`,
+      );
+      await step(0);
+      const values = await hud();
+      check(
+        "the HUD explains the deflection",
+        values.toast.includes("PLATING DEFLECTED"),
+        values.toast,
+      );
+    });
+
     // ---------------------------------------------------------------- levels
     define("levels", "l01-transition-reactor", async () => {
       await pose(17.5, 9.5, 0, 0, 0);

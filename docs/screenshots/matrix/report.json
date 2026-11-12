@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-12T06:34:18.582Z",
+  "generatedAt": "2026-11-12T06:53:32.350Z",
   "url": "http://127.0.0.1:5201/?screenshot",
-  "durationMs": 14158,
+  "durationMs": 14459,
   "scenarios": [
     "g01-spawn-idle",
     "g02-walk-forward",
@@ -100,6 +100,8 @@
     "f11-muzzle-spawn",
     "f12-crate-destroy",
     "f13-boss-encounter",
+    "f14-lancer-charge",
+    "f15-bulwark-armor",
     "l01-transition-reactor",
     "l02-vault-return",
     "l03-terrace-climb",
@@ -118,7 +120,7 @@
     "l16-ceiling-jet-cap",
     "l17-roof-over-vault"
   ],
-  "passed": 767,
+  "passed": 784,
   "failed": 0,
   "checks": [
     {
@@ -3087,7 +3089,7 @@
       "group": "ui",
       "name": "resuming advances the simulation",
       "ok": true,
-      "detail": "patrol dx 0.38, 23 frames, paused=false, 6.43% pixels changed"
+      "detail": "patrol dx 0.39, 21 frames, paused=false, 6.43% pixels changed"
     },
     {
       "scenario": "u05-pause-resume",
@@ -3892,7 +3894,7 @@
       "group": "combat",
       "name": "f02-enemy-corpse matches baseline",
       "ok": true,
-      "detail": "0.11% of pixels differ"
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "f02-player-kill",
@@ -3906,7 +3908,7 @@
       "group": "combat",
       "name": "f02-player-kill matches baseline",
       "ok": true,
-      "detail": "0.11% of pixels differ"
+      "detail": "0.00% of pixels differ"
     },
     {
       "scenario": "f02-player-kill",
@@ -4452,7 +4454,7 @@
       "group": "combat",
       "name": "the overseer fires a three-bolt volley",
       "ok": true,
-      "detail": "4 inbound bolts"
+      "detail": "3 inbound bolts"
     },
     {
       "scenario": "f13-boss-encounter",
@@ -4487,7 +4489,7 @@
       "group": "combat",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "18 rects"
+      "detail": "17 rects"
     },
     {
       "scenario": "f13-boss-encounter",
@@ -4495,6 +4497,125 @@
       "name": "HUD is populated",
       "ok": true,
       "detail": "PERCH · 12.0 m · fuel 100%"
+    },
+    {
+      "scenario": "f14-lancer-charge",
+      "group": "combat",
+      "name": "the lancer telegraphs a charged shot",
+      "ok": true,
+      "detail": "state=attack · charge=0.44"
+    },
+    {
+      "scenario": "f14-lancer-charge",
+      "group": "combat",
+      "name": "f14-lancer-charge matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "f14-lancer-charge",
+      "group": "combat",
+      "name": "f14-lancer-charge renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 40.7"
+    },
+    {
+      "scenario": "f14-lancer-charge",
+      "group": "combat",
+      "name": "the bolt is held until the telegraph completes",
+      "ok": true,
+      "detail": "0 bolts before release"
+    },
+    {
+      "scenario": "f14-lancer-charge",
+      "group": "combat",
+      "name": "the bolt releases after the telegraph",
+      "ok": true,
+      "detail": "1 inbound bolts"
+    },
+    {
+      "scenario": "f14-lancer-charge",
+      "group": "combat",
+      "name": "the charged bolt lands for heavy damage",
+      "ok": true,
+      "detail": "hp=80"
+    },
+    {
+      "scenario": "f14-lancer-charge",
+      "group": "combat",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "55.50, 47.50, 12.00, 1.00, 384.00, 11766.00, 32112.00"
+    },
+    {
+      "scenario": "f14-lancer-charge",
+      "group": "combat",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "13 rects"
+    },
+    {
+      "scenario": "f14-lancer-charge",
+      "group": "combat",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "PERCH · 12.0 m · fuel 100%"
+    },
+    {
+      "scenario": "f15-bulwark-armor",
+      "group": "combat",
+      "name": "frontal plating halves incoming damage",
+      "ok": true,
+      "detail": "hp 140 after a frontal 80"
+    },
+    {
+      "scenario": "f15-bulwark-armor",
+      "group": "combat",
+      "name": "flank hits bypass the plating",
+      "ok": true,
+      "detail": "hp 60 after a rear 80"
+    },
+    {
+      "scenario": "f15-bulwark-armor",
+      "group": "combat",
+      "name": "the HUD explains the deflection",
+      "ok": true,
+      "detail": "PLATING DEFLECTED · FLANK IT"
+    },
+    {
+      "scenario": "f15-bulwark-armor",
+      "group": "combat",
+      "name": "f15-bulwark-armor matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "f15-bulwark-armor",
+      "group": "combat",
+      "name": "f15-bulwark-armor renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 44.8"
+    },
+    {
+      "scenario": "f15-bulwark-armor",
+      "group": "combat",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "32.50, 58.50, 0.00, 1.00, 384.00, 39173.00, 0.00"
+    },
+    {
+      "scenario": "f15-bulwark-armor",
+      "group": "combat",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "16 rects"
+    },
+    {
+      "scenario": "f15-bulwark-armor",
+      "group": "combat",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
     },
     {
       "scenario": "l01-transition-reactor",
@@ -6030,13 +6151,13 @@
     {
       "name": "f02-enemy-corpse",
       "kind": "canvas",
-      "diff": 0.0011176215277777777,
+      "diff": 0,
       "baseline": "compared"
     },
     {
       "name": "f02-player-kill",
       "kind": "canvas",
-      "diff": 0.0011176215277777777,
+      "diff": 0,
       "baseline": "compared"
     },
     {
@@ -6135,6 +6256,23 @@
       "name": "f13-boss-encounter",
       "kind": "page",
       "baseline": "skipped"
+    },
+    {
+      "name": "f14-lancer-charge",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "f14-lancer-shot",
+      "kind": "page",
+      "baseline": "skipped"
+    },
+    {
+      "name": "f15-bulwark-armor",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
     },
     {
       "name": "l01-reactor-spawn",

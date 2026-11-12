@@ -1,9 +1,9 @@
 # Playtest matrix
 
 `npm run playtest:matrix` drives the same headless-Chrome/CDP harness as
-`npm run playtest`, but instead of one happy path it walks the game through 114
+`npm run playtest`, but instead of one happy path it walks the game through 116
 deterministic state, interaction, combat, level, district, interior, route, and viewmodel
-scenarios: 767 checks (assertions plus golden-frame comparisons) and 137 captures
+scenarios: 784 checks (assertions plus golden-frame comparisons) and 140 captures
 (canvas frames plus full-page UI overlays).
 
 The point is coverage the owner should not have to repeat by hand — every movement axis,
@@ -274,6 +274,22 @@ now mirrors world x for tiles, pickups, exits, actors, and the player, and
 asserts that re-hitting a dying enemy does not restart its death animation: after
 0.3 s the death frame is 2, an extra 999-damage hit leaves it at frame 2 instead of
 resetting to 0.
+
+## M14 enemy roster extension (2026-11-12)
+
+M14 adds two combat scenarios for the new roles, taking the suite to 116 scenarios and
+784 checks.
+
+| Scenario | Assertion |
+| --- | --- |
+| `f14-lancer-charge` | With every other hostile dead, standing on the lancer's roof 6 m south of it puts it in `attack` with a 0–1 `charge` above 0.2 at 0.5 s, no inbound bolt before 1.0 s, a bolt in flight after the 0.9 s wind-up, and exactly 20 damage on landing. |
+| `f15-bulwark-armor` | A synthetic 80-damage hit from the bulwark's front arc leaves it at 140 HP (50% plating), the same hit from behind leaves it at 60 HP, and the HUD toasts `PLATING DEFLECTED`. |
+
+The lancer test is isolated by killing every other hostile through the automation damage
+path (no source position), which is also the regression guard for the armor rule: scripted
+kills must stay full damage. The bulwark test calls `damageActor` with explicit source
+positions rather than relying on projectile travel, so it exercises the armor math without
+timing dependencies.
 
 ## Extending it
 

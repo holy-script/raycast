@@ -4,6 +4,7 @@ import { InputController } from "./engine/input";
 import {
   clamp,
   elevationAngle,
+  frontalArmorScale,
   lerp,
   minimapHeading,
   minimapPoint,
@@ -113,7 +114,9 @@ export type ViewmodelPose = "idle0" | "idle1" | "windup" | "strike" | "recover";
 export type GameEvent =
   | "shot"
   | "enemy-shot"
+  | "charge"
   | "hit"
+  | "blocked"
   | "kill"
   | "hurt"
   | "death"
@@ -274,6 +277,8 @@ export interface RenderDebug {
     maxHp: number;
     alive: boolean;
     hostile: boolean;
+    /** Charged-shot progress from 0 to 1 while winding up; null otherwise. */
+    charge: number | null;
   }>;
   pickups: Array<{ kind: string; x: number; y: number; taken: boolean }>;
   doors: Array<{ id: string; x: number; y: number; open: boolean }>;
@@ -311,6 +316,7 @@ export class Game {
   private victoryTime = 0;
   private toastText = "";
   private toastT = 0;
+  private armorNotice = 0;
   private events: GameEvent[] = [];
   private bolts: Projectile[] = [];
   private impacts: Impact[] = [];
@@ -370,6 +376,7 @@ export class Game {
     if (this.victory) return;
     this.time += dt;
     this.toastT = Math.max(0, this.toastT - dt);
+    this.armorNotice = Math.max(0, this.armorNotice - dt);
     this.player.hitFlash = Math.max(0, this.player.hitFlash - dt);
     this.player.attackCooldown = Math.max(0, this.player.attackCooldown - dt);
     this.updateActors(dt);
@@ -586,6 +593,21 @@ export class Game {
     );
   }
 
+  private beginAttack(actor: Actor, cooldown: number): void {
+    actor.state = "attack";
+    actor.stateT = 0;
+    actor.hitLanded = false;
+    actor.attackCooldown = cooldown;
+    if (actor.spec.gun?.charge) this.emit("charge");
+  }
+
+  /** 0–1 wind-up progress for a charged shot; null for melee or after firing. */
+  private chargeProgress(actor: Actor): number | null {
+    const charge = actor.spec.gun?.charge;
+    if (!charge || actor.state !== "attack" || actor.hitLanded) return null;
+    return clamp(actor.stateT / (ATTACK_IMPACT + charge), 0, 1);
+  }
+
   private updateActors(dt: number): void {
     for (const actor of this.actors) {
       if (!actor.alive) continue;
@@ -631,7 +653,10 @@ export class Game {
         );
         const attack = actor.spec.attack;
         const gun = actor.spec.gun;
-        if (!actor.hitLanded && actor.stateT >= ATTACK_IMPACT) {
+        // A charged gun spends its wind-up glowing before the bolt leaves; melee
+        // and instant guns keep the original 0.2 s impact beat.
+        const impactAt = ATTACK_IMPACT + (gun?.charge ?? 0);
+        if (!actor.hitLanded && actor.stateT >= impactAt) {
           actor.hitLanded = true;
           if (gun) {
             this.fireActorBolt(actor);
@@ -645,7 +670,7 @@ export class Game {
             }
           }
         }
-        if (actor.stateT >= ATTACK_STATE_TIME) {
+        if (actor.stateT >= Math.max(ATTACK_STATE_TIME, impactAt + 0.2)) {
           actor.state = "idle";
           actor.stateT = 0;
         }
@@ -706,10 +731,7 @@ export class Game {
             ),
         );
         if (ready) {
-          actor.state = "attack";
-          actor.stateT = 0;
-          actor.hitLanded = false;
-          actor.attackCooldown = gun.cooldown;
+          this.beginAttack(actor, gun.cooldown);
         } else {
           actor.state = "idle";
         }
@@ -745,20 +767,14 @@ export class Game {
         );
 
         if (gunReady && gun) {
-          actor.state = "attack";
-          actor.stateT = 0;
-          actor.hitLanded = false;
-          actor.attackCooldown = gun.cooldown;
+          this.beginAttack(actor, gun.cooldown);
         } else if (
           attack &&
           !this.player.dead &&
           distance <= attack.range &&
           actor.attackCooldown <= 0
         ) {
-          actor.state = "attack";
-          actor.stateT = 0;
-          actor.hitLanded = false;
-          actor.attackCooldown = attack.cooldown;
+          this.beginAttack(actor, attack.cooldown);
         } else if (distance > 1.5 && distance < range) {
           const step = Math.min(speed * dt, distance - 1.4);
           const nextX = actor.x + Math.cos(target) * step;
@@ -960,7 +976,10 @@ export class Game {
       if (bolt.fromPlayer) {
         const target = this.actorHitBy(bolt);
         if (target) {
-          this.damageActor(target, bolt.damage);
+          this.damageActor(target, bolt.damage, {
+            x: this.player.x,
+            y: this.player.y,
+          });
           this.addImpact(bolt.x, bolt.y, bolt.z, true);
           continue;
         }
@@ -987,13 +1006,41 @@ export class Game {
     return null;
   }
 
-  private damageActor(actor: Actor, amount: number): void {
+  /**
+   * Applies damage to an actor. `from` is the world position of the hit source;
+   * plating only covers the actor's forward arc, so a shot from behind ignores
+   * it. Automation calls that omit a source always land full damage.
+   */
+  private damageActor(
+    actor: Actor,
+    amount: number,
+    from?: { x: number; y: number },
+  ): void {
     // Bolts can still reach a body while it plays the 0.67 s death topple;
     // extra hits must not restart the animation or count another kill.
     if (actor.state === "death") return;
-    actor.hp = Math.max(0, actor.hp - amount);
+    const scale = from
+      ? frontalArmorScale(
+          actor.facing,
+          actor.x,
+          actor.y,
+          from.x,
+          from.y,
+          actor.spec.armor?.front ?? 0,
+        )
+      : 1;
+    const dealt = scale < 1 ? Math.max(1, Math.round(amount * scale)) : amount;
+    actor.hp = Math.max(0, actor.hp - dealt);
     actor.stateT = 0;
-    this.emit("hit");
+    if (scale < 1) {
+      this.emit("blocked");
+      if (this.armorNotice <= 0) {
+        this.setToast("PLATING DEFLECTED · FLANK IT", 1.6);
+        this.armorNotice = 2.5;
+      }
+    } else {
+      this.emit("hit");
+    }
     if (actor.hp <= 0) {
       actor.state = "death";
       if (actor.spec.hostile && !actor.spec.boss) this.huntKills += 1;
@@ -1573,6 +1620,26 @@ export class Game {
     const draws: SpriteDraw[] = [];
     const playerTint: [number, number, number] = [0.55, 1.15, 1.35];
     const enemyTint: [number, number, number] = [1.35, 0.72, 0.42];
+    const chargeTint: [number, number, number] = [1.5, 0.8, 0.42];
+
+    // The charged-shot wind-up is its own read: a glow swells in front of the
+    // muzzle so a 0.9 s telegraph is visible before the bolt arrives. Offsetting
+    // it along facing keeps the body from occluding the light.
+    for (const actor of this.actors) {
+      const progress = this.chargeProgress(actor);
+      if (progress === null) continue;
+      draws.push(
+        this.glowSprite(
+          actor.x + Math.cos(actor.facing) * 0.4,
+          actor.y + Math.sin(actor.facing) * 0.4,
+          actor.z + 0.85,
+          0.1 + progress * 0.5,
+          chargeTint,
+          0.25 + progress * 0.75,
+          `charge:${actor.spec.name}`,
+        ),
+      );
+    }
 
     for (const bolt of this.bolts) {
       draws.push(
@@ -1817,6 +1884,7 @@ export class Game {
           maxHp: actor.maxHp,
           alive: actor.alive,
           hostile: actor.spec.hostile ?? false,
+          charge: this.chargeProgress(actor),
         };
       }),
       pickups: this.pickups.map((pickup) => ({

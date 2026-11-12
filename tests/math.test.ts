@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   elevationAngle,
+  frontalArmorScale,
   minimapHeading,
   minimapPoint,
   quantizeDirection,
@@ -123,5 +124,24 @@ describe("minimap heading", () => {
     const afterLeftStrafe = minimapPoint(11, 10, 24, 24, 1);
     expect(afterLeftStrafe.x).toBeLessThan(start.x);
     expect(afterLeftStrafe.y).toBeCloseTo(start.y);
+  });
+});
+
+describe("frontal armor", () => {
+  it("absorbs hits inside the forward arc only", () => {
+    // Actor at the origin facing east.
+    expect(frontalArmorScale(0, 0, 0, 2, 0, 0.5)).toBeCloseTo(0.5);
+    expect(frontalArmorScale(0, 0, 0, 2, 1, 0.5)).toBeCloseTo(0.5);
+    expect(frontalArmorScale(0, 0, 0, 0, 2, 0.5)).toBe(1);
+    expect(frontalArmorScale(0, 0, 0, -2, 0, 0.5)).toBe(1);
+  });
+
+  it("treats a missing source as unarmored", () => {
+    expect(frontalArmorScale(0, 4, 4, 4, 4, 0.75)).toBe(1);
+    expect(frontalArmorScale(0, 0, 0, 2, 0, 0)).toBe(1);
+  });
+
+  it("clamps over-armored specs to zero", () => {
+    expect(frontalArmorScale(0, 0, 0, 2, 0, 1.4)).toBe(0);
   });
 });

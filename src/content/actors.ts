@@ -37,7 +37,11 @@ export interface ActorSpec {
     volley?: number;
     /** Radians between neighbouring bolts in a volley. */
     spread?: number;
+    /** Seconds of telegraphed wind-up before a charged bolt leaves the muzzle. */
+    charge?: number;
   };
+  /** Frontal plating; `front` is the fraction of damage absorbed from the front arc. */
+  armor?: { front: number };
   /** Overrides the behavior's turn rate (radians per second factor) when set. */
   turnRate?: number;
   /** Looping dialogue shown when the player uses E nearby. */
@@ -249,6 +253,8 @@ export const ROOFTOP_ACTORS: ActorSpec[] = [
     gun: { damage: 10, range: 20, cooldown: 2.0, speed: 10 },
   },
   {
+    // Lancer: long-range charged shot. The long telegraphed wind-up trades rate
+    // of fire for a bolt that punishes standing still in the open.
     name: "spire-se",
     sprite: "guardian",
     x: 55.5,
@@ -256,24 +262,33 @@ export const ROOFTOP_ACTORS: ActorSpec[] = [
     z: 12,
     facing: WEST,
     behavior: "sentry",
-    tint: [1.28, 0.82, 0.85],
-    scale: 1.04,
+    tint: [1.32, 0.76, 1.24],
+    scale: 1.06,
     hostile: true,
-    hp: 85,
-    gun: { damage: 10, range: 20, cooldown: 2.0, speed: 10 },
+    hp: 95,
+    gun: {
+      damage: 20,
+      range: 24,
+      cooldown: 2.8,
+      speed: 18,
+      charge: 0.9,
+    },
+    turnRate: 2.2,
   },
   {
-    name: "gunner-north",
+    // Rusher: no gun, closes fast, and is cheap to kill once it reaches you.
+    name: "rusher-north",
     sprite: "guardian",
     x: 32.5,
     y: 19.5,
     facing: SOUTH,
-    behavior: "sentry",
-    tint: [1.2, 0.9, 0.78],
-    scale: 0.98,
+    behavior: "chase",
+    tint: [1.38, 0.92, 0.52],
+    scale: 0.9,
+    chase: { speed: 2.6, range: 14 },
     hostile: true,
-    hp: 80,
-    gun: { damage: 8, range: 13, cooldown: 1.7, speed: 9 },
+    hp: 45,
+    attack: { damage: 6, range: 1.5, cooldown: 0.9 },
   },
   {
     name: "gunner-south",
@@ -289,18 +304,21 @@ export const ROOFTOP_ACTORS: ActorSpec[] = [
     gun: { damage: 8, range: 13, cooldown: 1.7, speed: 9 },
   },
   {
-    name: "bruiser",
+    // Bulwark: slow, heavy, and plated against fire from its front arc. Shots
+    // from the sides or behind bypass the plating entirely.
+    name: "bulwark",
     sprite: "guardian",
     x: 32.5,
     y: 37.5,
     facing: SOUTH,
     behavior: "chase",
-    tint: [1.32, 0.72, 0.68],
-    scale: 1.16,
-    chase: { speed: 1.35, range: 12 },
+    tint: [1.14, 0.88, 0.52],
+    scale: 1.28,
+    chase: { speed: 0.85, range: 12 },
     hostile: true,
-    hp: 150,
-    attack: { damage: 16, range: 1.7, cooldown: 1.5 },
+    hp: 180,
+    attack: { damage: 18, range: 1.8, cooldown: 1.6 },
+    armor: { front: 0.5 },
   },
   {
     name: "overseer",

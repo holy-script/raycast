@@ -134,3 +134,28 @@ export function fract(value: number): number {
 export function shortestAngleDelta(from: number, to: number): number {
   return wrapAngle(to - from + Math.PI) - Math.PI;
 }
+
+/**
+ * Damage scale for a hit arriving from `source`. `front` is the fraction of
+ * damage the actor's plating absorbs when the source sits inside its forward
+ * arc; side and rear hits ignore plating. A zero-length source vector has no
+ * direction to judge, so it lands unarmored.
+ */
+export function frontalArmorScale(
+  facing: number,
+  actorX: number,
+  actorY: number,
+  sourceX: number,
+  sourceY: number,
+  front: number,
+): number {
+  if (front <= 0) return 1;
+  const dx = sourceX - actorX;
+  const dy = sourceY - actorY;
+  const length = Math.hypot(dx, dy);
+  if (length < 1e-4) return 1;
+  const dot = (Math.cos(facing) * dx + Math.sin(facing) * dy) / length;
+  // The plating covers roughly a 140° cone; a grazing shot from the shoulder
+  // counts as a side hit and goes through.
+  return dot > 0.34 ? clamp(1 - front, 0, 1) : 1;
+}
