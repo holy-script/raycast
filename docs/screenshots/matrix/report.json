@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-12T05:44:27.681Z",
+  "generatedAt": "2026-11-12T05:55:08.974Z",
   "url": "http://127.0.0.1:5201/?screenshot",
-  "durationMs": 13659,
+  "durationMs": 12833,
   "scenarios": [
     "g01-spawn-idle",
     "g02-walk-forward",
@@ -3086,7 +3086,7 @@
       "group": "ui",
       "name": "resuming advances the simulation",
       "ok": true,
-      "detail": "patrol dx 0.38, 23 frames, paused=false, 6.43% pixels changed"
+      "detail": "patrol dx 0.37, 22 frames, paused=false, 6.40% pixels changed"
     },
     {
       "scenario": "u05-pause-resume",

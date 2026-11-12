@@ -14,6 +14,16 @@ export function wrapAngle(angle: number): number {
 }
 
 /**
+ * Projects a world-space heading onto a minimap drawn with y-up
+ * (`screenY = mapHeight - worldY`). World yaw grows from +x toward +y, so the
+ * screen y component is negated; using `sin` directly mirrors the arrow
+ * vertically while positions stay correct.
+ */
+export function minimapHeading(angle: number): { x: number; y: number } {
+  return { x: Math.cos(angle), y: -Math.sin(angle) };
+}
+
+/**
  * Maps a relative viewing angle to a quantized directional frame index.
  * Frame 0 is directly in front of the entity, increasing counter-clockwise.
  */

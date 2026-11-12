@@ -5,6 +5,7 @@ import {
   clamp,
   elevationAngle,
   lerp,
+  minimapHeading,
   quantizePitch,
   samplePitch,
   sampleStaticPitch,
@@ -1763,12 +1764,13 @@ export class Game {
       if (!actor.alive) continue;
       const ax = actor.x * scale;
       const ay = (world.height - actor.y) * scale;
+      const heading = minimapHeading(actor.facing);
       ctx.fillStyle = actor.spec.hostile ? "#e08a7a" : "#66c7cd";
       ctx.fillRect(ax - 1.5, ay - 1.5, 3, 3);
       ctx.strokeStyle = ctx.fillStyle;
       ctx.beginPath();
       ctx.moveTo(ax, ay);
-      ctx.lineTo(ax + Math.cos(actor.facing) * 5, ay + Math.sin(actor.facing) * 5);
+      ctx.lineTo(ax + heading.x * 5, ay + heading.y * 5);
       ctx.stroke();
     }
 
@@ -1776,20 +1778,17 @@ export class Game {
     const py = (world.height - this.player.y) * scale;
 
     const halfFov = this.baseFov() / 2;
+    const leftEdge = minimapHeading(this.player.yaw - halfFov);
+    const rightEdge = minimapHeading(this.player.yaw + halfFov);
     ctx.strokeStyle = "rgba(255, 210, 138, 0.24)";
     ctx.beginPath();
     ctx.moveTo(px, py);
-    ctx.lineTo(
-      px + Math.cos(this.player.yaw - halfFov) * 26,
-      py + Math.sin(this.player.yaw - halfFov) * 26,
-    );
+    ctx.lineTo(px + leftEdge.x * 26, py + leftEdge.y * 26);
     ctx.moveTo(px, py);
-    ctx.lineTo(
-      px + Math.cos(this.player.yaw + halfFov) * 26,
-      py + Math.sin(this.player.yaw + halfFov) * 26,
-    );
+    ctx.lineTo(px + rightEdge.x * 26, py + rightEdge.y * 26);
     ctx.stroke();
 
+    const facing = minimapHeading(this.player.yaw);
     ctx.fillStyle = "#ffd28a";
     ctx.beginPath();
     ctx.arc(px, py, 2.6, 0, Math.PI * 2);
@@ -1797,7 +1796,7 @@ export class Game {
     ctx.strokeStyle = "#ffd28a";
     ctx.beginPath();
     ctx.moveTo(px, py);
-    ctx.lineTo(px + Math.cos(this.player.yaw) * 7, py + Math.sin(this.player.yaw) * 7);
+    ctx.lineTo(px + facing.x * 7, py + facing.y * 7);
     ctx.stroke();
 
     ctx.strokeStyle = "#3a4152";

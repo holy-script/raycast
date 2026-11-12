@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   elevationAngle,
+  minimapHeading,
   quantizeDirection,
   quantizePitch,
   samplePitch,
@@ -93,5 +94,20 @@ describe("angle helpers", () => {
     expect(shortestAngleDelta((3 * Math.PI) / 2, Math.PI / 2)).toBeCloseTo(
       -Math.PI,
     );
+  });
+});
+
+describe("minimap heading", () => {
+  it("projects world yaw onto a y-up map without mirroring", () => {
+    // +x is screen-right; +y is north, which must draw upward (negative y).
+    const east = minimapHeading(0);
+    expect(east.x).toBeCloseTo(1);
+    expect(east.y).toBeCloseTo(0);
+    const north = minimapHeading(Math.PI / 2);
+    expect(north.x).toBeCloseTo(0);
+    expect(north.y).toBeCloseTo(-1);
+    const south = minimapHeading(-Math.PI / 2);
+    expect(south.x).toBeCloseTo(0);
+    expect(south.y).toBeCloseTo(1);
   });
 });
