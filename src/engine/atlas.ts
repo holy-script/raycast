@@ -1,5 +1,5 @@
 import type { PitchIndex } from "./math";
-import type { FrameRect, Texture } from "./renderer";
+import type { FrameRect, FrameSlice, Texture } from "./renderer";
 
 export interface AtlasFrameEntry {
   state: string;
@@ -12,6 +12,23 @@ export interface AtlasFrameEntry {
   h: number;
 }
 
+/**
+ * Stacked depth-slice metadata. The band atlas is a separate grayscale image
+ * with the same frame layout as `image`, so every existing frame rect is
+ * unchanged. Band 0 is farthest from the camera and `bands - 1` nearest.
+ */
+export interface SliceManifest {
+  image: string;
+  bands: number;
+  /** Camera-space depth offsets in metres, indexed by band (far → near). */
+  offsets: number[];
+  /** Source depth pass range in metres (3.2 near/white, 5.0 far/black). */
+  depthNear?: number;
+  depthFar?: number;
+  /** Quantizer cut points in source red-channel units (far → near). */
+  depthCuts?: number[];
+}
+
 export interface AtlasManifest {
   version: number;
   name?: string;
@@ -22,6 +39,8 @@ export interface AtlasManifest {
   frameAnchorZ?: number;
   /** Per-pitch billboard scale, compensating the tighter near-overhead frame. */
   pitchWorldScale?: number[];
+  /** Optional stacked depth-slice atlas; absent manifests render one billboard. */
+  slices?: SliceManifest;
   directions: number;
   pitches: number;
   pitchOrder: string[];
@@ -38,14 +57,60 @@ export interface AtlasManifest {
   frames: AtlasFrameEntry[];
 }
 
+const MAX_SLICE_BANDS = 8;
+
+/**
+ * Validates the optional slice block. A malformed or partial declaration falls
+ * back to the unsliced billboard path instead of failing asset boot.
+ */
+export function readSliceConfig(
+  manifest: AtlasManifest,
+): SliceManifest | undefined {
+  const slices = manifest.slices;
+  if (!slices || typeof slices.image !== "string" || slices.image.length === 0) {
+    return undefined;
+  }
+  const bands = Math.floor(slices.bands);
+  if (!Number.isFinite(bands) || bands < 2 || bands > MAX_SLICE_BANDS) {
+    return undefined;
+  }
+  if (
+    !Array.isArray(slices.offsets) ||
+    slices.offsets.length !== bands ||
+    !slices.offsets.every((offset) => Number.isFinite(offset))
+  ) {
+    return undefined;
+  }
+  return {
+    image: slices.image,
+    bands,
+    // Keep the per-band offsets small; a bad manifest must not teleport slices.
+    offsets: slices.offsets.map((offset) => Math.max(-0.5, Math.min(0.5, offset))),
+    depthNear: slices.depthNear,
+    depthFar: slices.depthFar,
+    depthCuts: Array.isArray(slices.depthCuts)
+      ? slices.depthCuts.filter((cut) => Number.isFinite(cut))
+      : undefined,
+  };
+}
+
 export class SpriteAtlas {
   readonly manifest: AtlasManifest;
   readonly texture: Texture;
   private readonly frames = new Map<string, AtlasFrameEntry>();
+  private readonly slices: SliceManifest | undefined;
+  private readonly sliceTexture: Texture | undefined;
 
-  constructor(manifest: AtlasManifest, texture: Texture) {
+  constructor(manifest: AtlasManifest, texture: Texture, sliceTexture?: Texture) {
     this.manifest = manifest;
     this.texture = texture;
+    this.slices = readSliceConfig(manifest);
+    // A band atlas without an image cannot be sampled; keep the base path.
+    this.sliceTexture =
+      this.slices && sliceTexture && sliceTexture.width === texture.width &&
+      sliceTexture.height === texture.height
+        ? sliceTexture
+        : undefined;
     for (const frame of manifest.frames) {
       this.frames.set(this.key(frame.state, frame.pitch, frame.yaw, frame.frame), frame);
     }
@@ -92,13 +157,28 @@ export class SpriteAtlas {
       this.frames.get(this.key(state, 1, yawIndex, frameIndex)) ??
       this.frames.get(this.key("idle", 1, yawIndex, 0));
     if (!entry) return undefined;
-    return {
+    const result: FrameRect = {
       texture: this.texture,
       sx: entry.x,
       sy: entry.y,
       sw: entry.w,
       sh: entry.h,
     };
+    if (this.slices && this.sliceTexture) {
+      // The band atlas mirrors the colour layout exactly, so the same rect
+      // addresses the band indices for this frame.
+      const slice: FrameSlice = {
+        texture: this.sliceTexture,
+        sx: entry.x,
+        sy: entry.y,
+        sw: entry.w,
+        sh: entry.h,
+        bands: this.slices.bands,
+        offsets: this.slices.offsets,
+      };
+      result.slice = slice;
+    }
+    return result;
   }
 }
 
@@ -108,9 +188,27 @@ export async function loadAtlas(manifestUrl: string): Promise<SpriteAtlas> {
     throw new Error(`Failed to load atlas manifest: ${response.status}`);
   }
   const manifest = (await response.json()) as AtlasManifest;
-  const imageUrl = new URL(manifest.image, new URL(manifestUrl, window.location.href));
+  const baseUrl = new URL(manifestUrl, window.location.href);
+  const imageUrl = new URL(manifest.image, baseUrl);
   const texture = await loadTexture(imageUrl.href);
-  return new SpriteAtlas(manifest, texture);
+  const slices = readSliceConfig(manifest);
+  if (!slices) {
+    // Manifests without slices keep the original single-billboard path.
+    return new SpriteAtlas(manifest, texture);
+  }
+  const sliceUrl = new URL(slices.image, baseUrl);
+  const sliceTexture = await loadTexture(sliceUrl.href);
+  if (
+    sliceTexture.width !== texture.width ||
+    sliceTexture.height !== texture.height
+  ) {
+    throw new Error(
+      `Slice atlas ${slices.image} must match ${manifest.image}: ` +
+        `${sliceTexture.width}x${sliceTexture.height} vs ` +
+        `${texture.width}x${texture.height}`,
+    );
+  }
+  return new SpriteAtlas(manifest, texture, sliceTexture);
 }
 
 export async function loadTexture(url: string): Promise<Texture> {

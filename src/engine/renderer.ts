@@ -10,10 +10,28 @@ const NEAR_PLANE = 0.01;
 /** World height of one facade window row before the texture repeats. */
 const FACADE_STOREY = 3;
 
+/** Stacked depth slices are only worth their extra sampling cost up close. */
+export const SLICE_LOD_DISTANCE = 8;
+
 export interface Texture {
   width: number;
   height: number;
   data: Uint8ClampedArray;
+}
+
+/**
+ * Grayscale depth-band map that mirrors a colour frame's rect. Band 0 is the
+ * farthest slice and `bands - 1` the nearest; the red channel is the index.
+ */
+export interface FrameSlice {
+  texture: Texture;
+  sx: number;
+  sy: number;
+  sw: number;
+  sh: number;
+  bands: number;
+  /** Camera-space depth offsets in metres, indexed by band (far → near). */
+  offsets: readonly number[];
 }
 
 export interface FrameRect {
@@ -22,6 +40,30 @@ export interface FrameRect {
   sy: number;
   sw: number;
   sh: number;
+  /** Present when this frame has a stacked depth-slice band map. */
+  slice?: FrameSlice;
+}
+
+/**
+ * Decodes a packed band index from the slice atlas red channel. Bands are
+ * stored at even 0–255 steps, so this also tolerates any channel quantization.
+ */
+export function sliceBandFromChannel(red: number, bands: number): number {
+  if (bands <= 1) return 0;
+  return Math.min(bands - 1, Math.max(0, Math.round((red / 255) * (bands - 1))));
+}
+
+/** Band draw order: farthest slice first, so nearer slices depth-test over it. */
+export function sliceDrawOrder(offsets: readonly number[]): number[] {
+  return offsets
+    .map((offset, band) => ({ offset, band }))
+    .sort((a, b) => b.offset - a.offset)
+    .map((entry) => entry.band);
+}
+
+/** Slices only apply within the close-range LOD; farther actors use one quad. */
+export function wantsSlices(distance: number): boolean {
+  return distance <= SLICE_LOD_DISTANCE;
 }
 
 export interface CameraState {
@@ -449,6 +491,7 @@ export class Renderer {
         zCam,
         xCam: side,
         yCam: -forward * sinP + dz * cosP,
+        distance: Math.hypot(dx, dy, dz),
       });
     }
 
@@ -459,7 +502,7 @@ export class Renderer {
   }
 
   private drawSprite(cam: CameraState, entry: PreparedSprite): void {
-    const { sprite, zCam, xCam, yCam } = entry;
+    const { sprite, zCam, xCam, yCam, distance } = entry;
     const { width, height, pixels, depth } = this;
     const screenX = width / 2 + (cam.focal * xCam) / zCam;
     const screenY = this.centerY - (cam.focal * yCam) / zCam;
@@ -504,6 +547,8 @@ export class Renderer {
     const frameB =
       sprite.frameB && sprite.frameB.texture === texture ? sprite.frameB : undefined;
     const blend = frameB ? clamp(sprite.blend ?? 0, 0, 1) : 0;
+    // Shade from the base depth for every slice so banding does not tint the
+    // body; only the depth test and depth write move per band.
     const shade = clamp(
       1 / (1 + zCam * 0.05 * (cam.fogScale ?? 1)),
       0.1,
@@ -512,6 +557,27 @@ export class Renderer {
     const fog = 1 - shade;
     const uScale = 1 / widthPx;
     const vScale = 1 / heightPx;
+    // Stacked slices: a close actor is painted band by band, farthest first.
+    // Each band writes its own camera-space depth, so a wall edge occludes the
+    // far slices while the near slices survive, giving per-band silhouette
+    // parallax without re-projecting the billboard (which would seam).
+    const sliced =
+      wantsSlices(distance) &&
+      sprite.frame.slice !== undefined &&
+      sprite.frame.slice.bands >= 2 &&
+      sprite.frame.slice.offsets.length === sprite.frame.slice.bands
+        ? sprite.frame.slice
+        : undefined;
+    const sliceTexture = sliced?.texture;
+    const sliceData = sliceTexture?.data;
+    const sliceBands = sliced?.bands ?? 0;
+    const sliceSx = sliced?.sx ?? 0;
+    const sliceSy = sliced?.sy ?? 0;
+    const sliceSw = sliced?.sw ?? 1;
+    const sliceSh = sliced?.sh ?? 1;
+    const frameBSlice = frameB?.slice;
+    // -1 is the unsliced single pass and keeps the original draw path.
+    const passes = sliced ? sliceDrawOrder(sliced.offsets) : [-1];
     let drawn = 0;
     let occluded = 0;
     let minX = width;
@@ -519,68 +585,99 @@ export class Renderer {
     let minY = height;
     let maxY = -1;
 
-    for (let x = xStart; x <= xEnd; x += 1) {
-      const u = (x + 0.5 - left) * uScale;
-      if (u < 0 || u >= 1) continue;
-      const texX = sx + Math.min(sw - 1, Math.floor(u * sw));
-      const texXB = frameB
-        ? frameB.sx + Math.min(frameB.sw - 1, Math.floor(u * frameB.sw))
-        : texX;
-      for (let y = yStart; y <= yEnd; y += 1) {
-        const v = (y + 0.5 - top) * vScale;
-        if (v < 0 || v >= 1) continue;
+    for (const band of passes) {
+      const viewZ =
+        band >= 0 && sliced ? zCam + sliced.offsets[band] : zCam;
+      if (viewZ <= 0.12) continue;
+      for (let x = xStart; x <= xEnd; x += 1) {
+        const u = (x + 0.5 - left) * uScale;
+        if (u < 0 || u >= 1) continue;
+        const texX = sx + Math.min(sw - 1, Math.floor(u * sw));
+        const texXB = frameB
+          ? frameB.sx + Math.min(frameB.sw - 1, Math.floor(u * frameB.sw))
+          : texX;
+        for (let y = yStart; y <= yEnd; y += 1) {
+          const v = (y + 0.5 - top) * vScale;
+          if (v < 0 || v >= 1) continue;
 
-        const texY = sy + Math.min(sh - 1, Math.floor(v * sh));
-        const src = (texY * texture.width + texX) * 4;
-        let alpha = data[src + 3] / 255;
-        let r = data[src];
-        let g = data[src + 1];
-        let b = data[src + 2];
+          const texY = sy + Math.min(sh - 1, Math.floor(v * sh));
+          const src = (texY * texture.width + texX) * 4;
+          let alpha = data[src + 3] / 255;
+          let r = data[src];
+          let g = data[src + 1];
+          let b = data[src + 2];
 
-        if (frameB) {
-          const texYB = frameB.sy + Math.min(frameB.sh - 1, Math.floor(v * frameB.sh));
-          const srcB = (texYB * texture.width + texXB) * 4;
-          const alphaB = data[srcB + 3] / 255;
-          const blendedAlpha = alpha * (1 - blend) + alphaB * blend;
-          if (blendedAlpha > 1e-4) {
-            // Blend premultiplied colour so transparent texels do not darken edges.
-            r = (r * alpha * (1 - blend) + data[srcB] * alphaB * blend) / blendedAlpha;
-            g =
-              (g * alpha * (1 - blend) + data[srcB + 1] * alphaB * blend) /
-              blendedAlpha;
-            b =
-              (b * alpha * (1 - blend) + data[srcB + 2] * alphaB * blend) /
-              blendedAlpha;
+          if (frameB) {
+            const texYB = frameB.sy + Math.min(frameB.sh - 1, Math.floor(v * frameB.sh));
+            const srcB = (texYB * texture.width + texXB) * 4;
+            const alphaB = data[srcB + 3] / 255;
+            const blendedAlpha = alpha * (1 - blend) + alphaB * blend;
+            if (blendedAlpha > 1e-4) {
+              // Blend premultiplied colour so transparent texels do not darken edges.
+              r = (r * alpha * (1 - blend) + data[srcB] * alphaB * blend) / blendedAlpha;
+              g =
+                (g * alpha * (1 - blend) + data[srcB + 1] * alphaB * blend) /
+                blendedAlpha;
+              b =
+                (b * alpha * (1 - blend) + data[srcB + 2] * alphaB * blend) /
+                blendedAlpha;
+            }
+            alpha = blendedAlpha;
           }
-          alpha = blendedAlpha;
+
+          alpha *= spriteAlpha;
+          if (alpha <= 0.02) continue;
+
+          if (band >= 0 && sliceData) {
+            const bandX = sliceSx + Math.min(sliceSw - 1, Math.floor(u * sliceSw));
+            const bandY = sliceSy + Math.min(sliceSh - 1, Math.floor(v * sliceSh));
+            let bandValue = sliceBandFromChannel(
+              sliceData[(bandY * sliceTexture!.width + bandX) * 4],
+              sliceBands,
+            );
+            // Crossfades keep their colour blend; the band mask follows the
+            // dominant pitch row so a texel is never painted twice.
+            if (frameBSlice && blend >= 0.5) {
+              const bxB =
+                frameBSlice.sx +
+                Math.min(frameBSlice.sw - 1, Math.floor(u * frameBSlice.sw));
+              const byB =
+                frameBSlice.sy +
+                Math.min(frameBSlice.sh - 1, Math.floor(v * frameBSlice.sh));
+              bandValue = sliceBandFromChannel(
+                frameBSlice.texture.data[
+                  (byB * frameBSlice.texture.width + bxB) * 4
+                ],
+                frameBSlice.bands,
+              );
+            }
+            if (bandValue !== band) continue;
+          }
+
+          const idx = y * width + x;
+          // Geometry depth is camera-space depth now, matching this billboard's
+          // zCam under any pitch. Comparing the old horizontal forward distance
+          // clipped actors behind walls that were below the camera.
+          if (viewZ >= depth[idx]) {
+            occluded += 1;
+            continue;
+          }
+
+          const dst = idx * 4;
+          const shadedR = r * tint[0] * shade + FOG_R * fog;
+          const shadedG = g * tint[1] * shade + FOG_G * fog;
+          const shadedB = b * tint[2] * shade + FOG_B * fog;
+          pixels[dst] = shadedR * alpha + pixels[dst] * (1 - alpha);
+          pixels[dst + 1] = shadedG * alpha + pixels[dst + 1] * (1 - alpha);
+          pixels[dst + 2] = shadedB * alpha + pixels[dst + 2] * (1 - alpha);
+          pixels[dst + 3] = 255;
+          if (alpha > 0.4) depth[idx] = viewZ;
+          drawn += 1;
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
         }
-
-        alpha *= spriteAlpha;
-        if (alpha <= 0.02) continue;
-
-        const idx = y * width + x;
-        // Geometry depth is camera-space depth now, matching this billboard's
-        // zCam under any pitch. Comparing the old horizontal forward distance
-        // clipped actors behind walls that were below the camera.
-        if (zCam >= depth[idx]) {
-          occluded += 1;
-          continue;
-        }
-
-        const dst = idx * 4;
-        const shadedR = r * tint[0] * shade + FOG_R * fog;
-        const shadedG = g * tint[1] * shade + FOG_G * fog;
-        const shadedB = b * tint[2] * shade + FOG_B * fog;
-        pixels[dst] = shadedR * alpha + pixels[dst] * (1 - alpha);
-        pixels[dst + 1] = shadedG * alpha + pixels[dst + 1] * (1 - alpha);
-        pixels[dst + 2] = shadedB * alpha + pixels[dst + 2] * (1 - alpha);
-        pixels[dst + 3] = 255;
-        if (alpha > 0.4) depth[idx] = zCam;
-        drawn += 1;
-        if (x < minX) minX = x;
-        if (x > maxX) maxX = x;
-        if (y < minY) minY = y;
-        if (y > maxY) maxY = y;
       }
     }
 
@@ -676,4 +773,6 @@ interface PreparedSprite {
   zCam: number;
   xCam: number;
   yCam: number;
+  /** 3D distance from the eye to the billboard centre; drives slice LOD. */
+  distance: number;
 }

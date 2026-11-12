@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "name": "guardian",
   "image": "atlas.png",
   "frameWidth": 96,
@@ -12,6 +12,25 @@
     1,
     0.6782608695652175
   ],
+  "slices": {
+    "image": "slices.png",
+    "bands": 4,
+    "offsets": [
+      0.15,
+      0.05,
+      -0.05,
+      -0.15
+    ],
+    "depthNear": 3.2,
+    "depthFar": 5,
+    "depthCuts": [
+      85,
+      113.5,
+      142,
+      170.5,
+      199
+    ]
+  },
   "directions": 16,
   "pitches": 4,
   "pitchOrder": [
