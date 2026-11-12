@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-12T08:09:11.938Z",
+  "generatedAt": "2026-11-12T11:46:11.891Z",
   "url": "http://127.0.0.1:5201/?screenshot",
-  "durationMs": 12766,
+  "durationMs": 13039,
   "scenarios": [
     "g01-spawn-idle",
     "g02-walk-forward",
@@ -129,9 +129,10 @@
     "l19-hot-channel-burns",
     "l20-cold-channel-safe",
     "l21-coolant-cell",
-    "l22-foundry-clear"
+    "l22-foundry-clear",
+    "l23-staggered-channels"
   ],
-  "passed": 879,
+  "passed": 887,
   "failed": 0,
   "checks": [
     {
@@ -3100,7 +3101,7 @@
       "group": "ui",
       "name": "resuming advances the simulation",
       "ok": true,
-      "detail": "patrol dx 0.38, 22 frames, paused=false, 6.43% pixels changed"
+      "detail": "patrol dx 0.39, 23 frames, paused=false, 6.43% pixels changed"
     },
     {
       "scenario": "u05-pause-resume",
@@ -6131,7 +6132,7 @@
       "group": "levels",
       "name": "l21-coolant-canister renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 33.9"
+      "detail": "512 colors, mean luma 33.6"
     },
     {
       "scenario": "l21-coolant-cell",
@@ -6152,7 +6153,7 @@
       "group": "levels",
       "name": "l21-coolant-cell renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 32.5"
+      "detail": "512 colors, mean luma 32.2"
     },
     {
       "scenario": "l21-coolant-cell",
@@ -6281,7 +6282,63 @@
       "detail": "WALK · LIVE · fuel 100%"
     },
     {
-      "scenario": "l22-foundry-clear",
+      "scenario": "l23-staggered-channels",
+      "group": "levels",
+      "name": "the south channel opens on the hot window",
+      "ok": true,
+      "detail": "hot true · phase 0 · health 93.6"
+    },
+    {
+      "scenario": "l23-staggered-channels",
+      "group": "levels",
+      "name": "the middle channel runs the opposite window",
+      "ok": true,
+      "detail": "hot false · phase 2 · health 93.6"
+    },
+    {
+      "scenario": "l23-staggered-channels",
+      "group": "levels",
+      "name": "the middle channel ignites as the south cools",
+      "ok": true,
+      "detail": "hot true · health 90.4"
+    },
+    {
+      "scenario": "l23-staggered-channels",
+      "group": "levels",
+      "name": "l23-staggered-channels matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l23-staggered-channels",
+      "group": "levels",
+      "name": "l23-staggered-channels renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 33.9"
+    },
+    {
+      "scenario": "l23-staggered-channels",
+      "group": "levels",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "6.60, 24.50, 0.00, 1.00, 384.00, 17510.00, 0.00"
+    },
+    {
+      "scenario": "l23-staggered-channels",
+      "group": "levels",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "19 rects"
+    },
+    {
+      "scenario": "l23-staggered-channels",
+      "group": "levels",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · LIVE · fuel 100%"
+    },
+    {
+      "scenario": "l23-staggered-channels",
       "group": "levels",
       "name": "no page errors",
       "ok": true,
@@ -7201,6 +7258,12 @@
     },
     {
       "name": "l22-foundry-clear",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l23-staggered-channels",
       "kind": "canvas",
       "diff": 0,
       "baseline": "compared"

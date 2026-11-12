@@ -58,10 +58,14 @@ export const FOUNDRY_ROOMS: RoomSpec[] = [
   },
 ];
 
-/** Two full-width channels plus steam vents flanking the control-room door. */
+/**
+ * Two full-width channels plus steam vents flanking the control-room door. The
+ * channels run opposite halves of the 4 s cycle, so exactly one of them is hot
+ * at any moment; the vents quarter the cycle to stay visually distinct.
+ */
 export const FOUNDRY_HAZARDS: HazardArea[] = [
-  { id: "slag-south", x: 1, y: 31, width: 46, height: 1 },
-  { id: "slag-mid", x: 1, y: 20, width: 46, height: 1 },
-  { id: "vent-west", x: 30, y: 11, width: 1, height: 1 },
-  { id: "vent-east", x: 34, y: 11, width: 1, height: 1 },
+  { id: "slag-south", phase: 0, x: 1, y: 31, width: 46, height: 1 },
+  { id: "slag-mid", phase: 2, x: 1, y: 20, width: 46, height: 1 },
+  { id: "vent-west", phase: 1, x: 30, y: 11, width: 1, height: 1 },
+  { id: "vent-east", phase: 3, x: 34, y: 11, width: 1, height: 1 },
 ];

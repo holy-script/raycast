@@ -30,6 +30,8 @@ export interface World {
   roofs: Float32Array;
   /** 1 on walkable cells that cycle hot and burn whoever stands there. */
   hazards: Uint8Array;
+  /** Seconds added to the shared clock per hazard cell; 0 for the default cycle. */
+  hazardPhases: Float32Array;
   spawn: { x: number; y: number };
   /** Sector definitions, kept for tests and tooling. */
   rooms: RoomSpec[];
@@ -80,6 +82,12 @@ export interface WorldOptions {
 export interface HazardArea {
   /** Optional label used by tooling and playtest output. */
   id?: string;
+  /**
+   * Seconds added to the shared clock. A phase of half a cycle flips the area
+   * to the opposite window, so two channels can alternate instead of pulsing
+   * together.
+   */
+  phase?: number;
   x: number;
   y: number;
   width: number;
@@ -117,6 +125,7 @@ export function createWorld(
   const ceilings = new Float32Array(width * height);
   const roofs = new Float32Array(width * height);
   const hazards = new Uint8Array(width * height);
+  const hazardPhases = new Float32Array(width * height);
   const rooms = options.rooms ?? [];
   const hazardAreas = options.hazards ?? [];
 
@@ -189,6 +198,10 @@ export function createWorld(
   }
 
   for (const area of hazardAreas) {
+    const phase = area.phase ?? 0;
+    if (!Number.isFinite(phase)) {
+      throw new Error(`Hazard area at ${area.x},${area.y} needs a finite phase`);
+    }
     if (
       area.x < 0 ||
       area.y < 0 ||
@@ -206,6 +219,7 @@ export function createWorld(
           throw new Error(`Hazard area covers the solid cell at ${x},${y}`);
         }
         hazards[cell] = 1;
+        hazardPhases[cell] = phase;
       }
     }
   }
@@ -218,6 +232,7 @@ export function createWorld(
     ceilings,
     roofs,
     hazards,
+    hazardPhases,
     spawn,
     rooms,
   };
@@ -239,6 +254,12 @@ export function roofAt(world: World, x: number, y: number): number {
 export function hazardAt(world: World, x: number, y: number): boolean {
   if (x < 0 || y < 0 || x >= world.width || y >= world.height) return false;
   return world.hazards[Math.floor(y) * world.width + Math.floor(x)] !== 0;
+}
+
+/** Clock offset of a hazard cell; 0 outside the grid. */
+export function hazardPhaseAt(world: World, x: number, y: number): number {
+  if (x < 0 || y < 0 || x >= world.width || y >= world.height) return 0;
+  return world.hazardPhases[Math.floor(y) * world.width + Math.floor(x)];
 }
 
 export function isSolidAt(world: World, x: number, y: number): boolean {

@@ -415,15 +415,18 @@ district runs the overseer and the foundry runs the foreman.
 ### Slag hazards
 
 `hazards?: HazardArea[]` on a level is stamped into `world.hazards` at creation: every
-cell in each rectangle is set to 1 after bounds and solid-cell validation. The foundry
-declares two 46-cell channels (y = 31 and y = 20) and two 1×1 vents. `hazardHotAt(time)` is
-pure and global — a 4 s cycle with the first 2 s hot — so every channel burns together.
-`Game.tickHazards()` damages only a living, grounded player while the current cell is a
-hazard and the phase is hot; damage is `HAZARD_DPS (12) × elapsed` in batches no shorter
-than 0.25 s, with the accumulator cleared as soon as the player leaves or jumps. The
-renderer receives `FloorHazards { hot, cold, hotNow }` and swaps the floor texture for
-hazard cells, adding an ember tint (+30/+9/0) while hot; vents render stacked glow plumes
-that tint with the phase, and the minimap paints channels by phase.
+cell in each rectangle is set to 1 after bounds and solid-cell validation, and its
+`phase` offset (seconds) is stamped into `world.hazardPhases`. The foundry declares two
+46-cell channels (y = 31 and y = 20) and two 1×1 vents. `hazardHotAt(time, phase)` is pure
+— a 4 s cycle with the first 2 s hot, shifted by the cell's offset — so the foundry's
+channels alternate at 0 s and 2 s and one of them is always burning; the vents quarter the
+cycle at 1 s and 3 s. `Game.tickHazards()` damages only a living, grounded player while
+the current cell is a hazard and its phase is hot; damage is `HAZARD_DPS (12) × elapsed`
+in batches no shorter than 0.25 s, with the accumulator cleared as soon as the player
+leaves or jumps. The renderer receives `FloorHazards { hot, cold, time }` and resolves
+each hazard cell's phase inside the floor loop, swapping the floor texture and adding an
+ember tint (+30/+9/0) while hot; vents render stacked glow plumes that tint with their own
+phase, and the minimap paints each channel cell by its phase.
 
 ### Campaign and audio
 
@@ -577,7 +580,7 @@ Screenshots and a JSON report land in `docs/screenshots/playtest/`.
 The companion harnesses share `tools/playtest/support.ts` (contact sheets, sky-row
 classification, image metrics):
 
-- `playtest:matrix` — 127 deterministic scenarios, 879 checks (743 assertions + goldens),
+- `playtest:matrix` — 128 deterministic scenarios, 887 checks (750 assertions + goldens),
   golden-frame comparison.
 - `playtest:states` — paused player/guardian animation gallery, 42 checks.
 - `playtest:flight` — 18 altitude/pitch poses plus a live jetpack flight, 109 checks. It

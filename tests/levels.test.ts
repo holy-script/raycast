@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { LEVELS, levelIndexById } from "../src/content/levels";
+import { hazardHotAt } from "../src/engine/hazard";
 import { hasLineOfSight } from "../src/engine/projectile";
 import {
   canOccupy,
@@ -7,6 +8,7 @@ import {
   COVER_CHAR,
   createWorld,
   hazardAt,
+  hazardPhaseAt,
   isSolidAt,
   roofAt,
   supportHeight,
@@ -484,6 +486,18 @@ describe("slagworks foundry", () => {
     expect(hazardAt(world, 30.5, 11.5)).toBe(true);
     expect(hazardAt(world, 34.5, 11.5)).toBe(true);
     expect(hazardAt(world, 20.5, 25.5)).toBe(false);
+  });
+
+  it("staggering the channels keeps exactly one hot at load", () => {
+    const southPhase = hazardPhaseAt(world, 24.5, 31.5);
+    const midPhase = hazardPhaseAt(world, 24.5, 20.5);
+    expect(southPhase).toBe(0);
+    expect(midPhase).toBe(2);
+    expect(hazardHotAt(0, southPhase)).toBe(true);
+    expect(hazardHotAt(0, midPhase)).toBe(false);
+    // Vents quarter the cycle so their plumes never pulse in lockstep.
+    expect(hazardPhaseAt(world, 30.5, 11.5)).toBe(1);
+    expect(hazardPhaseAt(world, 34.5, 11.5)).toBe(3);
   });
 
   it("gates extraction on the hunt, three coolant cells, and the foreman", () => {

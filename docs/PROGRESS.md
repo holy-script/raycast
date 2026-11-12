@@ -24,6 +24,7 @@ Last updated: **2026-11-12**
 | Campaign and progression | M15 | ✅ Versioned `raycast.campaign.v1` record, unlock/best-time/kills persistence, keyboard level select with briefings, `NEW BEST` victory summary; 125 unit tests |
 | Audio and game feel | M16 | ✅ Pure audio mix director, per-level ambience beds, stage-driven bass/pad/percussion, boss/extract/victory cues, low-health heartbeat, `audioDebug()` hook; 133 unit tests |
 | Foundry biome | M17 | ✅ SLAGWORKS 48×48 foundry, cycling slag channels, coolant collection gate, foreman boss, foundry palette; stage audio extended; 145 unit tests, 879 matrix checks |
+| Staggered hazards | post-M17 | ✅ Per-cell phase grid; foundry channels alternate at phases 0/2 and vents at 1/3, so one channel is always hot and a single frame shows both states; 148 unit tests, 887 matrix checks |
 
 ## Verification snapshot
 
@@ -32,10 +33,10 @@ Run from a clean checkout:
 ```bash
 npm ci
 npm run typecheck   # passes
-npm test            # 14 files, 145 tests pass
-npm run build       # tsc + vite build (85.17 kB JS / 28.30 kB gzip)
+npm test            # 14 files, 148 tests pass
+npm run build       # tsc + vite build (85.64 kB JS / 28.45 kB gzip)
 npm run playtest    # 40/40 browser checks pass
-npm run playtest:matrix  # 127 scenarios, 879/879 checks (743 assertions + 136 goldens), 156 captures, 0 console errors
+npm run playtest:matrix  # 128 scenarios, 887/887 checks (750 assertions + 137 goldens), 157 captures, 0 console errors
 npm run playtest:flight  # 18 poses + live jetpack, 109/109 checks, 30 captures
 npm run playtest:states  # 42/42 state checks, 21 captures, 0 console errors
 npm run assets:verify -- --min-iou 0.4  # 1,216-frame guardian atlas; min IoU 0.43, mean 0.90
@@ -174,6 +175,32 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
 - Artifacts: `docs/screenshots/states/contact-sheet.png`, 43 PNGs, `report.json`.
 
 ## Session log
+
+### 2026-11-12 — Staggered slag channels (post-M17 enhancement)
+
+- `HazardArea` gains an optional `phase` in seconds. `createWorld` stamps it into a
+  `world.hazardPhases: Float32Array` beside the hazard flag after a finite-number check;
+  areas without a phase stamp 0, so prior levels are unchanged. `hazardPhaseAt()` reads it.
+- `hazardHotAt(time, phase = 0)` wraps `(time + phase)` against the 4 s cycle, keeping a
+  single clock and a pure phase test. Damage, the floor renderer, the minimap, vents, and
+  `debug().hazard.phase` all resolve the phase of the cell they touch instead of the
+  global phase.
+- The foundry now runs `slag-south` at phase 0 and `slag-mid` at phase 2, so exactly one
+  channel burns at any moment; the vents quarter the cycle at 1 and 3. `FloorHazards`
+  becomes `{ hot, cold, time }` and the renderer resolves the phase per hazard cell inside
+  the existing floor loop, so one frame can show a hot and a cold channel together.
+- Tests: `hazard.test.ts` covers phase offsets and negative wrapping; `world.test.ts`
+  covers phase stamping, the zero default, and the finite check; `levels.test.ts` asserts
+  the south channel is hot and the middle channel cold at load. Matrix adds
+  `l23-staggered-channels`, which burns on the south channel, finds the middle one cold at
+  the same instant, then waits for it to ignite; it captures a frame between both channels.
+- The `l21` goldens changed (0.7 % of pixels): the middle channel is now cold at level
+  load where it used to share the south channel's hot phase. Both `l21` captures and the
+  new `l23` capture were inspected before `--update-golden`; together they document both
+  phase orderings.
+- Verification: typecheck clean, **148 unit tests**, matrix 750/750 assertions (887 checks
+  with goldens) across 128 scenarios (157 captures, zero console errors), `playtest`
+  40/40, `flight` 109/109, `states` 42/42, build 85.64 kB JS / 28.45 kB gzip.
 
 ### 2026-11-12 — M17 SLAGWORKS foundry biome
 
@@ -746,8 +773,9 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
 - Sprites are still masked to the Blender silhouette, so AI cannot invent limbs outside
   the render; a reference-image lock for costume details is also not implemented.
 - Slag channels only damage while the player is grounded; jetpacking over them is always
-  safe, and the hazard state is global (every channel is hot at the same time), so no
-  per-channel phase offset exists yet.
+  safe. The foundry's two channels run opposite phases (0 s and 2 s), so one is always
+  hot; a level could still author all channels on the same phase if it wants a single
+  crossing window. There is no visual edge lip on a channel.
 - Foundry floor damage is batched at ≥0.25 s, so a scripted crossing can lose
   12–13 HP per batch rather than an exact 12 dps total.
 - Audio is synthesized (a procedural director, no music or sample assets) and starts only
@@ -761,16 +789,17 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
 ## Immediate next steps
 
 1. Owner playtest of M15–M17: open the level select, deploy into SLAGWORKS, and confirm
-   the slag channels read hot/cold without the HUD, the coolant cells are findable, the
-   foreman stage is clear, and extraction only opens after both gates. Listen for the
-   per-level ambience and stage intensity lift. Confirm campaign bests persist after a
-   reload. The M14 roster check (rush the rusher, read the lancer's glow, flank the
-   bulwark) still applies in the district.
+   the slag channels read hot/cold without the HUD and alternate (south hot at load, then
+   the middle channel), the coolant cells are findable, the foreman stage is clear, and
+   extraction only opens after both gates. Listen for the per-level ambience and stage
+   intensity lift. Confirm campaign bests persist after a reload. The M14 roster check
+   (rush the rusher, read the lancer's glow, flank the bulwark) still applies in the
+   district.
 2. Tune the foundry in `src/content/foundry-map.ts` and `src/content/actors.ts`:
-   hazard dps/period, coolant placement, foreman HP, and the vent chokepoints. Keep
+   hazard dps/period/phases, coolant placement, foreman HP, and the vent chokepoints. Keep
    `huntTargets` at 6 and `coolantTargets` at 3.
-3. Optional: per-channel hazard phase offsets, a visible channel-edge lip, and a
-   dedicated foreman chassis instead of the tinted sentry.
+3. Optional: a visible channel-edge lip and a dedicated foreman chassis instead of the
+   tinted sentry.
 4. Optional: stairs between interior floors and a second room per building; extend
    `RoomSpec` with an entry side and a per-room floor texture.
 5. Optional: AutoSprite/Gamelabs adapter behind the same CLI/workflow boundary.

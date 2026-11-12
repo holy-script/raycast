@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-12T08:03:49.316Z",
+  "generatedAt": "2026-11-12T11:46:45.047Z",
   "url": "http://127.0.0.1:5199/?screenshot",
   "passed": 40,
   "failed": 0,
@@ -32,7 +32,7 @@
     {
       "name": "viewmodel rests in an idle pose on the ground",
       "ok": true,
-      "detail": "idle0 at 1.2,1.0"
+      "detail": "idle0 at 1.3,1.0"
     },
     {
       "name": "attacking swings the viewmodel into the strike pose",
@@ -52,7 +52,7 @@
     {
       "name": "strafe right maps to screen-right",
       "ok": true,
-      "detail": "moved to 5.50, 5.75"
+      "detail": "moved to 5.50, 5.70"
     },
     {
       "name": "mouse-right turns camera clockwise",
@@ -112,7 +112,7 @@
     {
       "name": "midair altitude registers",
       "ok": true,
-      "detail": "alt 7.24 m, sprite pitch 3"
+      "detail": "alt 7.23 m, sprite pitch 3"
     },
     {
       "name": "FOV stays fixed from the ground to the ceiling",

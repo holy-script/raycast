@@ -443,7 +443,9 @@ visual could ride on a per-cell flag.
 over) with no new collision or render code paths, and the route is never hard-gated. The
 tradeoffs are that the whole foundry shares one phase (no interleaved safe lanes), the
 0.25 s batch can lose 12–13 HP rather than an exact 12 dps, and airborne players are
-immune by design, which makes the jetpack a hard counter to the hazard.
+immune by design, which makes the jetpack a hard counter to the hazard. ADR-024 later
+adds a per-cell phase offset; the stamped grid, single clock, and grounded-only damage
+from this decision still stand.
 
 ## ADR-023 — Generalize the boss and the facade, and gate on collected coolant
 
@@ -474,3 +476,33 @@ gate tests still cover the shared logic. Tradeoffs: the boss is still a tinted s
 chassis (no dedicated art or phases), the overlay copy is a lookup table keyed by level
 id, and the wall override is a load-time mutation of two texture tiles rather than a true
 per-level material system.
+
+## ADR-024 — Per-cell hazard phases on the shared clock
+
+**Context:** ADR-022 gave every slag channel one global phase, so the foundry's two
+channels always burned together and a crossing was a single wait for both. The enhancement
+backlog listed per-channel phases; the question was whether to run a second clock per
+channel or keep one clock and offset it.
+
+**Decision:**
+
+- `HazardArea` gains an optional `phase` in seconds. `createWorld` stamps it into a
+  parallel `world.hazardPhases: Float32Array` beside the hazard flag, with a finite-number
+  check; areas without a phase stamp 0, so every prior level is unchanged.
+- `hazardHotAt(time, phase = 0)` wraps `(time + phase)` against the 4 s cycle. There is
+  still exactly one clock and one pure function; every consumer (damage, floor renderer,
+  minimap, vents) reads the phase of the cell it is drawing or standing on. No second
+  simulation clock exists to drift.
+- The floor renderer switches from a precomputed `hotNow` to `FloorHazards { hot, cold,
+  time }` and resolves the phase per cell inside the existing floor loop, so a single
+  frame can show one hot channel and one cold channel.
+- The foundry sets the channels to phases 0 and 2 (opposite halves) and the vents to 1
+  and 3 (quarters). The route now alternates: at load the south channel burns and the
+  middle one is safe, and the player times two different windows.
+
+**Consequences:** The hazard rhythm has a second beat and the two channels are legible as
+independent systems in one frame (the `l21`/`l23` captures document both orderings). The
+cost is one `Float32Array` per world and a per-pixel modulo in the floor loop, which is
+negligible at 384×240. Because offsets are authored per area, a future level can also
+create safe lanes by phase rather than by geometry. The model still shares one clock, so
+pausing, rewinding, and scripted stepping remain deterministic.

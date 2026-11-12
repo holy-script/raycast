@@ -11,14 +11,14 @@ npm run typecheck
 npm test
 npm run build
 npm run playtest   # headless Chrome, 40 checks + screenshots
-npm run playtest:matrix  # 127 deterministic scenarios, 879 checks (743 assertions + goldens)
+npm run playtest:matrix  # 128 deterministic scenarios, 887 checks (750 assertions + goldens)
 npm run playtest:flight  # 18 airborne poses + live jetpack, 109 checks
 npm run playtest:states  # 42 state checks, 21 paused-state captures
 npm run dev        # http://localhost:5173
 ```
 
-Expected: typecheck clean, 145 tests passing across 14 files, Vite build succeeds (85.17 kB
-JS), playtest 40/40, matrix 879/879 (743 assertions + 136 goldens), flight 109/109, state
+Expected: typecheck clean, 148 tests passing across 14 files, Vite build succeeds (85.64 kB
+JS), playtest 40/40, matrix 887/887 (750 assertions + 137 goldens), flight 109/109, state
 gallery 42/42 with zero console errors.
 Click the canvas,
 move with WASD, hold Space to jetpack up to 18 m outdoors (or below the ceiling indoors),
@@ -144,12 +144,13 @@ per-sprite `contentW/contentH/pixels/occluded`, and the live `bolts` array
 (`x, y, z, fromPlayer`) so the harness can assert on what was actually drawn and in
 flight. `debug().actors[]` also reports `charge` (0–1 during a charged wind-up, else
 `null`), which `f14-lancer-charge` uses to prove the telegraph. `debug().hazard` reports
-`{ hotNow, standing, coolant }`, and `getHudState().missions` carries the coolant gate and
-`hazardHot` flag.
+`{ hotNow, standing, phase, coolant }`, and `getHudState()` carries the coolant gate and
+`hazardHot` flag. `hotNow` is the phase-0 window; `phase` is the offset of the player's cell,
+so a harness can prove two channels are staggered.
 
 `?screenshot` hides the intro overlay for headless captures. Prefer the harnesses:
 `npm run playtest` is the happy-path browser check, `npm run playtest:matrix` walks
-127 deterministic state/route scenarios (879 checks with goldens, 743 assertions,
+128 deterministic state/route scenarios (887 checks with goldens, 750 assertions,
 labelled contact sheet), `npm run playtest:states` pauses the sim in every
 player/guardian body state
 for 21 gallery captures (42 checks), and `npm run playtest:flight` sweeps 18
@@ -289,13 +290,15 @@ alone can leave HUD values at `--`.
   transition leaves stray projectiles and flashes in the new map.
 - **Doors and exits:** opening a door clears both its tile id and height so movement and
   raycasts agree; exits and pickups are radius checks in `update`, not tile triggers.
-- **Hazard grid:** `createWorld` stamps `hazards` into `world.hazards` after validating
-  bounds and walkability. Never mutate it at runtime; a level reload must rebuild it.
-  Damage is grounded-only and batched at ≥0.25 s, and `hazardAccum` must clear when the
-  player leaves the cell or lifts off, or a later landing inherits a stale batch.
-- **Hazard phase:** `hazardHotAt` is the single source of truth for hot/cold; the
-  renderer, minimap, HUD, and damage all call it with the same level time. Adding a
-  per-channel offset means threading a second clock everywhere, not just the renderer.
+- **Hazard grid:** `createWorld` stamps `hazards` and `hazardPhases` into `world` after
+  validating bounds, walkability, and a finite phase. Never mutate either grid at runtime;
+  a level reload must rebuild them. Damage is grounded-only and batched at ≥0.25 s, and
+  `hazardAccum` must clear when the player leaves the cell or lifts off, or a later
+  landing inherits a stale batch.
+- **Hazard phase:** `hazardHotAt(time, phase)` is the single source of truth for hot/cold;
+  damage, the renderer, the minimap, and vents all pass the relevant cell's
+  `hazardPhases` offset (`hazardPhaseAt`), so they cannot disagree. Adding a new consumer
+  means reading the phase of the cell it draws or stands on, not the global phase.
 - **Mission gates:** `exitsUnlocked()` requires `huntKills >= huntTargets`,
   `coolant >= coolantTargets`, and no live `spec.boss`. `huntTargets`/`coolantTargets` must
   match the level content or the beacon can never open; `tests/levels.test.ts` locks the
@@ -351,9 +354,9 @@ alone can leave HUD values at `--`.
   `rooms` (the district office and vault, and the foundry control room). Interior wall
   faces and ceilings sample the shared panel texture on a world grid, so they show riveted
   cladding instead of windows; the roof and lintel keep the exterior materials.
-- Slag hazards are floor-only and global: every channel runs the same 4 s hot/cold cycle,
-  damage lands only when grounded, and there is no per-channel phase offset or visual
-  edge lip. The jetpack therefore trivializes a channel crossing by design.
+- Slag hazards are floor-only: damage lands only when grounded, and there is no visual
+  edge lip. The foundry's channels alternate (phases 0 and 2), so one is always hot; the
+  jetpack therefore trivializes a channel crossing by design.
 - The foundry foreman reuses the sentry chassis with scale 1.36 and no unique art, phases,
   or telegraphed attack.
 - Actors are non-blocking (no player/actor or actor/actor collision). Hostiles deal melee
@@ -389,27 +392,28 @@ alone can leave HUD values at `--`.
 
 ## Next task: M15–M17 owner playtest and tuning
 
-M15–M17 are complete and deployed (production serves `index-B1q8EU2d.js`): campaign
-persistence and level select, the layered audio director, and the SLAGWORKS foundry with
-cycling slag channels, a coolant gate, and the foreman. The owner playtest is the next
-step.
+M15–M17 are complete and deployed (production serves `index-B1q8EU2d.js`), plus the
+staggered-channel enhancement: campaign persistence and level select, the layered audio
+director, and the SLAGWORKS foundry with alternating slag channels, a coolant gate, and
+the foreman. The owner playtest is the next step.
 
 1. Play SLAGWORKS from the level-select card or the courtyard beacon at (21.5, 22.5).
-   Check the hot/cold channel read, the coolant search, the keycard door, and that the
+   Check the hot/cold channel read (the south channel is hot at load, the middle one is
+   cold, and they swap every 2 s), the coolant search, the keycard door, and that the
    beacon refuses until hunt + coolant + foreman all clear.
-2. Tune the foundry in `src/content/foundry-map.ts` (hazard layout, coolant placement,
-   door/beacon positions) and `src/content/actors.ts` (roster, foreman HP). Keep
-   `huntTargets` at 6 and `coolantTargets` at 3, and re-run `tests/levels.test.ts` after
-   moving any pickup, exit, or ground actor.
+2. Tune the foundry in `src/content/foundry-map.ts` (hazard layout and phases, coolant
+   placement, door/beacon positions) and `src/content/actors.ts` (roster, foreman HP).
+   Keep `huntTargets` at 6 and `coolantTargets` at 3, and re-run `tests/levels.test.ts`
+   after moving any pickup, exit, or ground actor.
 3. Listen for the per-level ambience and the stage intensity lift, and confirm campaign
    bests survive a reload (`NEW BEST` badge on an improved run). Settings and campaign are
    separate localStorage keys.
 4. If a visual change lands, run `npm run playtest:matrix`; only use `--update-golden`
    after inspecting the first mismatching run. Then run typecheck/tests/build, playtest,
    flight, states, and check Vercel.
-5. Deferred: per-channel hazard phases, a dedicated foreman chassis and telegraphed heavy
-   attack, campaign-wide statistics, stairs between floors, projectile drop/penetration,
-   and an AutoSprite/Gamelabs adapter.
+5. Deferred: a dedicated foreman chassis and telegraphed heavy attack, campaign-wide
+   statistics, stairs between floors, projectile drop/penetration, and an
+   AutoSprite/Gamelabs adapter.
 
 If a design choice could go either way, record it in [DECISIONS.md](DECISIONS.md) with the
 tradeoff, then proceed.

@@ -48,18 +48,19 @@ mission-complete screen. The district fields three distinct roles: a fast low-HP
 lancer whose orange muzzle glow telegraphs a 20-damage charged bolt, and a slow bulwark
 whose frontal plating halves damage until the player flanks it. Actor billboards carry four
 depth bands from a separate slice atlas, so near walls cut through the correct part of a
-sprite. A fourth level, SLAGWORKS, is a 48×48 foundry: two slag channels burn for 2 s of
-every 4 s cycle, three coolant cells and six hostiles gate the 320 HP foreman, and only the
-control-room beacon extracts. Campaign progress, best times, and settings persist in
-localStorage, and the synthesized audio director follows the mission stage.
+sprite. A fourth level, SLAGWORKS, is a 48×48 foundry: two slag channels run opposite
+halves of a 4 s cycle so one is always burning, three coolant cells and six hostiles gate
+the 320 HP foreman, and only the control-room beacon extracts. Campaign progress, best
+times, and settings persist in localStorage, and the synthesized audio director follows
+the mission stage.
 
 **Status:** playable build with four levels, ranged and melee combat with hurt/death
 states, NPC dialogue, doors, keycard/medkit/fuel/coolant pickups, level transitions, a
 64×64 Rooftop District with 4–12 m towers, enterable interiors, and a boss-gated
 extraction, a 48×48 foundry with cycling hazards and a collection gate, a persistent
 campaign with level select, synthesized audio with a stage-driven music director, and a
-pause/settings menu. Verification runs a 127-scenario deterministic matrix (879 checks,
-743 assertions), a 40-check happy-path browser run, an 18-pose airborne flight sweep with
+pause/settings menu. Verification runs a 128-scenario deterministic matrix (887 checks,
+750 assertions), a 40-check happy-path browser run, an 18-pose airborne flight sweep with
 a live jetpack sequence (109 checks), and a 42-check paused-state gallery capturing every
 body state.
 The M6 AI stylization infrastructure (Blender depth/normal controls, ComfyUI
@@ -78,7 +79,7 @@ npm test           # unit tests
 npm run typecheck
 npm run build      # static build in dist/
 npm run playtest   # headless Chrome: input, physics, atlas, viewmodel, screenshot checks
-npm run playtest:matrix  # 127 deterministic state/interaction/combat/level/foundry scenarios
+npm run playtest:matrix  # 128 deterministic state/interaction/combat/level/foundry scenarios
 npm run playtest:flight  # 18 airborne poses + live jetpack sweep, wall/sky/sprite analysis
 npm run playtest:states  # paused-state gallery: 42 checks, 21 captures
 ```

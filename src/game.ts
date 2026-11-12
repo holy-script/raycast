@@ -30,6 +30,7 @@ import {
   ceilingAt,
   createWorld,
   hazardAt,
+  hazardPhaseAt,
   resolveFootprint,
   roofAt,
   STEP_UP,
@@ -283,6 +284,8 @@ export interface RenderDebug {
   hazard: {
     hotNow: boolean;
     standing: boolean;
+    /** Clock offset of the player's cell; 0 off the grid. */
+    phase: number;
     coolant: { got: number; target: number } | null;
   };
   viewmodel: { pose: string; dx: number; dy: number };
@@ -607,9 +610,14 @@ export class Game {
       !this.player.dead &&
       this.player.onGround &&
       hazardAt(this.world, this.player.x, this.player.y);
-    const hot = hazardHotAt(this.time);
-    this.hazardHot = standing && hot;
-    if (!this.hazardHot) {
+    const hot =
+      standing &&
+      hazardHotAt(
+        this.time,
+        hazardPhaseAt(this.world, this.player.x, this.player.y),
+      );
+    this.hazardHot = hot;
+    if (!hot) {
       this.hazardAccum = 0;
       return;
     }
@@ -1507,9 +1515,7 @@ export class Game {
     const hot = this.assets.floors["slag-hot"];
     const cold = this.assets.floors["slag-cold"];
     const hazards: FloorHazards | undefined =
-      hot && cold
-        ? { hot, cold, hotNow: hazardHotAt(this.time) }
-        : undefined;
+      hot && cold ? { hot, cold, time: this.time } : undefined;
     this.renderer.render(
       camera,
       this.world,
@@ -1758,14 +1764,14 @@ export class Game {
 
     // Single-cell hazard areas are steam vents; two stacked glows read as a
     // plume that glows ember-hot while the vent is in its burn phase.
-    const hotNow = hazardHotAt(this.time);
-    const ventTint: [number, number, number] = hotNow
-      ? [1.4, 0.85, 0.5]
-      : [0.72, 1.0, 1.12];
     for (const vent of this.level.hazards ?? []) {
       if (vent.width !== 1 || vent.height !== 1) continue;
       const x = vent.x + 0.5;
       const y = vent.y + 0.5;
+      const hotNow = hazardHotAt(this.time, vent.phase ?? 0);
+      const ventTint: [number, number, number] = hotNow
+        ? [1.4, 0.85, 0.5]
+        : [0.72, 1.0, 1.12];
       const pulse = 0.78 + Math.sin(this.time * 5 + x + y) * 0.14;
       const id = vent.id ?? `${vent.x},${vent.y}`;
       draws.push(
@@ -2043,6 +2049,7 @@ export class Game {
       hazard: {
         hotNow: hazardHotAt(this.time),
         standing: hazardAt(this.world, this.player.x, this.player.y),
+        phase: hazardPhaseAt(this.world, this.player.x, this.player.y),
         coolant:
           this.level.coolantTargets !== undefined
             ? { got: this.coolant, target: this.level.coolantTargets }
@@ -2108,7 +2115,6 @@ export class Game {
     ctx.fillStyle = "#0a0c12";
     ctx.fillRect(0, 0, size, size);
 
-    const hotNow = hazardHotAt(this.time);
     for (let y = 0; y < world.height; y += 1) {
       for (let x = 0; x < world.width; x += 1) {
         const cell = y * world.width + x;
@@ -2116,6 +2122,7 @@ export class Game {
         const mirroredX = world.width - 1 - x;
         if (tile === 0) {
           if (world.hazards[cell] === 0) continue;
+          const hotNow = hazardHotAt(this.time, world.hazardPhases[cell]);
           ctx.fillStyle = hotNow ? "#7a3d26" : "#1f3b40";
           ctx.fillRect(
             mirroredX * scale,

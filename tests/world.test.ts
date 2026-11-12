@@ -4,6 +4,7 @@ import {
   ceilingAt,
   createWorld,
   hazardAt,
+  hazardPhaseAt,
   isSolidAt,
   resolveFootprint,
   roofAt,
@@ -271,6 +272,21 @@ describe("hazard cells", () => {
   it("keeps levels without hazards at an empty grid", () => {
     const plain = createWorld(MAP, undefined, { heights: { a: 8 } });
     expect(plain.hazards.every((value) => value === 0)).toBe(true);
+    expect(plain.hazardPhases.every((value) => value === 0)).toBe(true);
+  });
+
+  it("stamps each area's clock offset onto its cells", () => {
+    const world = createWorld(MAP, undefined, {
+      heights: { a: 8 },
+      hazards: [
+        { id: "staggered", x: 1, y: 1, width: 2, height: 1, phase: 2 },
+        { id: "default", x: 4, y: 3, width: 2, height: 1 },
+      ],
+    });
+    expect(hazardPhaseAt(world, 1.5, 1.5)).toBe(2);
+    expect(hazardPhaseAt(world, 2.5, 1.5)).toBe(2);
+    expect(hazardPhaseAt(world, 4.5, 3.5)).toBe(0);
+    expect(hazardPhaseAt(world, 20, 20)).toBe(0);
   });
 
   it("rejects areas that leave the map or cover solid cells", () => {
@@ -286,5 +302,11 @@ describe("hazard cells", () => {
         hazards: [{ x: 3, y: 2, width: 1, height: 1 }],
       }),
     ).toThrow(/solid cell/);
+    expect(() =>
+      createWorld(MAP, undefined, {
+        heights: { a: 8 },
+        hazards: [{ x: 1, y: 1, width: 1, height: 1, phase: Number.NaN }],
+      }),
+    ).toThrow(/finite phase/);
   });
 });

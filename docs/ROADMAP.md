@@ -4,11 +4,12 @@ Milestones are ordered. A milestone is complete only when every acceptance crite
 is checked and the verification command passes. Update this file and
 [PROGRESS.md](PROGRESS.md) whenever a milestone starts or finishes.
 
-Current position: **M0–M17 complete and deployed (2026-11-12).**
+Current position: **M0–M17 plus the staggered-channel enhancement are complete and
+deployed (2026-11-12).**
 Ranged combat, interaction, doors/pickups, level transitions, the reactor map, the
 Rooftop District, the SLAGWORKS foundry, campaign persistence, and the stage-driven audio
-director are playable and covered by 743 deterministic matrix assertions (127 scenarios,
-879 checks with goldens), a 40-check happy-path run, a 109-check flight sweep, and a
+director are playable and covered by 750 deterministic matrix assertions (128 scenarios,
+887 checks with goldens), a 40-check happy-path run, a 109-check flight sweep, and a
 42-check paused-state gallery. The guardian is the only shipped chassis, with all six
 states in a 16×4×19 atlas;
 the scout and brute prototypes were removed until their art pass exists. M8 delivered
@@ -29,7 +30,8 @@ charged-shot lancer with a visible muzzle telegraph, and a frontal-armor bulwark
 be flanked. M15 adds a persistent campaign with a level-select screen and mission
 briefings. M16 adds a procedural music director, per-level ambience beds, and event cues.
 M17 adds SLAGWORKS: a 48×48 foundry with cycling slag channels, a coolant collection gate,
-and the foreman boss. M15–M17 shipped on 2026-11-12; the owner playtest is next.
+and the foreman boss. M15–M17 shipped on 2026-11-12; a follow-up enhancement staggers the
+two slag channels into opposite phases so one is always hot. The owner playtest is next.
 
 ## M0 — Foundation
 
@@ -532,3 +534,29 @@ schedule, the collection gate and boss stage work end to end, and every existing
 stays green. Verified 2026-11-12: 145 unit tests, 743/743 matrix assertions across 127
 scenarios (879 checks with goldens), 40/40 happy path, 109/109 flight, 42/42 paused states,
 and a clean production build (`index-B1q8EU2d.js`, 85.17 kB / 28.30 kB gzip).
+
+## Post-M17 enhancement — staggered slag channels
+
+Goal: give the two foundry channels independent rhythm so the player times two windows
+instead of waiting once, without adding a second simulation clock.
+
+Implemented 2026-11-12.
+
+- [x] `HazardArea.phase` (seconds) stamps a per-cell `Float32Array` on `World`
+  (`hazardPhases`) during world creation, with a finite-number check; phases default to 0
+  so courtyard, reactor, and district are untouched
+- [x] `hazardHotAt(time, phase = 0)` wraps the shared clock by the cell offset; damage,
+  the floor renderer, the minimap, vents, and debug all read the phase of the relevant
+  cell (`hazardPhaseAt`)
+- [x] `FloorHazards { hot, cold, time }` resolves the phase per hazard cell inside the
+  existing floor loop, so one frame can show a burning and a safe channel together
+- [x] Foundry channels run phases 0 and 2 and vents 1 and 3; at load the south channel is
+  hot and the middle channel is cold
+- [x] Unit tests cover phase wrapping, stamping/defaults, finite validation, and the
+  foundry layout; matrix adds `l23-staggered-channels` (south hot → middle cold → middle
+  ignites) plus a capture framed between both channels
+
+**Acceptance:** the two channels alternate, every consumer agrees with the cell phase,
+and all suites stay green. Verified 2026-11-12: 148 unit tests, 750/750 matrix assertions
+across 128 scenarios (887 checks with goldens, 157 captures), 40/40 happy path, 109/109
+flight, 42/42 paused states, build `index-DlHpFm6E.js` (85.64 kB / 28.45 kB gzip).

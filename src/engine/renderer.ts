@@ -1,3 +1,4 @@
+import { hazardHotAt } from "./hazard";
 import { clamp, fract } from "./math";
 import { TOWER_TILE, WALL_HEIGHT, type World } from "./world";
 
@@ -133,13 +134,14 @@ export interface ViewmodelDraw {
 }
 
 /**
- * Slag surfaces drawn over hazard cells. The cycle phase is resolved by the
- * game so the renderer stays a pure function of its arguments.
+ * Slag surfaces drawn over hazard cells. The game passes the simulation clock so
+ * each cell can resolve its own phase inside the floor loop; the renderer stays
+ * a pure function of its arguments.
  */
 export interface FloorHazards {
   hot: Texture;
   cold: Texture;
-  hotNow: boolean;
+  time: number;
 }
 
 export interface RenderStats {
@@ -598,9 +600,18 @@ export class Renderer {
             world.hazards[
               Math.floor(floorWorldY) * world.width + Math.floor(floorWorldX)
             ] !== 0;
+          const hotNow =
+            hazardCell && floorHazards !== undefined
+              ? hazardHotAt(
+                  floorHazards.time,
+                  world.hazardPhases[
+                    Math.floor(floorWorldY) * world.width + Math.floor(floorWorldX)
+                  ],
+                )
+              : false;
           const surface =
             hazardCell && floorHazards
-              ? floorHazards.hotNow
+              ? hotNow
                 ? floorHazards.hot
                 : floorHazards.cold
               : floorTexture;
@@ -611,7 +622,7 @@ export class Renderer {
           // Hot slag keeps a small additive ember glow on top of the distance
           // falloff so a burning channel reads at range.
           const shade = clamp(1 / (1 + floorT * 0.075 * fogScale), 0.06, 1);
-          const ember = hazardCell && floorHazards?.hotNow ? 1 : 0;
+          const ember = hotNow ? 1 : 0;
           const fog = 1 - shade;
           pixels[dst] = surface.data[src] * shade + FOG_R * fog + ember * 30;
           pixels[dst + 1] = surface.data[src + 1] * shade + FOG_G * fog + ember * 9;

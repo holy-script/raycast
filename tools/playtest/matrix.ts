@@ -2693,6 +2693,49 @@ async function main(): Promise<void> {
       );
     });
 
+    define("levels", "l23-staggered-channels", async () => {
+      await loadLevel("foundry");
+      await evaluate(`(() => {
+        const game = window.__raycast.game;
+        for (const actor of game.actors) {
+          if (actor.spec.hostile) game.damageActor(actor, 999);
+        }
+      })()`);
+      await step(0);
+      // The south channel opens on the hot window while the middle one is cold.
+      await pose(24.5, 31.5, 0, -Math.PI / 2, -0.75);
+      await step(0.6);
+      const south = await state();
+      let dbg = await debug();
+      check(
+        "the south channel opens on the hot window",
+        south.hazardHot && dbg.hazard.phase === 0 && south.health < 100,
+        `hot ${south.hazardHot} · phase ${dbg.hazard.phase} · health ${south.health.toFixed(1)}`,
+      );
+      await pose(24.5, 20.5, 0, -Math.PI / 2, -0.75);
+      await step(0.6);
+      const midCold = await state();
+      dbg = await debug();
+      check(
+        "the middle channel runs the opposite window",
+        !midCold.hazardHot && dbg.hazard.phase === 2 && midCold.health === south.health,
+        `hot ${midCold.hazardHot} · phase ${dbg.hazard.phase} · health ${midCold.health.toFixed(1)}`,
+      );
+      // Two seconds in, the middle channel ignites while the south cools.
+      await step(1.2);
+      const midHot = await state();
+      check(
+        "the middle channel ignites as the south cools",
+        midHot.hazardHot && midHot.health < midCold.health,
+        `hot ${midHot.hazardHot} · health ${midHot.health.toFixed(1)}`,
+      );
+      // Frame both channels: the middle one is hot while the south one is cold,
+      // the mirror image of the l21 load captures.
+      await pose(6.6, 24.5, 0, 0, 0);
+      await step(0);
+      await saveCanvas("l23-staggered-channels", true);
+    });
+
     // ------------------------------------------------------------------ run
     for (const scenario of scenarios) {
       currentScenario = scenario.id;
