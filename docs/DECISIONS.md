@@ -314,3 +314,34 @@ angle, while living sprite scale and the top-down compensation are unchanged. Th
 manifest now supports per-state frame overrides (only `death` uses one today). The
 `f02-player-kill` matrix check asserts the corpse world size (1.33 m for the 0.95-scale
 stalker), and `tests/math.test.ts` locks the static-snap side of each pitch threshold.
+
+## ADR-019 — Carve rooms into the heightmap, spawn from the muzzle, and slice sprites
+
+**Context:** M12 needed three kinds of depth without replacing the engine: buildable
+interiors with ceilings, shots that read as leaving the gun, and sprites that a near wall
+can partially occlude. A full Doom-style sector engine, hit-scan ray offsets, or true 3D
+character meshes would each change core contracts and the asset pipeline.
+
+**Decision:**
+
+- Rooms are additive per-cell data, not a new world model. `RoomSpec` stamps `ceilings`
+  and `roofs` onto the existing heightmap after the height pass. The tile stays solid, so
+  collision, line of sight, and the DDA face/top logic keep working; the renderer adds roof,
+  lintel, and ceiling candidates in that cell. Indoor flight uses the same `maxAltitude`
+  path with a ceiling cap.
+- Player bolts spawn from a camera-space muzzle offset (right 0.18, up −0.08, forward 0.35)
+  with an eye fallback inside solid geometry. This keeps the bolt visually attached to the
+  projector without changing projectile ownership or collision.
+- Depth slices stay pre-baked and 2D. The packer condenses the existing 384×384 depth
+  passes into four bands in a separate `slices.png`; the renderer draws the same quad once
+  per band with per-band depth. The color atlas is untouched, and manifests without slices
+  keep the old single pass.
+- Crates are ordinary grid cells (`X`) with a per-cell hit count. Clearing one zeroes tile
+  and height, so movement, LOS, and projectiles agree without a parallel prop system.
+
+**Consequences:** Interiors cost no new collision code and no atlas rebuild; cover and
+crates behave like geometry at every altitude. Near walls cut through the correct band of
+an actor up to 8 m, where the base quad takes over. Tradeoffs: interiors reuse the facade
+texture indoors, rooms are single-volume (no interior stairs), the slice atlas adds a
+second 1,216-frame image to load, and the muzzle fallback can still put a bolt at the eye
+when the player stands inside a wall.

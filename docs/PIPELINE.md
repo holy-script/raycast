@@ -162,7 +162,12 @@ code.
 - `frameWorldSize = 1.15`, `frameAnchorZ = -0.075`.
 - Row order: for each state, for each frame, for each pitch (low, level, high, top), then
   yaw.
-- Output: `public/assets/sprites/<character>/atlas.{png,json}`.
+- Output: `public/assets/sprites/<character>/atlas.{png,json}` plus `slices.png`.
+- Depth slices: each frame's 384×384 depth pass is downsampled with max pooling, cut into
+  four bands by percentile depth, and written as grayscale into a second atlas that
+  mirrors the color layout. The manifest's `slices` block carries the band offsets and
+  depth cuts (`bands: 4`, offsets `0.15/0.05/−0.05/−0.15` m, depth range 3.2–5.0). The
+  color atlas is unchanged by this pass.
 
 Six states are packed: `idle` (2 frames, 2 fps), `walk` (4, 8), `attack` (4, 10),
 `hurt` (2, 8), `death` (4, 6), `talk` (3, 4). The engine animates `idle`/`walk` from a
@@ -173,7 +178,7 @@ Manifest shape (`atlas.json`):
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "name": "guardian",
   "image": "atlas.png",
   "frameWidth": 96,
@@ -183,6 +188,14 @@ Manifest shape (`atlas.json`):
   "directions": 16,
   "pitches": 4,
   "pitchOrder": ["low", "level", "high", "top"],
+  "slices": {
+    "image": "slices.png",
+    "bands": 4,
+    "offsets": [0.15, 0.05, -0.05, -0.15],
+    "depthNear": 3.2,
+    "depthFar": 5,
+    "depthCuts": [85, 113.5, 142, 170.5, 199]
+  },
   "states": {
     "idle": { "fps": 2, "frames": 2 },
     "walk": { "fps": 8, "frames": 4 },

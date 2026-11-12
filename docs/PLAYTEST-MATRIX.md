@@ -1,9 +1,9 @@
 # Playtest matrix
 
 `npm run playtest:matrix` drives the same headless-Chrome/CDP harness as
-`npm run playtest`, but instead of one happy path it walks the game through 105
-deterministic state, interaction, combat, level, district, route, and viewmodel
-scenarios: 691 checks (assertions plus golden-frame comparisons) and 123 captures
+`npm run playtest`, but instead of one happy path it walks the game through 113
+deterministic state, interaction, combat, level, district, interior, route, and viewmodel
+scenarios: 752 checks (assertions plus golden-frame comparisons) and 134 captures
 (canvas frames plus full-page UI overlays).
 
 The point is coverage the owner should not have to repeat by hand — every movement axis,
@@ -75,8 +75,8 @@ Two harness details matter when extending it:
 | UI | `u01`–`u07` | Minimap toggle, HUD minimal mode, pause freeze, pause/resume, HUD values, fuel readout. |
 | Routes | `r01`–`r05` | Jet over a wall, jet forward climb, aerial look-down, mid-air respawn, sprint route. |
 | Interaction | `i01`–`i07` | Keycard pickup + toast, locked door refusal, door unlock (tile cleared), talk-line cycle, medkit heal, fuel refill, empty interact. |
-| Combat | `f01`–`f10` | Bolt hit, kill → corpse, fired-away miss, 4 m bolt travel, hostile melee damage overlay, player death → redeploy, cooldown gate, enemy wind-up timing, wall absorption, marauder gunner shot + damage. |
-| Levels | `l01`–`l05` | Courtyard → reactor transition, vault return with reloaded state, terrace climb, reactor hover actor, beacon loop. |
+| Combat | `f01`–`f12` | Bolt hit, kill → corpse, fired-away miss, 4 m bolt travel, hostile melee damage overlay, player death → redeploy, cooldown gate, enemy wind-up timing, wall absorption, marauder gunner shot + damage, muzzle-aligned spawn, two-bolt crate destruction. |
+| Levels | `l01`–`l17` | Courtyard → reactor transition, vault return with reloaded state, terrace climb, reactor hover actor, beacon loop, district arrival/landing/sentry/hunt gate/gate entry, and office/vault interiors with ceilings and roofs. |
 
 Every scenario also runs universal checks: finite player/render state, sane projected
 sprite rectangles, populated HUD, a non-blank rendered frame, and (for canvas captures) a
@@ -211,10 +211,10 @@ verticality and the hunt gate without relying on live combat:
 
 | Scenario | Assertion |
 | --- | --- |
-| `l06-district-arrival` | The loader reports `district` / `ROOFTOP DISTRICT`, spawn is `(32.5, 58.5)` on support 0, the objective reads `0/7`, and four elevated actors sit at 8/12 m. |
+| `l06-district-arrival` | The loader reports `district` / `ROOFTOP DISTRICT`, spawn is `(32.5, 58.5)` on support 0, the objective reads `0/8`, and five elevated actors sit at 8/12 m (including the overseer). |
 | `l07-rooftop-landing` | Dropped above the 4 m NW tower, the player settles at `z ≈ 4`, `support ≈ 4`, and the HUD reads `PERCH · 4.0 m`. |
 | `l08-sentry-los` | From the plaza at `(6.5, 30.5)`, the NW sentry fires a bolt whose origin is above 6.5 m — sight lines work from roof edge to street. |
-| `l09-hunt-gate` | Standing on the beacon before the hunt toasts `EXTRACTION LOCKED · 7 HUNTERS REMAIN` and stays in the district; after seven hostile deaths, the same step extracts to the courtyard. |
+| `l09-hunt-gate` | Standing on the beacon before the hunt toasts `EXTRACTION LOCKED · 8 HUNTERS REMAIN` and stays in the district; after eight hostile deaths, the same step extracts to the courtyard. |
 | `l10-jetpack-roof` | Holding Space for 0.8 s then W for 0.35 s from the alley climbs onto the 4 m roof and ends in a perch. |
 | `l11-district-gate-entry` | The courtyard gate at `(2.5, 22.5)` loads the district. |
 
@@ -223,6 +223,26 @@ downward sight line clipped by its own parapet, so `l08` saw zero bolts. Sentry 
 sit on outer roof cells. The courtyard gate originally sat at `(22.5, 22.5)`, on the state
 gallery's marauder pose, and silently hijacked the combat captures — it moved to
 `(2.5, 22.5)`.
+
+## M12 combat depth, interiors, and slices extension (2026-11-12)
+
+M12 added eight scenarios (matrix now 113 scenarios / 752 checks / 134 captures). Two
+cover the combat-depth track, six cover interiors from the street, the air, and the roof:
+
+| Scenario | Assertion |
+| --- | --- |
+| `f11-muzzle-spawn` | Firing from `(5.5, 4.5)` spawns the player bolt at `(5.85, 4.68, 0.47)` — the viewmodel muzzle, not the eye at 0.55 m. |
+| `f12-crate-destroy` | The district crate at `(34, 9)` starts solid at 1.4 m; one bolt leaves it standing, the second clears tile and height and toasts `CRATE DESTROYED`. |
+| `l12-office-entry` | Walking west through the `(2, 6)` doorway lands on the office floor; the player reports ceiling 3 m / roof 4 m; looking up paints >12,000 ceiling pixels. |
+| `l13-office-medkit` | The office medkit at `(6.5, 4.5)` is collected indoors and heals 50 → 90. |
+| `l14-vault-entry` | Walking north through `(55, 60)` enters the vault (`y` 57.8–59.4) under a 3 m ceiling with the 12 m roof above. |
+| `l15-vault-fuel` | The vault fuel cache at `(54.5, 55.5)` refills an empty jetpack to 1.0. |
+| `l16-ceiling-jet-cap` | Holding Space indoors caps altitude at 1.60 m (`ceiling − 1.4`), and releasing lands back on the interior floor. |
+| `l17-roof-over-vault` | Standing on the vault roof at 12 m and looking down shows the roof slab (`topPixels > 6000`, zero ceiling pixels). |
+
+The first M12 run caught a duplicate-medkit lookup: `l13` matched the rooftop medkit at the
+same `x = 6.5`, so the check now matches both `x` and `y`. Interior captures also confirmed
+that the sky visible through a room is the open doorway sightline, not an enclosed hole.
 
 ## Extending it
 

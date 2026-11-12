@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-11T19:30:38.320Z",
+  "generatedAt": "2026-11-12T05:44:42.800Z",
   "url": "http://127.0.0.1:5204/?screenshot",
-  "durationMs": 2264,
+  "durationMs": 4982,
   "passed": 42,
   "failed": 0,
   "checks": [
@@ -99,7 +99,7 @@
       "state": "guardian",
       "name": "guardian-idle shows guard",
       "ok": true,
-      "detail": "4676 px"
+      "detail": "4670 px"
     },
     {
       "state": "guardian",
@@ -123,7 +123,7 @@
       "state": "guardian",
       "name": "guardian-talk-early shows guard",
       "ok": true,
-      "detail": "4658 px"
+      "detail": "4651 px"
     },
     {
       "state": "guardian",
@@ -135,7 +135,7 @@
       "state": "guardian",
       "name": "guardian-talk-late shows guard",
       "ok": true,
-      "detail": "4532 px"
+      "detail": "4525 px"
     },
     {
       "state": "guardian",
@@ -189,7 +189,7 @@
       "state": "guardian",
       "name": "guardian-attack-impact shows marauder",
       "ok": true,
-      "detail": "5849 px"
+      "detail": "5851 px"
     },
     {
       "state": "guardian",
@@ -201,13 +201,13 @@
       "state": "guardian",
       "name": "guardian-hurt renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 56.1"
+      "detail": "512 colors, mean luma 56.3"
     },
     {
       "state": "guardian",
       "name": "guardian-hurt shows marauder",
       "ok": true,
-      "detail": "4157 px"
+      "detail": "4132 px"
     },
     {
       "state": "guardian",
@@ -219,13 +219,13 @@
       "state": "guardian",
       "name": "guardian-death-early renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 56.5"
+      "detail": "512 colors, mean luma 56.4"
     },
     {
       "state": "guardian",
       "name": "guardian-death-early shows marauder",
       "ok": true,
-      "detail": "6178 px"
+      "detail": "6246 px"
     },
     {
       "state": "guardian",
@@ -237,7 +237,7 @@
       "state": "guardian",
       "name": "guardian-death-mid shows marauder",
       "ok": true,
-      "detail": "5712 px"
+      "detail": "5892 px"
     },
     {
       "state": "guardian",
@@ -249,13 +249,13 @@
       "state": "guardian",
       "name": "guardian-corpse shows marauder",
       "ok": true,
-      "detail": "2822 px"
+      "detail": "2828 px"
     },
     {
       "state": "guardian",
       "name": "guardian corpse remains rendered",
       "ok": true,
-      "detail": "alive=false px=2822"
+      "detail": "alive=false px=2828"
     }
   ],
   "shots": [
@@ -376,7 +376,7 @@
       "expected": "hurt",
       "observed": "hurt",
       "colors": 512,
-      "meanLuma": 56.1
+      "meanLuma": 56.3
     },
     {
       "name": "guardian-death-early",
@@ -385,7 +385,7 @@
       "expected": "death",
       "observed": "death",
       "colors": 512,
-      "meanLuma": 56.5
+      "meanLuma": 56.4
     },
     {
       "name": "guardian-death-mid",

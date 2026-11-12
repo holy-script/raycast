@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-11T19:29:51.990Z",
+  "generatedAt": "2026-11-12T05:44:27.681Z",
   "url": "http://127.0.0.1:5201/?screenshot",
-  "durationMs": 8060,
+  "durationMs": 13659,
   "scenarios": [
     "g01-spawn-idle",
     "g02-walk-forward",
@@ -97,6 +97,8 @@
     "f08-enemy-windup",
     "f09-bolt-blocked",
     "f10-enemy-gun",
+    "f11-muzzle-spawn",
+    "f12-crate-destroy",
     "l01-transition-reactor",
     "l02-vault-return",
     "l03-terrace-climb",
@@ -107,9 +109,15 @@
     "l08-sentry-los",
     "l09-hunt-gate",
     "l10-jetpack-roof",
-    "l11-district-gate-entry"
+    "l11-district-gate-entry",
+    "l12-office-entry",
+    "l13-office-medkit",
+    "l14-vault-entry",
+    "l15-vault-fuel",
+    "l16-ceiling-jet-cap",
+    "l17-roof-over-vault"
   ],
-  "passed": 691,
+  "passed": 752,
   "failed": 0,
   "checks": [
     {
@@ -1566,7 +1574,7 @@
       "group": "aim",
       "name": "a15-pitch-band-level renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 54.7"
+      "detail": "512 colors, mean luma 54.6"
     },
     {
       "scenario": "a15-pitch-band-level",
@@ -2861,14 +2869,14 @@
       "group": "viewmodel",
       "name": "w02-strike-viewmodel renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 55.4"
+      "detail": "512 colors, mean luma 55.3"
     },
     {
       "scenario": "w02-attack-swing",
       "group": "viewmodel",
       "name": "w02-attack-swing renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 55.4"
+      "detail": "512 colors, mean luma 55.3"
     },
     {
       "scenario": "w02-attack-swing",
@@ -3078,7 +3086,7 @@
       "group": "ui",
       "name": "resuming advances the simulation",
       "ok": true,
-      "detail": "patrol dx 0.37, 23 frames, paused=false, 6.40% pixels changed"
+      "detail": "patrol dx 0.38, 23 frames, paused=false, 6.43% pixels changed"
     },
     {
       "scenario": "u05-pause-resume",
@@ -3813,7 +3821,7 @@
       "group": "combat",
       "name": "f01-enemy-hurt renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 48.7"
+      "detail": "512 colors, mean luma 48.8"
     },
     {
       "scenario": "f01-player-shot",
@@ -3827,7 +3835,7 @@
       "group": "combat",
       "name": "f01-player-shot renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 48.7"
+      "detail": "512 colors, mean luma 48.8"
     },
     {
       "scenario": "f01-player-shot",
@@ -3869,7 +3877,7 @@
       "group": "combat",
       "name": "the corpse drops out of targeting but stays rendered",
       "ok": true,
-      "detail": "alive=false · size=1.33 m · 4859 corpse px"
+      "detail": "alive=false · size=1.33 m · 4744 corpse px"
     },
     {
       "scenario": "f02-player-kill",
@@ -4135,7 +4143,7 @@
       "group": "combat",
       "name": "f07-fire-cooldown renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 48.7"
+      "detail": "512 colors, mean luma 48.8"
     },
     {
       "scenario": "f07-fire-cooldown",
@@ -4314,6 +4322,111 @@
     },
     {
       "scenario": "f10-enemy-gun",
+      "group": "combat",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "f11-muzzle-spawn",
+      "group": "combat",
+      "name": "the bolt leaves the projector, not the eye",
+      "ok": true,
+      "detail": "5.85, 4.68, 0.47"
+    },
+    {
+      "scenario": "f11-muzzle-spawn",
+      "group": "combat",
+      "name": "f11-muzzle-spawn matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "f11-muzzle-spawn",
+      "group": "combat",
+      "name": "f11-muzzle-spawn renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 59.6"
+    },
+    {
+      "scenario": "f11-muzzle-spawn",
+      "group": "combat",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 4.50, 0.00, 1.00, 384.00, 68006.00, 0.00"
+    },
+    {
+      "scenario": "f11-muzzle-spawn",
+      "group": "combat",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "14 rects"
+    },
+    {
+      "scenario": "f11-muzzle-spawn",
+      "group": "combat",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "f12-crate-destroy",
+      "group": "combat",
+      "name": "the district crate starts solid",
+      "ok": true,
+      "detail": "tile 2 · height 1.40"
+    },
+    {
+      "scenario": "f12-crate-destroy",
+      "group": "combat",
+      "name": "one bolt does not destroy the crate",
+      "ok": true,
+      "detail": "fired=true · solid=true"
+    },
+    {
+      "scenario": "f12-crate-destroy",
+      "group": "combat",
+      "name": "the second bolt clears the crate cell",
+      "ok": true,
+      "detail": "fired=true · tile 0 · height 0"
+    },
+    {
+      "scenario": "f12-crate-destroy",
+      "group": "combat",
+      "name": "crate destruction reports a toast",
+      "ok": true,
+      "detail": "CRATE DESTROYED"
+    },
+    {
+      "scenario": "f12-crate-destroy",
+      "group": "combat",
+      "name": "f12-crate-destroy matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "f12-crate-destroy",
+      "group": "combat",
+      "name": "f12-crate-destroy renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 46.8"
+    },
+    {
+      "scenario": "f12-crate-destroy",
+      "group": "combat",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "34.50, 13.50, 0.00, 1.00, 384.00, 36144.00, 0.00"
+    },
+    {
+      "scenario": "f12-crate-destroy",
+      "group": "combat",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "6 rects"
+    },
+    {
+      "scenario": "f12-crate-destroy",
       "group": "combat",
       "name": "HUD is populated",
       "ok": true,
@@ -4618,14 +4731,14 @@
       "group": "levels",
       "name": "the hunt objective starts empty",
       "ok": true,
-      "detail": "Hunt the seven hostiles, then reach the extraction beacon. · 0/7"
+      "detail": "Hunt the eight hostiles, then reach the extraction beacon. · 0/8"
     },
     {
       "scenario": "l06-district-arrival",
       "group": "levels",
-      "name": "four sentries stand on the rooftops",
+      "name": "four sentries and the overseer hold the rooftops",
       "ok": true,
-      "detail": "spire-nw@8, spire-ne@12, spire-sw@12, spire-se@12"
+      "detail": "spire-nw@8, spire-ne@12, spire-sw@12, spire-se@12, overseer@12"
     },
     {
       "scenario": "l06-district-arrival",
@@ -4667,7 +4780,7 @@
       "group": "levels",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "16 rects"
     },
     {
       "scenario": "l06-district-arrival",
@@ -4723,14 +4836,14 @@
       "group": "levels",
       "name": "state and geometry stay finite",
       "ok": true,
-      "detail": "6.50, 6.50, 4.00, 1.00, 384.00, 8.00, 92152.00"
+      "detail": "6.50, 6.50, 4.00, 1.00, 384.00, 0.00, 92160.00"
     },
     {
       "scenario": "l07-rooftop-landing",
       "group": "levels",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "0 rects"
+      "detail": "1 rects"
     },
     {
       "scenario": "l07-rooftop-landing",
@@ -4786,7 +4899,7 @@
       "group": "levels",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "6 rects"
+      "detail": "7 rects"
     },
     {
       "scenario": "l08-sentry-los",
@@ -4800,14 +4913,14 @@
       "group": "levels",
       "name": "the beacon refuses extraction before the hunt",
       "ok": true,
-      "detail": "district · EXTRACTION LOCKED · 7 HUNTERS REMAIN"
+      "detail": "district · EXTRACTION LOCKED · 8 HUNTERS REMAIN"
     },
     {
       "scenario": "l09-hunt-gate",
       "group": "levels",
       "name": "killing every hostile fills the hunt counter",
       "ok": true,
-      "detail": "7/7"
+      "detail": "8/8"
     },
     {
       "scenario": "l09-hunt-gate",
@@ -4891,7 +5004,7 @@
       "group": "levels",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "3 rects"
+      "detail": "4 rects"
     },
     {
       "scenario": "l10-jetpack-roof",
@@ -4933,7 +5046,7 @@
       "group": "levels",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "16 rects"
     },
     {
       "scenario": "l11-district-gate-entry",
@@ -4943,7 +5056,329 @@
       "detail": "WALK · ATTRACT · fuel 100%"
     },
     {
-      "scenario": "l11-district-gate-entry",
+      "scenario": "l12-office-entry",
+      "group": "levels",
+      "name": "walking through the doorway reaches the security office floor",
+      "ok": true,
+      "detail": "x=6.30, y=6.50 · support 0"
+    },
+    {
+      "scenario": "l12-office-entry",
+      "group": "levels",
+      "name": "the office is covered by a 3 m ceiling under a 4 m roof",
+      "ok": true,
+      "detail": "ceiling 3 · roof 4"
+    },
+    {
+      "scenario": "l12-office-entry",
+      "group": "levels",
+      "name": "looking up indoors paints the ceiling slab",
+      "ok": true,
+      "detail": "74112 ceiling pixels"
+    },
+    {
+      "scenario": "l12-office-entry",
+      "group": "levels",
+      "name": "l12-office-interior matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l12-office-entry",
+      "group": "levels",
+      "name": "l12-office-interior renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 52.5"
+    },
+    {
+      "scenario": "l12-office-entry",
+      "group": "levels",
+      "name": "l12-office-entry matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l12-office-entry",
+      "group": "levels",
+      "name": "l12-office-entry renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 52.5"
+    },
+    {
+      "scenario": "l12-office-entry",
+      "group": "levels",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "6.30, 6.50, 0.00, 1.00, 384.00, 18048.00, 0.00"
+    },
+    {
+      "scenario": "l12-office-entry",
+      "group": "levels",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "15 rects"
+    },
+    {
+      "scenario": "l12-office-entry",
+      "group": "levels",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "l13-office-medkit",
+      "group": "levels",
+      "name": "the indoor medkit is collected inside the office",
+      "ok": true,
+      "detail": "taken=true · health 90"
+    },
+    {
+      "scenario": "l13-office-medkit",
+      "group": "levels",
+      "name": "l13-office-medkit matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l13-office-medkit",
+      "group": "levels",
+      "name": "l13-office-medkit renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 73.6"
+    },
+    {
+      "scenario": "l13-office-medkit",
+      "group": "levels",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "6.50, 4.50, 0.00, 1.00, 384.00, 69797.00, 18592.00"
+    },
+    {
+      "scenario": "l13-office-medkit",
+      "group": "levels",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "13 rects"
+    },
+    {
+      "scenario": "l13-office-medkit",
+      "group": "levels",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "l14-vault-entry",
+      "group": "levels",
+      "name": "walking north enters the vault under its 3 m ceiling",
+      "ok": true,
+      "detail": "y=58.80 · ceiling 3 · roof 12"
+    },
+    {
+      "scenario": "l14-vault-entry",
+      "group": "levels",
+      "name": "l14-vault-interior matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l14-vault-entry",
+      "group": "levels",
+      "name": "l14-vault-interior renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 56.8"
+    },
+    {
+      "scenario": "l14-vault-entry",
+      "group": "levels",
+      "name": "l14-vault-entry matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l14-vault-entry",
+      "group": "levels",
+      "name": "l14-vault-entry renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 56.8"
+    },
+    {
+      "scenario": "l14-vault-entry",
+      "group": "levels",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "55.50, 58.80, 0.00, 1.00, 384.00, 92160.00, 0.00"
+    },
+    {
+      "scenario": "l14-vault-entry",
+      "group": "levels",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "16 rects"
+    },
+    {
+      "scenario": "l14-vault-entry",
+      "group": "levels",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "l15-vault-fuel",
+      "group": "levels",
+      "name": "the vault fuel cache refills the jetpack",
+      "ok": true,
+      "detail": "taken=true · fuel 1.00"
+    },
+    {
+      "scenario": "l15-vault-fuel",
+      "group": "levels",
+      "name": "l15-vault-fuel matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l15-vault-fuel",
+      "group": "levels",
+      "name": "l15-vault-fuel renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 61.1"
+    },
+    {
+      "scenario": "l15-vault-fuel",
+      "group": "levels",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "54.50, 55.50, 0.00, 1.00, 384.00, 64228.00, 0.00"
+    },
+    {
+      "scenario": "l15-vault-fuel",
+      "group": "levels",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "1 rects"
+    },
+    {
+      "scenario": "l15-vault-fuel",
+      "group": "levels",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "l16-ceiling-jet-cap",
+      "group": "levels",
+      "name": "the jetpack is capped below the 3 m office ceiling",
+      "ok": true,
+      "detail": "alt 1.60 m (cap 1.60)"
+    },
+    {
+      "scenario": "l16-ceiling-jet-cap",
+      "group": "levels",
+      "name": "releasing the jetpack lands back on the interior floor",
+      "ok": true,
+      "detail": "alt 0.00 m · onGround true"
+    },
+    {
+      "scenario": "l16-ceiling-jet-cap",
+      "group": "levels",
+      "name": "l16-ceiling-cap matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l16-ceiling-jet-cap",
+      "group": "levels",
+      "name": "l16-ceiling-cap renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 59.8"
+    },
+    {
+      "scenario": "l16-ceiling-jet-cap",
+      "group": "levels",
+      "name": "l16-ceiling-jet-cap matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l16-ceiling-jet-cap",
+      "group": "levels",
+      "name": "l16-ceiling-jet-cap renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 59.8"
+    },
+    {
+      "scenario": "l16-ceiling-jet-cap",
+      "group": "levels",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "5.50, 6.50, 0.00, 1.00, 384.00, 69168.00, 99.00"
+    },
+    {
+      "scenario": "l16-ceiling-jet-cap",
+      "group": "levels",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "1 rects"
+    },
+    {
+      "scenario": "l16-ceiling-jet-cap",
+      "group": "levels",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · ATTRACT · fuel 100%"
+    },
+    {
+      "scenario": "l17-roof-over-vault",
+      "group": "levels",
+      "name": "the vault roof still closes from above",
+      "ok": true,
+      "detail": "alt 12.00 m · support 12"
+    },
+    {
+      "scenario": "l17-roof-over-vault",
+      "group": "levels",
+      "name": "looking down shows the roof slab instead of sky",
+      "ok": true,
+      "detail": "92160 top px · 0 ceiling px"
+    },
+    {
+      "scenario": "l17-roof-over-vault",
+      "group": "levels",
+      "name": "l17-roof-over-vault matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l17-roof-over-vault",
+      "group": "levels",
+      "name": "l17-roof-over-vault renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 70.2"
+    },
+    {
+      "scenario": "l17-roof-over-vault",
+      "group": "levels",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "55.50, 56.50, 12.00, 1.00, 384.00, 0.00, 92160.00"
+    },
+    {
+      "scenario": "l17-roof-over-vault",
+      "group": "levels",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "18 rects"
+    },
+    {
+      "scenario": "l17-roof-over-vault",
+      "group": "levels",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "PERCH · 12.0 m · fuel 100%"
+    },
+    {
+      "scenario": "l17-roof-over-vault",
       "group": "levels",
       "name": "no page errors",
       "ok": true,
@@ -5579,6 +6014,18 @@
       "baseline": "compared"
     },
     {
+      "name": "f11-muzzle-spawn",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "f12-crate-destroy",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
       "name": "l01-reactor-spawn",
       "kind": "canvas",
       "diff": 0,
@@ -5670,6 +6117,60 @@
     },
     {
       "name": "l11-district-gate-entry",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l12-office-interior",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l12-office-entry",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l13-office-medkit",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l14-vault-interior",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l14-vault-entry",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l15-vault-fuel",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l16-ceiling-cap",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l16-ceiling-jet-cap",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l17-roof-over-vault",
       "kind": "canvas",
       "diff": 0,
       "baseline": "compared"

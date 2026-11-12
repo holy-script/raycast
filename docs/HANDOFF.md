@@ -11,20 +11,21 @@ npm run typecheck
 npm test
 npm run build
 npm run playtest   # headless Chrome, 40 checks + screenshots
-npm run playtest:matrix  # 105 deterministic scenarios, 691 checks
+npm run playtest:matrix  # 113 deterministic scenarios, 752 checks
 npm run playtest:flight  # 18 airborne poses + live jetpack, 109 checks
 npm run playtest:states  # 42 state checks, 21 paused-state captures
 npm run dev        # http://localhost:5173
 ```
 
-Expected: typecheck clean, 76 tests passing across 9 files, Vite build succeeds, playtest
-40/40, matrix 691/691, flight 109/109, state gallery 42/42 with zero console errors.
+Expected: typecheck clean, 108 tests passing across 11 files, Vite build succeeds, playtest
+40/40, matrix 752/752, flight 109/109, state gallery 42/42 with zero console errors.
 Click the canvas,
-move with WASD, hold Space to jetpack up to 18 m, and look down to see the top-pitch
+move with WASD, hold Space to jetpack up to 18 m outdoors (or below the ceiling indoors),
+and look down to see the top-pitch
 sprite rows and the diorama. Walk up the panel stairs (x=10–13, y=18–21) onto the 0.4
 platform, jump the 0.6 crate at (4.5, 13.5), or land on a wall to perch; walk off to fall
 back. The plasma projector in the lower-right idles and swings when you fire; bolts
-travel straight from the camera and bloom on impact.
+travel straight from the muzzle and bloom on impact.
 
 M7 loop: pick up the keycard near the courtyard spawn, open the door at (9, 11), step on
 the beacon to reach the reactor map, climb the terraces, unlock/open the vault door at
@@ -36,7 +37,12 @@ M11 loop: use the courtyard beacon at (2.5, 22.5) to enter the 64×64 Rooftop Di
 From the south avenue spawn (32.5, 58.5), advance into the plaza, kill the two street
 gunners and the plaza bruiser, jetpack onto the 4/6/8/10/12 m towers, and clear the four
 rooftop sentries. The beacon at the plaza centre (32.5, 32.5) returns to the courtyard
-only after all seven hostiles are dead; until then it toasts the remaining hunt count.
+only after all eight hostiles are dead; until then it toasts the remaining hunt count.
+
+M12 additions: walk through the west doorway at (2, 6) into the security office for a
+medkit under a 3 m ceiling; the south doorway at (55, 60) enters the vault for fuel. Five
+`X` crates take two bolts each and toast `CRATE DESTROYED`; seven `3` risers give 0.6 m of
+shooting cover. The 260 HP overseer patrols the 12 m roof at (51.5, 41.5).
 
 Asset pipeline after a fresh clone (raw renders are gitignored):
 
@@ -101,7 +107,7 @@ flight.
 
 `?screenshot` hides the intro overlay for headless captures. Prefer the harnesses:
 `npm run playtest` is the happy-path browser check, `npm run playtest:matrix` walks
-105 deterministic state/route scenarios (691 checks, labelled contact sheet, golden
+113 deterministic state/route scenarios (752 checks, labelled contact sheet, golden
 frames), `npm run playtest:states` pauses the sim in every player/guardian body state
 for 21 gallery captures (42 checks), and `npm run playtest:flight` sweeps 18
 altitude/pitch poses plus a live jetpack flight (109 checks) while asserting no sky
@@ -268,15 +274,23 @@ alone can leave HUD values at `--`.
 
 ## Known constraints
 
-- Heights are blocks grown from `z = 0`; there are no sunken floors/pits, overhangs, or
-  ceilings. The walkable floor is one plane at 0. Legend characters (`a`–`e`) create
-  solid towers up to 12 m, but they have no interiors: towers are obstacles and rooftops,
-  not enterable buildings.
-- No ceiling geometry; sky is visible above the outer walls from ground level.
+- Heights are blocks grown from `z = 0` plus carved room sectors. There are still no
+  sunken floors/pits, overhangs, multi-storey interiors, or interior stairs. Legend
+  characters (`a`–`e`) create solid towers up to 12 m; rooms are single-volume sectors with
+  a `ceilingZ` and a separate `roofZ`. Interiors exist only where a level declares
+  `rooms` (the district office and vault), and their wall faces reuse the exterior facade
+  texture, so lit windows can appear indoors.
 - Actors are non-blocking (no player/actor or actor/actor collision). Hostiles deal melee
-  contact damage and marauders fire bolts; both can be killed. Bolts are straight,
-  gravity-free, and do not penetrate or bounce. The player bolt spawns at the eye, not
-  the viewmodel muzzle.
+  contact damage and gunners/sentries fire bolts; both can be killed. Bolts are straight,
+  gravity-free, and do not penetrate or bounce. Player bolts spawn at the viewmodel muzzle
+  with an eye fallback when the muzzle point is inside solid geometry.
+- Destructible crates are grid cells, so they block movement and line of sight until the
+  second player bolt clears them; they reset with the level. Cover risers (`3`) sit 0.6 m
+  above their tallest neighbour and are walk-over.
+- Stacked-slice impostors use four depth bands from the existing depth-control renders.
+  Bands are offset in camera space and depth-tested; beyond 8 m the base quad is used.
+  The slice atlas doubles atlas download size (color + gray mask), but the color atlas is
+  byte-identical to M11.
 - Levels reload from their definitions on every transition, which resets pickups, doors,
   and the keycard. The demo loop is therefore one-way per visit: after the courtyard
   beacon return you can re-collect the keycard and run it again.
@@ -293,24 +307,26 @@ alone can leave HUD values at `--`.
   (`raycast.settings.v1`) and fail open when storage is blocked.
 - No license file yet.
 
-## Next task: M11 owner playtest and district tuning
+## Next task: M12 owner playtest and tuning
 
-M11 is complete locally: the 64×64 Rooftop District, legend towers, rooftop sentries, and
-the hunt-gated extraction are covered by `playtest` (40), `playtest:matrix` (691 across
-105 scenarios), `playtest:flight` (109), and `playtest:states` (42), plus 76 unit tests.
-The owner should playtest rooftop combat and the seven-kill gate before the next design
-step.
+M12 is complete locally: combat depth (muzzle spawn, destructible crates, cover, the
+overseer boss), tower interiors (office and vault sectors with ceilings, roofs, and an
+indoor flight cap), and stacked-slice sprites are covered by `playtest` (40),
+`playtest:matrix` (752 across 113 scenarios), `playtest:flight` (109),
+`playtest:states` (42), and 108 unit tests. The owner should playtest the crate fight,
+indoor flight, and the overseer before the next design step.
 
-1. Tune the district roster in `src/content/actors.ts` (sentry range/damage, gunner
-   ranges, bruiser chase) and pickup placement in `src/content/levels.ts`. Keep
-   `huntTargets` equal to the hostile count.
-2. If towers move, keep sentries on outer roof cells and update the `l07`/`l10` landing
-   positions; rerun `tests/levels.test.ts` so elevated content still matches roof heights.
+1. Tune in `src/engine/crates.ts` / `src/content/actors.ts`: crate hit count, the
+   overseer's HP/damage/turn rate, and the seven cover risers. Keep `huntTargets` equal to
+   the hostile count (8).
+2. If rooms move, update `DISTRICT_ROOMS`, the level's indoor pickups, and the `l12`–`l17`
+   doorway/pose coordinates; rerun `tests/levels.test.ts` so sector bounds and the roof
+   stay valid.
 3. If a visual change lands, rerun `npm run playtest:matrix -- --update-golden`, inspect
    the first mismatching run before committing, then run typecheck/tests/build, both
    playtests, flight, states, and check Vercel.
-4. Deferred: tower interiors, rooftop cover props, destructible crates, a district boss,
-   muzzle-aligned bolt spawns, projectile drop/penetration, and stacked-slice sprites.
+4. Deferred: interior-specific wall/ceiling art, stairs between floors, projectile
+   drop/penetration, per-band slice lighting, and an AutoSprite/Gamelabs adapter.
 
 If a design choice could go either way, record it in [DECISIONS.md](DECISIONS.md) with the
 tradeoff, then proceed.

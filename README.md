@@ -7,8 +7,10 @@ reproducible pipeline for multi-angle character sprites, based on
 **Live demo:** https://raycast-rosy.vercel.app
 
 > **Status:** combat, interaction, doors, and transitions are live, M8 polish has landed
-> procedural audio plus a pause/settings menu (mouse sensitivity, FOV, mute), and M9 adds
-> a first-person viewmodel with attack animation. The guardian is the only shipped
+> procedural audio plus a pause/settings menu (mouse sensitivity, FOV, mute), M9 adds a
+> first-person viewmodel with attack animation, and M12 adds muzzle-aligned bolts,
+> destructible crates, a district boss, enterable tower interiors, and stacked-slice
+> impostors. The guardian is the only shipped
 > chassis, so every actor renders through its six-state atlas
 > (idle/walk/attack/hurt/death/talk).
 
@@ -29,17 +31,22 @@ drive frame selection, including a dedicated near-overhead row with a compensati
 billboard scale, so actors keep a stable apparent size from the floor to the ceiling. A
 Blender-rendered first-person viewmodel (both gauntlets plus a plasma projector) animates
 through idle, wind-up, strike, and recovery, and bob follows the walk cycle. F/click
-launches a plasma bolt along the camera aim; marauder gunners answer with orange bolts
-that respect walls, and impacts bloom as depth-tested glow billboards. A 64×64 Rooftop
-District extends the same movement and combat onto 4–12 m towers, with jetpack traversal,
-rooftop sentries, and an extraction beacon that unlocks after a seven-hostile hunt.
+launches a plasma bolt along the camera aim from the projector muzzle; marauder gunners
+answer with orange bolts that respect walls, and impacts bloom as depth-tested glow
+billboards. Five crates break after two bolts, seven risers provide cover, and the 260 HP
+overseer guards the district roof. A 64×64 Rooftop District extends the same movement and
+combat onto 4–12 m towers, with jetpack traversal, rooftop sentries, enterable office and
+vault interiors under 3 m ceilings, and an extraction beacon that unlocks after an
+eight-hostile hunt. Actor billboards carry four depth bands from a separate slice atlas,
+so near walls cut through the correct part of a sprite.
 
 **Status:** playable build with three levels, ranged and melee combat with hurt/death
 states, NPC dialogue, doors, keycard/medkit/fuel pickups, level transitions, a 64×64
-Rooftop District with 4–12 m towers and hunt-gated extraction, synthesized audio, and a
-pause/settings menu. Verification runs a 105-scenario deterministic matrix (691 checks),
-a 40-check happy-path browser run, an 18-pose airborne flight sweep with a live jetpack
-sequence (109 checks), and a 42-check paused-state gallery capturing every body state.
+Rooftop District with 4–12 m towers, enterable interiors, and hunt-gated extraction,
+synthesized audio, and a pause/settings menu. Verification runs a 113-scenario
+deterministic matrix (752 checks), a 40-check happy-path browser run, an 18-pose airborne
+flight sweep with a live jetpack sequence (109 checks), and a 42-check paused-state gallery
+capturing every body state.
 The M6 AI stylization infrastructure (Blender depth/normal controls, ComfyUI
 img2img + ControlNet, silhouette/palette verification, MCP studio server) remains the
 asset path. See the [roadmap](docs/ROADMAP.md), [pipeline](docs/PIPELINE.md), and
@@ -56,7 +63,7 @@ npm test           # unit tests
 npm run typecheck
 npm run build      # static build in dist/
 npm run playtest   # headless Chrome: input, physics, atlas, viewmodel, screenshot checks
-npm run playtest:matrix  # 105 deterministic state/interaction/combat/level/district scenarios
+npm run playtest:matrix  # 113 deterministic state/interaction/combat/level/district scenarios
 npm run playtest:flight  # 18 airborne poses + live jetpack sweep, wall/sky/sprite analysis
 npm run playtest:states  # paused-state gallery: 42 checks, 21 captures
 ```

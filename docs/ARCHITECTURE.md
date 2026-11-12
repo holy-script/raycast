@@ -22,10 +22,11 @@ solid diorama from jetpack altitude and the player can land on a wall to look do
 | File | Responsibility |
 | --- | --- |
 | `src/engine/dda.ts` | Grid traversal helpers used by tests and editors; the renderer walks DDA inline per pixel |
-| `src/engine/world.ts` | ASCII map parsing, legend heights, solid lookup, wall height / support height, height-aware collision |
+| `src/engine/world.ts` | ASCII map parsing, legend heights, room sectors (`ceilings`/`roofs`), solid lookup, wall height / support height, height-aware collision |
+| `src/engine/crates.ts` | Destructible crate cells, hit counting, debris rules, cell clearing |
 | `src/engine/math.ts` | Angle wrap, yaw/pitch quantization, elevation angle |
-| `src/engine/renderer.ts` | Sky, per-pixel floors/faces/tops, facade storey sampling, sprites, shadows, depth buffer |
-| `src/engine/atlas.ts` | Manifest parsing, frame lookup with fallback, image loading |
+| `src/engine/renderer.ts` | Sky, per-pixel floors/faces/tops, roof/lintel/ceiling planes, facade storey sampling, sprites with depth slices, shadows, depth buffer |
+| `src/engine/atlas.ts` | Manifest parsing, frame lookup with fallback, slice atlas loading, image loading |
 | `src/engine/input.ts` | Pointer lock, key state, one-shot actions, scripted playtest input |
 | `src/game.ts` | Player physics, jetpack, combat/interaction, level loading, actor behavior, sprite selection, HUD |
 | `src/content/` | Level definitions (rows, heights, surfaces, spawn, actors, pickups, doors, exits) and actor specs |
@@ -118,6 +119,31 @@ altitude at the map border therefore shows the void beyond the floating island, 
 hole: the analyzer in the flight suite ignores sky runs that reach the bottom of the
 frame and flags only enclosed holes between geometry.
 
+## Room sectors
+
+A level can declare `rooms: RoomSpec[]` (`{ x0, y0, x1, y1, ceilingZ, roofZ }`).
+`createWorld` validates bounds, ordering (`0 < ceilingZ < roofZ`), and overlap, then stamps
+two per-cell floats: `ceilings[cell] = ceilingZ` and `roofs[cell] = roofZ`. The tile stays
+solid above the room, so the exterior wall still rises to its legend height while the
+carved volume becomes walkable. A room's doorway is an ordinary gap in its tile ring.
+
+The renderer treats a room as a slab between `ceilingZ` and `roofZ` and adds three
+candidate surfaces to the per-pixel DDA walk:
+
+- **Roof plane** — when the eye is above `roofZ`, the ray crosses it downward:
+  `roofT = (roofZ − eyeZ) / rayZ`, accepted inside the sector cell. Sampled with the top
+  texture, so from the air the vault reads as a solid roof.
+- **Lintel band** — when a ray enters a carved cell whose `ceilingZ < zEntry < roofZ`,
+  the slab edge is painted as a face. This closes the wall band above the doorway; without
+  it the doorway would show sky through the building.
+- **Ceiling plane** — when the eye is below `ceilingZ` and `rayZ > 0`, the ray crosses the
+  underside: `ceilingT = (ceilingZ − eyeZ) / rayZ`, accepted inside the cell. Sampled with
+  the facade texture and reported in `stats.ceilingPixels`.
+
+All three share the pixel depth test, so a nearer wall still wins. Indoor flight clamps
+`maxAltitude` to `ceilingZ − PLAYER_HEIGHT`, and `stepProjectile` plus `hasLineOfSight`
+treat the slab as solid: a bolt fired upward indoors hits the ceiling and stops.
+
 ## Depth buffer
 
 `depth: Float32Array(width × height)` stores the camera-space ray parameter `t` of the
@@ -166,6 +192,21 @@ the actor's ground position when `z < 2.5`; `SpriteDraw.shadowScale` widens it f
 corpses. `SpriteDraw.noShadow` skips the shadow for glowing projectiles and impact
 flashes; their translucent pixels do not write depth, so the glow blends over the wall it
 struck instead of clipping against it.
+
+### Depth slices
+
+A flat billboard cannot intersect a wall: the whole sprite is either in front or behind.
+The atlas packer now condenses each frame's four depth-control views into a gray
+`slices.png` that mirrors the color atlas layout, with four bands per frame and per-band
+camera-space offsets. Manifest v2 carries
+`slices { image, bands, offsets, depthNear, depthFar, depthCuts }`; manifests without it
+keep the single-quad path.
+
+`drawSprite` draws the same quad once per band, far→near, with `viewZ = zCam + offset[band]`
+and the band's own depth test. The color atlas is unchanged; the slice atlas only supplies
+which band a pixel belongs to, so a wall that cuts through an actor's feet occludes the
+lower bands while the torso still draws. Bands are pixel-masked against `depthCuts`; the
+base quad is used beyond `SLICE_LOD_DISTANCE = 8 m`, where the offsets are sub-pixel.
 
 ### Directional frame selection
 
@@ -222,7 +263,7 @@ new renders.
 | Jet thrust / max climb | 34 units·s⁻² / 5.6 units·s⁻¹ |
 | Jet fuel / refuel | 5 s of burn / 0.5 per second on the ground |
 | Terminal fall | 15 units·s⁻¹ |
-| Max altitude | 18 |
+| Max altitude | 18 outdoors; indoors `ceilingZ − 1.4` |
 | Mouse sensitivity | 0.0022 rad·px⁻¹ |
 | Pitch limit | 1.1 rad ground, 1.45 rad airborne |
 
@@ -240,7 +281,9 @@ While grounded, a step down within `STEP_UP` snaps to the lower tread instead of
 free-falling. Jetpack thrust, refuelling, and the grounded flag all key off that support,
 so the player can climb the demo stairs onto a 0.4 platform, fly onto a wall top, perch
 there (`PERCH · 1.4 m` in the HUD), look down at the courtyard, and step off to fall back
-to the floor. Freefly clamps `z` to `[support, MAX_ALTITUDE]`.
+to the floor. Freefly clamps `z` to `[support, MAX_ALTITUDE]`. Inside a room (`ceilingAt`
+above the player) `maxAltitude()` returns `min(MAX_ALTITUDE, ceilingZ − PLAYER_HEIGHT)`, so
+the jetpack caps about 0.2 m below a 3 m ceiling and the player never pokes through the slab.
 
 Holding `Space` burns fuel and thrusts upward from the ground or midair. At `MAX_ALTITUDE`
 the clamp zeroes upward velocity while thrusting, so the player can hover and look down
@@ -253,19 +296,21 @@ and straight lines stay stable while flying. Only fog attenuation scales down at
 ## Levels, combat, and interaction
 
 `src/content/levels.ts` defines each level as `{ id, title, objective, rows, heights?,
-floorTexture?, topTexture?, spawn, actors, pickups, doors, exits, huntTargets? }`.
+rooms?, floorTexture?, topTexture?, spawn, actors, pickups, doors, exits, huntTargets? }`.
 `Game.loadLevel(index)` rebuilds the `World` from the rows, then deterministically resets
-time, player pose/health/fuel/cooldown, keycard, hunt progress, and actor animation phase
-(`index × 0.37`). Exits target another level id; the beacon prop marks the pad. Because the
-world is rebuilt, pickups, opened doors, and the keycard reset on every transition — the
-demo loop is one-way per visit.
+time, player pose/health/fuel/cooldown, keycard, hunt progress, crate hits, and actor
+animation phase (`index × 0.37`). Exits target another level id; the beacon prop marks the
+pad. Because the world is rebuilt, pickups, opened doors, crates, and the keycard reset on
+every transition — the demo loop is one-way per visit.
 
 Three levels ship: the 24×24 courtyard, the 24×24 reactor deck, and the 64×64 Rooftop
-District. The district declares legend heights, asphalt floors, roof tops, and
-`huntTargets: 7`; its actors, pickups, and exits can carry a `z` altitude. Grounded
-content validates against open floor, while elevated content must sit on a solid cell
-whose surface matches its `z`. The courtyard gate beacon at (2.5, 22.5) enters the
-district, and the plaza beacon returns.
+District. The district declares legend heights, asphalt floors, roof tops,
+`rooms: DISTRICT_ROOMS`, and `huntTargets: 8`; its actors, pickups, and exits can carry a
+`z` altitude. Two rooms are carved: the NW security office (x 2–8, y 4–8, ceiling 3 m
+under a 4 m roof) and the SE vault (x 51–57, y 54–59, ceiling 3 m under the 12 m tower),
+each with a doorway and an indoor pickup. Grounded content validates against open floor,
+while elevated content must sit on a solid cell whose surface matches its `z`. The
+courtyard gate beacon at (2.5, 22.5) enters the district, and the plaza beacon returns.
 
 Actor states are `idle | walk | attack | hurt | death | talk`. Hostiles (`hostile: true`)
 either stalk the player (`chase`) or hold a position and shoot when they have line of
@@ -283,14 +328,23 @@ inward, the parapet clips their own downward sight line. Once within reach, chas
 | Marauder gun | 11 dmg, 9 m range, 1.7 s cooldown, 9 m/s bolt |
 | District street gunner | 8 dmg, 13 m range, 1.7 s cooldown, 9 m/s bolt |
 | District roof sentry | 9–10 dmg, 18–20 m range, 1.9–2.0 s cooldown, 10 m/s bolt |
+| District overseer (boss) | 260 HP, 7 dmg, 16 m range, 1.3 s cooldown, 11 m/s bolt, 1.4 rad/s turn |
+| Destructible crate | 1.4 m tall, 2 player bolts, `CRATE DESTROYED` toast |
 | Interaction radius | talk/door 2.4 m, pickup 0.5 m, exit pad 0.6 m |
 
-`attack()` spawns a player bolt at the camera eye along yaw and pitch (horizontal
-component scaled by `cos(pitch)`, vertical by `sin(pitch)`); damage, travel, and hit
-resolution are owned by the projectile step. A hit applies damage plus 0.18 knockback and
-switches the actor to `hurt` or `death`. Dead actors stay in the actor array with
-`alive = false` so the final death frame still draws as a corpse; they no longer update,
-attack, or accept further hits.
+`attack()` spawns a player bolt at the viewmodel muzzle rather than the eye: the camera-space
+offset is right 0.18 m, up −0.08 m, forward 0.35 m, rotated into world space. If that point
+sits inside solid geometry or outside the room, the eye is used instead. Damage, travel,
+and hit resolution are owned by the projectile step. A hit applies damage plus 0.18
+knockback and switches the actor to `hurt` or `death`. Dead actors stay in the actor array
+with `alive = false` so the final death frame still draws as a corpse; they no longer
+update, attack, or accept further hits.
+
+`src/engine/crates.ts` marks cells containing `X` at 1.4 m. Player bolts call
+`damageCrateAt(x, y)` when they stop on a crate; each hit is counted per cell and, on the
+second hit, `clearCrate` zeroes the tile and height so movement and raycasts agree. The
+kill emits debris from the hit point and toasts `CRATE DESTROYED`. Crates are part of the
+level grid, so they reset on reload like doors.
 
 Hostiles with a `gun` spec (the courtyard marauder, the district gunners, and the rooftop
 sentries) check distance, cooldown, and a 3D-sampled `hasLineOfSight` before entering
@@ -319,10 +373,11 @@ objects.
 `src/engine/projectile.ts` owns the simulation. A projectile is a straight segment
 `{x, y, z, vx, vy, vz, life, damage, fromPlayer}`. `stepProjectile` splits each frame's
 travel into slices of at most `BOLT_SUBSTEP = 0.08` m so a 22 m/s bolt cannot tunnel
-through a 0.2 m stair tread, and reports `fly | wall | floor | expired`:
+through a 0.2 m stair tread, and reports `fly | wall | ceiling | floor | expired`:
 
 - `floor` when the segment reaches `z ≤ 0`.
 - `wall` on an out-of-bounds cell or when `z ≤ height + 1e-4` for a solid cell.
+- `ceiling` when the segment rises through a room's `ceilingZ` inside that sector.
 - `expired` when `life` runs out; the bolt is discarded.
 
 Wall/floor hits and actor hits are checked only on surviving slices. Player bolts test
@@ -331,8 +386,9 @@ hostile actors with `projectileHitsActor` (center `z + 0.62`, radius 0.34, half-
 0.26, half-height 0.5). A bolt damages only the first target and is removed.
 
 `hasLineOfSight` walks the same world in 0.1 m samples in 3D, returning false when a
-solid cell is above the sample height. The marauder samples from `actor.z + 0.9` to
-`player.z + 0.5`; the player's own shots need no LOS check because the bolt collides.
+solid cell is above the sample height or the sample crosses a room ceiling. The marauder
+samples from `actor.z + 0.9` to `player.z + 0.5`; the player's own shots need no LOS check
+because the bolt collides.
 
 Glow billboards make the shots readable. `createGlowTexture(32)` builds a white radial
 alpha ramp; `Game.buildBoltSprites()` projects bolts as `worldSize 0.24` sprites tinted
@@ -435,10 +491,10 @@ Screenshots and a JSON report land in `docs/screenshots/playtest/`.
 The companion harnesses share `tools/playtest/support.ts` (contact sheets, sky-row
 classification, image metrics):
 
-- `playtest:matrix` — 105 deterministic scenarios, 691 checks, golden-frame comparison.
+- `playtest:matrix` — 113 deterministic scenarios, 752 checks, golden-frame comparison.
 - `playtest:states` — paused player/guardian animation gallery, 42 checks.
-- `playtest:flight` — 18 altitude/pitch poses plus a live jetpack flight. It classifies
-  every canvas pixel against the sky gradient, flags enclosed sky holes, fits the
+- `playtest:flight` — 18 altitude/pitch poses plus a live jetpack flight, 109 checks. It
+  classifies every canvas pixel against the sky gradient, flags enclosed sky holes, fits the
   wall-top silhouette (max residual ≤ 1.5 px over 264 columns), asserts overhead sprite
   content is unclipped, and enforces a real-time loop of at least 45 FPS.
 

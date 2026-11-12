@@ -1925,7 +1925,8 @@ async function main(): Promise<void> {
       await step(0.15);
       const dbg = await debug();
       const medkit = dbg.pickups.find(
-        (pickup) => pickup.kind === "medkit" && pickup.x === 6.5,
+        (pickup) =>
+          pickup.kind === "medkit" && pickup.x === 6.5 && pickup.y === 4.5,
       );
       check(
         "the indoor medkit is collected inside the office",

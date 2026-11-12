@@ -18,6 +18,7 @@ Last updated: **2026-11-12**
 | Viewmodel and visual stability | M9 | ✅ Blender viewmodel, fixed FOV, pitch-scale compensation, wall-side depenetration, hardened playtests |
 | Ranged plasma combat | M10 | ✅ Camera-aimed projectiles, marauder gunner with line of sight, impact flash, depth-tested glow billboards |
 | Rooftop District | M11 | ✅ 64×64 city, 4–12 m legend towers, jetpack roof traversal, elevated sentries, hunt-gated extraction |
+| Combat depth, interiors, slices | M12 | ✅ Muzzle-aligned bolts, 5 destructible crates, 7 cover props, overseer boss; office + vault sectors with ceilings/roofs and indoor flight cap; 4-band stacked-slice billboards on a separate depth atlas |
 
 ## Verification snapshot
 
@@ -26,10 +27,10 @@ Run from a clean checkout:
 ```bash
 npm ci
 npm run typecheck   # passes
-npm test            # 9 files, 76 tests pass
-npm run build       # tsc + vite build
+npm test            # 11 files, 108 tests pass
+npm run build       # tsc + vite build (64.01 kB JS / 21.66 kB gzip)
 npm run playtest    # 40/40 browser checks pass
-npm run playtest:matrix  # 105 scenarios, 691/691 checks, 123 captures, 0 console errors
+npm run playtest:matrix  # 113 scenarios, 752/752 checks, 134 captures, 0 console errors
 npm run playtest:flight  # 18 poses + live jetpack, 109/109 checks, 30 captures
 npm run playtest:states  # 42/42 state checks, 21 captures, 0 console errors
 npm run assets:verify -- --min-iou 0.4  # 1,216-frame guardian atlas; min IoU 0.43, mean 0.90
@@ -156,6 +157,42 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
 - Artifacts: `docs/screenshots/states/contact-sheet.png`, 43 PNGs, `report.json`.
 
 ## Session log
+
+### 2026-11-12 — M12 combat depth, tower interiors, stacked slices
+
+- Combat depth: player bolts now leave the viewmodel muzzle at a camera-space offset
+  (right 0.18 m, up −0.08 m, forward 0.35 m) instead of the eye, with an eye fallback when
+  the muzzle would spawn inside solid geometry. `src/engine/crates.ts` adds 1.4 m
+  destructible crates (`X`): two player bolts clear the cell, the hit count is tracked per
+  cell, impacts emit debris, and the HUD toasts `CRATE DESTROYED`. Levels reset crates.
+  The district now has 5 destructible crates and 7 elevated cover risers (`3`, +0.6 m on
+  the tallest neighbour). A district boss `overseer` (12 m, 260 HP, 7-damage gun, 16 m
+  range, 1.3 s cooldown, 1.4 rad/s turn rate) raises the hunt to 8 targets.
+- Tower interiors: `createWorld` accepts `rooms: RoomSpec[]` and stamps per-cell
+  `ceilings` and `roofs` after the heightmap pass, rejecting invalid or overlapping
+  sectors. Two enterable sectors landed in the district: the NW security office (ceiling
+  3 m under a 4 m roof) and the SE vault (ceiling 3 m under the 12 m tower), each with a
+  doorway and an indoor pickup. The renderer gained a roof plane (camera above the roof),
+  a lintel band on sector entry, and a ceiling plane (camera below the ceiling), reported
+  through `ceilingPixels`. Indoors, `maxAltitude` is clamped to `ceiling − 1.4 m`; bolts,
+  actor fire, and line-of-sight treat the slab as solid.
+- Stacked slices: `tools/atlas/pack.ts` condenses the existing 1,216 384×384 depth maps
+  into four depth bands, writes a separate gray `slices.png` atlas matching the color
+  atlas layout, and bumps the manifest to v2 with `slices { image, bands, offsets,
+  depthNear, depthFar, depthCuts }`. `drawSprite` draws the bands far→near on the same
+  quad with per-band camera-space depth offsets and depth testing, so near walls cut
+  through the correct layer; the base quad is used beyond 8 m. The color atlas and every
+  frame stayed byte-identical.
+- Verification: typecheck clean, **108 unit tests** (11 files), `playtest` 40/40,
+  `playtest:matrix` 752/752 across 113 scenarios (134 captures, including `l12`–`l17`
+  interiors and `f11`/`f12` combat), `playtest:flight` 109/109, `playtest:states` 42/42,
+  zero console errors. `npm run build` succeeds (64.01 kB JS / 21.66 kB gzip). Visual
+  review: the office shows a closed ceiling and floor, the jetpack caps below it, the
+  vault roof closes from above, the crate clears after two bolts, the bolt leaves the
+  projector, and close-up guardian frames show no slice seams.
+- Known approximations: interior wall faces reuse the exterior facade texture (lit
+  windows appear indoors), and the vault entry captures face a nearby partition. Deferred:
+  interior-specific art, stairs between floors, projectile drop/penetration.
 
 ### 2026-11-12 — M11 Rooftop District
 
@@ -523,15 +560,18 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
 
 ## Known issues / limitations
 
-- Heights are blocks grown from `z = 0`; there are no sunken floors/pits, overhangs, or
-  ceilings. A full floor/ceiling sector model is deferred (not needed for this game).
-- No ceiling geometry: sky is visible above the outer walls from ground level.
+- Heights are blocks grown from `z = 0` alongside carved room sectors. There are still no
+  sunken floors/pits, overhangs, or multi-storey interior stairs; rooms are single-volume
+  sectors with a ceiling and a separate roof slab.
+- Interiors exist only where a level declares `rooms` (the district office and vault).
+  Interior faces reuse the facade texture, so lit windows can appear on interior walls.
 - Actors are non-blocking (no player/actor or actor/actor collision). Hostiles deal melee
-  contact damage; marauders also fire bolts with line of sight. Older melee-only strike
-  behavior is gone, but actors still cannot push each other or the player.
+  contact damage; marauders and sentries also fire bolts with line of sight. Actors still
+  cannot push each other or the player.
 - Projectiles are straight, gravity-free segments stepped in ≤0.08 m slices. They stop at
-  the first wall/floor or actor, do not penetrate, and cannot be shot down. The player
-  bolt spawns at the camera eye rather than the viewmodel muzzle.
+  the first wall/floor/ceiling or actor, do not penetrate, and cannot be shot down. Player
+  bolts spawn at the viewmodel muzzle with an eye fallback when the muzzle is inside solid
+  geometry.
 - Impact flashes are glow billboards backed out of the struck cell; a point-blank hit can
   still put a large translucent orb near the screen edge.
 - Actor shadows fade out above 2.5 m, so high hover actors have no visible shadow.
@@ -564,11 +604,11 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
 
 ## Immediate next steps
 
-1. Owner playtest of M10 ranged combat: bolt speed/damage, gunner range and cooldown,
-   impact-flash readability, and whether the eye-spawned bolt still reads as coming from
-   the plasma projector. Also capture feel feedback on the M9 viewmodel.
-2. If the shot needs to align with the viewmodel, add a muzzle offset in camera space
-   (`attack()` in `src/game.ts`) and re-check the point-blank captures.
-3. Optional: implement true stacked-slice actor rendering behind a feature flag, keeping
-   the current turntable atlas as the fallback and depth contract.
+1. Owner playtest of M12: fire from the muzzle at a crate twice, fly the jetpack inside the
+   office and vault, land on the vault roof, and fight the 260 HP overseer. Check that
+   close-range actor silhouettes still read with the 4-band slices.
+2. If interior windows look wrong, add a dedicated interior wall texture (or sample the
+   facade without windows indoors) rather than reusing the exterior facade.
+3. Optional: stairs between interior floors and a second room per building; extend
+   `RoomSpec` with an entry side and a per-room floor texture.
 4. Optional: AutoSprite/Gamelabs adapter behind the same CLI/workflow boundary.

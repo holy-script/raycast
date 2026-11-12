@@ -4,9 +4,9 @@ Milestones are ordered. A milestone is complete only when every acceptance crite
 is checked and the verification command passes. Update this file and
 [PROGRESS.md](PROGRESS.md) whenever a milestone starts or finishes.
 
-Current position: **M0–M11 complete locally.** Ranged combat, interaction, doors/pickups,
+Current position: **M0–M12 complete locally.** Ranged combat, interaction, doors/pickups,
 level transitions, the reactor map, and the Rooftop District are playable and covered by
-691 deterministic matrix checks (105 scenarios), a 40-check happy-path run, a 109-check
+752 deterministic matrix checks (113 scenarios), a 40-check happy-path run, a 109-check
 flight sweep, and a 42-check paused-state gallery. The guardian is the only shipped
 chassis, with all six states in a 16×4×19 atlas; the scout and brute prototypes were
 removed until their art pass exists. M8 delivered procedural audio, a pause/settings menu
@@ -17,7 +17,10 @@ marauder gunner with line of sight, and rendered depth-tested glow impacts. The 
 follow-up re-authored the death animation as a flat backward topple, gave the corpse its
 own pitch-static frame, and removed the near-wall double silhouette. M11 takes the same
 movement and combat into a 64×64 city: legend-height towers, jetpack rooftop traversal,
-elevated sentries, and a hunt-gated extraction. M11 is complete and deployed.
+elevated sentries, and a hunt-gated extraction. M11 shipped on 2026-11-12. M12 adds combat
+depth (muzzle-aligned bolts, destructible crates, a district boss), enterable tower
+interiors with ceilings and roofs, and stacked-slice sprite impostors. M12 is complete
+locally.
 
 ## M0 — Foundation
 
@@ -263,3 +266,56 @@ https://raycast-rosy.vercel.app (`index-BBOtZrv_.js`); the production playtest p
 
 Deferred: indoor tower floors, rooftop cover props, destructible crates, and a district
 boss. The district is an outdoor arena; tower interiors remain future work.
+
+## M12 — Combat depth, tower interiors, stacked slices ✅
+
+Goal: make the city fight read spatially — shots leave the gun, cover can be broken,
+buildings can be entered, and sprites gain real volume at close range.
+
+**Combat depth**
+
+- [x] Player bolts spawn at the viewmodel muzzle (right 0.18 m, up −0.08 m, forward
+  0.35 m) with an eye fallback when the muzzle would sit inside solid geometry
+- [x] Destructible crates (`X`, 1.4 m): two player bolts clear the cell, impacts emit
+  debris, and the HUD toasts `CRATE DESTROYED`; crates reset with the level
+- [x] Rooftop cover props (`3`): seven 0.6 m cover risers on support surfaces, walk-over
+  height, usable as shooting cover
+- [x] District boss `overseer` at 12 m: 260 HP, 7-damage gun with 16 m range, 1.3 s
+  cooldown, and a 1.4 rad/s turn rate; the hunt now requires 8 hostiles
+- [x] Muzzle spawn (`f11`) and crate destruction (`f12`) matrix scenarios
+
+**Tower interiors**
+
+- [x] `rooms: RoomSpec[]` in `createWorld` stamps per-cell `ceilings` and `roofs`; room
+  bounds, ordering, and overlap are validated
+- [x] Two enterable sectors in the district: the NW security office (ceiling 3 m, roof
+  4 m) and the SE vault (ceiling 3 m, roof 12 m), each with a doorway, indoor pickup,
+  and interior walls
+- [x] Renderer draws the roof slab from above, a lintel band when a ray enters a carved
+  cell between ceiling and roof, the ceiling plane from below, then the normal block face
+- [x] Indoor flight cap: `maxAltitude` is clamped to `ceiling − PLAYER_HEIGHT`; bolts,
+  actor fire, and line-of-sight treat the slab as solid
+- [x] Matrix scenarios `l12`–`l17` for doorway entry, ceilings, indoor pickups, the
+  jetpack cap, and the roof closing from above
+
+**Stacked-slice sprites**
+
+- [x] Four depth bands packed from the 1,216 existing 384×384 depth-control maps into a
+  separate gray `slices.png` atlas that mirrors the color atlas layout
+- [x] Manifest v2 adds `slices { image, bands, offsets, depthNear, depthFar, depthCuts }`;
+  manifests without slices keep the single-quad path
+- [x] Billboards draw bands far→near on the same quad with per-band camera-space depth
+  offsets and depth testing, so near walls cut through the correct layer; LOD keeps the
+  base quad beyond 8 m
+- [x] Color atlas and frames are byte-identical to M11; only the slice atlas is new
+
+**Acceptance:** `npm run typecheck`, 108 unit tests, `npm run build` (64.01 kB JS),
+`npm run playtest` (40/40), `npm run playtest:matrix` (752/752 across 113 scenarios, 134
+captures), `npm run playtest:flight` (109/109), and `npm run playtest:states` (42/42)
+pass with zero page errors. Captures show the office ceiling and floor, the capped indoor
+jetpack, the roof over the vault, a destroyed crate, the muzzle-aligned bolt, and clean
+guardian close-ups without slice seams. Verified 2026-11-12.
+
+Deferred: interior-specific wall/ceiling art (interior faces currently reuse the facade
+texture), stairs between floors, multi-room buildings, projectile drop/penetration, and
+per-band slice lighting.
