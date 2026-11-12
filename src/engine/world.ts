@@ -1,3 +1,22 @@
+/**
+ * An interior sector carved into a tower: one slab cell rectangle whose open
+ * cells become floor under a ceiling plane. Solid cells inside the rectangle
+ * keep their block (an interior column or partition) and are capped by the same
+ * roof, so the tower still reads as one mass from above.
+ */
+export interface RoomSpec {
+  id: string;
+  /** Inclusive cell rectangle origin. */
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  /** Underside of the slab: headroom for the player and the jetpack clamp. */
+  ceilingZ: number;
+  /** Top surface of the same slab: the tower roof seen from above. */
+  roofZ: number;
+}
+
 export interface World {
   width: number;
   height: number;
@@ -5,7 +24,13 @@ export interface World {
   tiles: Uint8Array;
   /** Top surface height per cell. 0 is floor; every solid cell is above it. */
   heights: Float32Array;
+  /** Interior slab underside per cell. 0 means open sky above the cell. */
+  ceilings: Float32Array;
+  /** Interior slab top per cell. 0 means the cell has no interior sector. */
+  roofs: Float32Array;
   spawn: { x: number; y: number };
+  /** Sector definitions, kept for tests and tooling. */
+  rooms: RoomSpec[];
 }
 
 /** Default full-height block for now; digit cells are lower platforms/steps. */
@@ -35,6 +60,13 @@ export interface WorldOptions {
    * without overloading the digit platform scale.
    */
   heights?: Record<string, number>;
+  /**
+   * Interior sectors. Each rectangle stamps a ceiling plane and a roof plane
+   * onto its cells; the map rows decide which of those cells are carved open.
+   * Levels without rooms produce empty sector grids, so the courtyard and the
+   * reactor deck keep exactly their previous geometry.
+   */
+  rooms?: RoomSpec[];
 }
 
 /** A digit 1-9 is a solid panel platform at 0.2 × digit world units. */
@@ -65,6 +97,9 @@ export function createWorld(
   const heights = new Float32Array(width * height);
   const coverCells: number[] = [];
   const coverSet = new Set<number>();
+  const ceilings = new Float32Array(width * height);
+  const roofs = new Float32Array(width * height);
+  const rooms = options.rooms ?? [];
 
   for (let y = 0; y < height; y += 1) {
     const row = rows[y];
@@ -106,7 +141,47 @@ export function createWorld(
     heights[cell] = base + COVER_RISE;
   }
 
-  return { width, height, tiles, heights, spawn };
+  for (const room of rooms) {
+    if (room.ceilingZ <= 0 || room.roofZ <= room.ceilingZ) {
+      throw new Error(
+        `Room ${room.id} needs 0 < ceilingZ < roofZ (${room.ceilingZ}, ${room.roofZ})`,
+      );
+    }
+    if (
+      room.x < 0 ||
+      room.y < 0 ||
+      room.width <= 0 ||
+      room.height <= 0 ||
+      room.x + room.width > width ||
+      room.y + room.height > height
+    ) {
+      throw new Error(`Room ${room.id} leaves the map bounds`);
+    }
+    for (let y = room.y; y < room.y + room.height; y += 1) {
+      for (let x = room.x; x < room.x + room.width; x += 1) {
+        const cell = y * width + x;
+        if (ceilings[cell] > 0) {
+          throw new Error(`Room ${room.id} overlaps another interior at ${x},${y}`);
+        }
+        ceilings[cell] = room.ceilingZ;
+        roofs[cell] = room.roofZ;
+      }
+    }
+  }
+
+  return { width, height, tiles, heights, ceilings, roofs, spawn, rooms };
+}
+
+/** Underside of the interior slab over a cell; 0 means open sky. */
+export function ceilingAt(world: World, x: number, y: number): number {
+  if (x < 0 || y < 0 || x >= world.width || y >= world.height) return 0;
+  return world.ceilings[Math.floor(y) * world.width + Math.floor(x)];
+}
+
+/** Roof surface of an interior cell; 0 when the cell has no sector. */
+export function roofAt(world: World, x: number, y: number): number {
+  if (x < 0 || y < 0 || x >= world.width || y >= world.height) return 0;
+  return world.roofs[Math.floor(y) * world.width + Math.floor(x)];
 }
 
 export function isSolidAt(world: World, x: number, y: number): boolean {
@@ -121,11 +196,22 @@ export function tileHeightAt(world: World, x: number, y: number): number {
 }
 
 /**
- * Surface height directly under the player's centre. Sampling the footprint would
- * lift the player onto a wall merely by standing next to it; M5 sectors can extend
- * this to step-ups once per-cell heights exist.
+ * Surface height directly under an actor's centre. Sampling the footprint would
+ * lift the player onto a wall merely by standing next to it. Interior cells are
+ * two-sided: from inside they are floor, from above they are the tower roof, so
+ * the caller's `z` selects the side. Everywhere else `z` is ignored, keeping
+ * the courtyard and reactor behaviour identical.
  */
-export function supportHeight(world: World, x: number, y: number): number {
+export function supportHeight(
+  world: World,
+  x: number,
+  y: number,
+  z = 0,
+): number {
+  const roof = roofAt(world, x, y);
+  // A sector slab is solid between ceilingZ and roofZ; an actor at or above the
+  // roof stands on it instead of dropping through into the room below.
+  if (roof > 0 && z >= roof - 1e-3) return roof;
   return tileHeightAt(world, x, y);
 }
 

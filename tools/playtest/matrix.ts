@@ -1884,6 +1884,138 @@ async function main(): Promise<void> {
       );
     });
 
+    // ------------------------------------------------------- tower interiors
+    define("levels", "l12-office-entry", async () => {
+      await loadLevel("district");
+      // West street, straight through the 3 m doorway at (2,6).
+      await pose(1.5, 6.5, 0, 0, 0);
+      await press("KeyW");
+      await step(1.6);
+      await release("KeyW");
+      const current = await state();
+      const dbg = await debug();
+      check(
+        "walking through the doorway reaches the security office floor",
+        current.x > 3.2 &&
+          current.x < 8.2 &&
+          current.onGround &&
+          current.support === 0,
+        `x=${current.x.toFixed(2)}, y=${current.y.toFixed(2)} · support ${current.support}`,
+      );
+      check(
+        "the office is covered by a 3 m ceiling under a 4 m roof",
+        dbg.player.ceiling === 3 && dbg.player.roof === 4,
+        `ceiling ${dbg.player.ceiling} · roof ${dbg.player.roof}`,
+      );
+      await pose(current.x, current.y, 0, 0, 1.0);
+      await step(0);
+      const pixels = (await debug()).stats.ceilingPixels;
+      check(
+        "looking up indoors paints the ceiling slab",
+        pixels > 12000,
+        `${pixels} ceiling pixels`,
+      );
+      await saveCanvas("l12-office-interior", true);
+    });
+
+    define("levels", "l13-office-medkit", async () => {
+      await loadLevel("district");
+      await setHealth(50);
+      await pose(6.5, 4.5, 0, 0, 0);
+      await step(0.15);
+      const dbg = await debug();
+      const medkit = dbg.pickups.find(
+        (pickup) => pickup.kind === "medkit" && pickup.x === 6.5,
+      );
+      check(
+        "the indoor medkit is collected inside the office",
+        medkit?.taken === true && dbg.health > 50,
+        `taken=${medkit?.taken} · health ${dbg.health}`,
+      );
+    });
+
+    define("levels", "l14-vault-entry", async () => {
+      await loadLevel("district");
+      // South avenue pavement, north through the vault doorway at (55,60).
+      await pose(55.5, 61.5, 0, -Math.PI / 2, 0);
+      await press("KeyW");
+      await step(0.9);
+      await release("KeyW");
+      const current = await state();
+      const dbg = await debug();
+      check(
+        "walking north enters the vault under its 3 m ceiling",
+        current.y < 59.4 &&
+          current.y > 57.8 &&
+          current.onGround &&
+          dbg.player.ceiling === 3 &&
+          dbg.player.roof === 12,
+        `y=${current.y.toFixed(2)} · ceiling ${dbg.player.ceiling} · roof ${dbg.player.roof}`,
+      );
+      await saveCanvas("l14-vault-interior", true);
+    });
+
+    define("levels", "l15-vault-fuel", async () => {
+      await loadLevel("district");
+      await setFuel(0.2);
+      await pose(54.5, 55.5, 0, 0, 0);
+      await step(0.15);
+      const dbg = await debug();
+      const fuel = dbg.pickups.find(
+        (pickup) => pickup.kind === "fuel" && pickup.x === 54.5,
+      );
+      check(
+        "the vault fuel cache refills the jetpack",
+        fuel?.taken === true && near((await state()).fuel, 1, 0.001),
+        `taken=${fuel?.taken} · fuel ${(await state()).fuel.toFixed(2)}`,
+      );
+    });
+
+    define("levels", "l16-ceiling-jet-cap", async () => {
+      await loadLevel("district");
+      await pose(5.5, 6.5, 0, -Math.PI / 2, 0);
+      await press("Space");
+      await step(1.4);
+      const burning = await state();
+      check(
+        "the jetpack is capped below the 3 m office ceiling",
+        burning.z > 1.2 &&
+          burning.z <= 1.61 &&
+          burning.z < 3 - 0.55,
+        `alt ${burning.z.toFixed(2)} m (cap 1.60)`,
+      );
+      await release("Space");
+      await step(1.2);
+      const landed = await state();
+      check(
+        "releasing the jetpack lands back on the interior floor",
+        landed.onGround && landed.z === 0 && landed.support === 0,
+        `alt ${landed.z.toFixed(2)} m · onGround ${landed.onGround}`,
+      );
+      await saveCanvas("l16-ceiling-cap", true);
+    });
+
+    define("levels", "l17-roof-over-vault", async () => {
+      await loadLevel("district");
+      await pose(55.5, 56.5, 14, -Math.PI / 2, -0.9);
+      await step(1.2);
+      const current = await state();
+      const dbg = await debug();
+      check(
+        "the vault roof still closes from above",
+        current.onGround &&
+          near(current.z, 12, 0.02) &&
+          near(current.support, 12, 0.01),
+        `alt ${current.z.toFixed(2)} m · support ${current.support}`,
+      );
+      check(
+        "looking down shows the roof slab instead of sky",
+        dbg.stats.topPixels > 6000 && dbg.stats.ceilingPixels === 0,
+        `${dbg.stats.topPixels} top px · ${dbg.stats.ceilingPixels} ceiling px`,
+      );
+      await saveCanvas("l17-roof-over-vault", true);
+    });
+
     // ------------------------------------------------------------------ run
     for (const scenario of scenarios) {
       currentScenario = scenario.id;

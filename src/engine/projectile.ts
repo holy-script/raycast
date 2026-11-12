@@ -1,4 +1,4 @@
-import { tileHeightAt, type World } from "./world";
+import { ceilingAt, roofAt, tileHeightAt, type World } from "./world";
 
 /**
  * Plasma bolts travel in straight lines through the same heightmap blocks the
@@ -19,7 +19,7 @@ export interface Projectile {
   fromPlayer: boolean;
 }
 
-export type ProjectileOutcome = "fly" | "wall" | "floor" | "expired";
+export type ProjectileOutcome = "fly" | "wall" | "floor" | "ceiling" | "expired";
 
 export const BOLT_SUBSTEP = 0.08;
 
@@ -82,6 +82,16 @@ export function stepProjectile(
       projectile.z <= world.heights[cell] + 1e-4
     ) {
       return "wall";
+    }
+    // The slab between ceilingZ and roofZ is solid building mass: stop there so
+    // a bolt fired indoors cannot leave through the ceiling (or the roof).
+    const ceiling = ceilingAt(world, projectile.x, projectile.y);
+    if (
+      ceiling > 0 &&
+      projectile.z >= ceiling &&
+      projectile.z <= roofAt(world, projectile.x, projectile.y)
+    ) {
+      return "ceiling";
     }
     if (projectile.life <= 0) return "expired";
   }
@@ -181,6 +191,10 @@ export function hasLineOfSight(
       return false;
     }
     if (tileHeightAt(world, x, y) > z) return false;
+    // Interior slabs are solid between the ceiling and the roof, so a sight
+    // line cannot pass through a building's roof into the room below.
+    const ceiling = ceilingAt(world, x, y);
+    if (ceiling > 0 && z >= ceiling && z <= roofAt(world, x, y)) return false;
   }
   return true;
 }

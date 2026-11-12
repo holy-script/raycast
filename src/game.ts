@@ -23,8 +23,10 @@ import {
 } from "./engine/renderer";
 import {
   canOccupy,
+  ceilingAt,
   createWorld,
   resolveFootprint,
+  roofAt,
   STEP_UP,
   supportHeight,
   type World,
@@ -72,6 +74,8 @@ const MOUSE_SENSITIVITY = 0.0022;
 const GROUND_PITCH_LIMIT = 1.1;
 const AIR_PITCH_LIMIT = 1.45;
 const MAX_ALTITUDE = 18;
+/** Body height used to keep the head under an interior ceiling. */
+const PLAYER_HEIGHT = 1.4;
 
 const PLAYER_MAX_HEALTH = 100;
 const PLAYER_ATTACK_DAMAGE = 45;
@@ -227,6 +231,10 @@ export interface RenderDebug {
     y: number;
     z: number;
     support: number;
+    /** Interior slab underside over the player; 0 when under open sky. */
+    ceiling: number;
+    /** Roof surface over the player's cell; 0 outside a sector. */
+    roof: number;
     onGround: boolean;
   };
   level: string;
@@ -293,6 +301,7 @@ export class Game {
     this.assets = assets;
     this.world = createWorld(LEVELS[0].rows, undefined, {
       heights: LEVELS[0].heights,
+      rooms: LEVELS[0].rooms,
     });
     this.input = new InputController(canvas);
 
@@ -395,7 +404,18 @@ export class Game {
       this.world,
       this.player.x,
       this.player.y,
+      this.player.z,
     );
+    // Feet altitude limit. Indoors this is the slab, so the jetpack cannot push
+    // the head through the ceiling; standing on the roof disables the clamp.
+    const maxAltitude = this.maxAltitude(support);
+    // Walking into a room while flying can put the head inside the slab; push
+    // the feet back down instead of letting the next frame tunnel upward.
+    if (this.player.z > maxAltitude) {
+      this.player.z = maxAltitude;
+      this.player.vz = Math.min(this.player.vz, 0);
+      this.player.onGround = false;
+    }
 
     if (this.flying) {
       const vertical =
@@ -408,7 +428,7 @@ export class Game {
       this.player.z = clamp(
         this.player.z + vertical * FLY_SPEED * dt,
         support,
-        MAX_ALTITUDE,
+        maxAltitude,
       );
       this.player.vz = 0;
       this.player.onGround = this.player.z <= support + 0.001;
@@ -434,8 +454,8 @@ export class Game {
       );
       this.player.z += this.player.vz * dt;
 
-      if (this.player.z >= MAX_ALTITUDE) {
-        this.player.z = MAX_ALTITUDE;
+      if (this.player.z >= maxAltitude) {
+        this.player.z = maxAltitude;
         this.player.vz = this.player.thrusting ? 0 : Math.min(this.player.vz, 0);
       }
 
@@ -475,7 +495,12 @@ export class Game {
     if (separated.x !== this.player.x || separated.y !== this.player.y) {
       this.player.x = separated.x;
       this.player.y = separated.y;
-      const settled = supportHeight(this.world, separated.x, separated.y);
+      const settled = supportHeight(
+        this.world,
+        separated.x,
+        separated.y,
+        this.player.z,
+      );
       if (
         this.player.onGround &&
         settled > this.player.z &&
@@ -503,6 +528,20 @@ export class Game {
     return this.player.z > 0.04 || this.flying
       ? AIR_PITCH_LIMIT
       : GROUND_PITCH_LIMIT;
+  }
+
+  /**
+   * Highest foot altitude the player may reach. Indoors the slab caps it one
+   * body height below the ceiling, which also stops landing/hover from passing
+   * through the slab. A player standing on the roof is above the sector, so the
+   * global ceiling applies there.
+   */
+  private maxAltitude(support: number): number {
+    const ceiling = ceilingAt(this.world, this.player.x, this.player.y);
+    if (ceiling <= 0) return MAX_ALTITUDE;
+    const roof = roofAt(this.world, this.player.x, this.player.y);
+    if (this.player.z >= roof - 1e-3) return MAX_ALTITUDE;
+    return Math.min(MAX_ALTITUDE, Math.max(support, ceiling - PLAYER_HEIGHT));
   }
 
   private settlePitch(dt: number): void {
@@ -1140,7 +1179,7 @@ export class Game {
         x: level.spawn.x,
         y: level.spawn.y,
       },
-      { heights: level.heights },
+      { heights: level.heights, rooms: level.rooms },
     );
     this.actors = level.actors.map((spec, i) => this.createActor(spec, i));
     this.pickups = level.pickups.map((pickup, i) => ({
@@ -1545,6 +1584,7 @@ export class Game {
       this.world,
       this.player.x,
       this.player.y,
+      this.player.z,
     );
 
     return {
@@ -1604,6 +1644,7 @@ export class Game {
       this.world,
       this.player.x,
       this.player.y,
+      this.player.z,
     );
     return {
       camera: {
@@ -1622,6 +1663,8 @@ export class Game {
         y: this.player.y,
         z: this.player.z,
         support,
+        ceiling: ceilingAt(this.world, this.player.x, this.player.y),
+        roof: roofAt(this.world, this.player.x, this.player.y),
         onGround: this.player.onGround,
       },
       level: this.level.id,
@@ -1774,7 +1817,7 @@ export class Game {
     this.player.y = y;
     this.player.z = z;
     this.player.vz = 0;
-    const support = supportHeight(this.world, x, y);
+    const support = supportHeight(this.world, x, y, z);
     this.player.onGround = z <= support + 0.001;
     this.player.yaw = wrapAngle(yaw);
     const limit = this.pitchLimit();

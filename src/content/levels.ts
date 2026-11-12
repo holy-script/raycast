@@ -5,7 +5,8 @@ import {
   type ActorSpec,
 } from "./actors";
 import { DEMO_MAP, DEMO_SPAWN } from "./demo-map";
-import { DISTRICT_HEIGHTS, DISTRICT_MAP, DISTRICT_SPAWN } from "./district-map";
+import { DISTRICT_HEIGHTS, DISTRICT_MAP, DISTRICT_ROOMS, DISTRICT_SPAWN } from "./district-map";
+import type { RoomSpec } from "../engine/world";
 
 export type PickupKind = "keycard" | "medkit" | "fuel";
 
@@ -39,6 +40,8 @@ export interface LevelSpec {
   rows: string[];
   /** Map characters that describe solid towers at explicit world heights. */
   heights?: Record<string, number>;
+  /** Interior sectors carved into towers: ceiling plane plus roof plane. */
+  rooms?: RoomSpec[];
   /** Floor and wall-top surface keys from the loaded texture sets. */
   floorTexture?: string;
   topTexture?: string;
@@ -118,6 +121,7 @@ export const LEVELS: LevelSpec[] = [
     objective: "Hunt the eight hostiles, then reach the extraction beacon.",
     rows: DISTRICT_MAP,
     heights: DISTRICT_HEIGHTS,
+    rooms: DISTRICT_ROOMS,
     floorTexture: "asphalt",
     topTexture: "roof",
     spawn: { x: DISTRICT_SPAWN.x, y: DISTRICT_SPAWN.y, yaw: -Math.PI * 0.5 },
@@ -128,6 +132,9 @@ export const LEVELS: LevelSpec[] = [
       { kind: "fuel", x: 44.5, y: 56.5, z: 4 },
       { kind: "medkit", x: 6.5, y: 45.5, z: 6 },
       { kind: "medkit", x: 28.5, y: 35.5 },
+      // Indoor caches: the NW security office and the SE vault.
+      { kind: "medkit", x: 6.5, y: 4.5 },
+      { kind: "fuel", x: 54.5, y: 55.5 },
     ],
     doors: [],
     exits: [{ id: "extraction", x: 32.5, y: 32.5, target: "courtyard" }],

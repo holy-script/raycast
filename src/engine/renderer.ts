@@ -134,6 +134,8 @@ export interface RenderStats {
   wallColumns: number;
   wallPixels: number;
   topPixels: number;
+  /** Pixels of interior slab undersides, drawn only below a ceiling plane. */
+  ceilingPixels: number;
   viewmodelPixels: number;
   spriteRects: SpriteScreenRect[];
 }
@@ -147,6 +149,7 @@ export class Renderer {
     wallColumns: 0,
     wallPixels: 0,
     topPixels: 0,
+    ceilingPixels: 0,
     viewmodelPixels: 0,
     spriteRects: [],
   };
@@ -203,6 +206,7 @@ export class Renderer {
     this.stats.wallColumns = 0;
     this.stats.wallPixels = 0;
     this.stats.topPixels = 0;
+    this.stats.ceilingPixels = 0;
     this.stats.viewmodelPixels = 0;
     this.stats.spriteRects = [];
     this.drawSky();
@@ -231,12 +235,19 @@ export class Renderer {
   }
 
   /**
-   * Rasterizes floors, wall faces and wall tops with one camera-correct ray per
-   * pixel. Wall columns used to be cast in the horizontal plane and then sheared
-   * vertically for pitch, which moved a wall's screen x with its height and bent
-   * straight walls into curves while looking down. Deriving the horizontal ray
-   * from the pitched basis as well keeps every surface on the same perspective,
-   * and the ray parameter is the true camera-space depth for every occluder.
+   * Rasterizes floors, wall faces, wall tops, interior ceilings and roofs with
+   * one camera-correct ray per pixel. Wall columns used to be cast in the
+   * horizontal plane and then sheared vertically for pitch, which moved a
+   * wall's screen x with its height and bent straight walls into curves while
+   * looking down. Deriving the horizontal ray from the pitched basis as well
+   * keeps every surface on the same perspective, and the ray parameter is the
+   * true camera-space depth for every occluder.
+   *
+   * Interior sectors add two more horizontal planes per cell: the slab
+   * underside (`ceilings`) below the camera and the slab top (`roofs`) above it.
+   * Both are solved with `t = (z - eyeZ) / rayZ` inside the DDA cell span, so
+   * they share the pitched basis, the depth metric, and the fog/shade rules
+   * instead of introducing a second projection.
    */
   private drawGeometry(
     cam: CameraState,
@@ -262,6 +273,17 @@ export class Renderer {
     const centerY = this.centerY;
     let wallPixels = 0;
     let topPixels = 0;
+    let ceilingPixels = 0;
+    const cameraCell =
+      Math.floor(cam.y) * world.width + Math.floor(cam.x);
+    // A ray that starts inside a sector must not treat the camera's own cell as
+    // an exterior boundary (that would paint a lintel across the room).
+    const cameraInterior =
+      cam.x >= 0 &&
+      cam.y >= 0 &&
+      cam.x < world.width &&
+      cam.y < world.height &&
+      world.ceilings[cameraCell] > 0;
 
     for (let y = 0; y < height; y += 1) {
       const yCam = (centerY - (y + 0.5)) / cam.focal;
@@ -301,7 +323,7 @@ export class Renderer {
         }
 
         let hitT = Infinity;
-        let hitKind: 0 | 1 | 2 = 0;
+        let hitKind: 0 | 1 | 2 | 3 = 0;
         let hitSide: 0 | 1 = 0;
         let hitU = 0;
         let hitHeight = 0;
@@ -320,6 +342,7 @@ export class Renderer {
         let entry = 0;
         let nextEntry = Math.min(sideDistX, sideDistY);
         let side: 0 | 1 = 0;
+        let interiorBefore = cameraInterior;
 
         for (let step = 0; step < 4096; step += 1) {
           if (entry > floorPlaneT + 1e-6) break;
@@ -329,9 +352,75 @@ export class Renderer {
 
           const cell = mapY * world.width + mapX;
           const tile = world.tiles[cell];
+          const ceiling = world.ceilings[cell];
+          const roof = world.roofs[cell];
+          const zEntry = cam.eyeZ + entry * rayZ;
+
+          // The slab top is nearer than anything under it, so a camera above a
+          // sector sees its roof even when a partition stands inside the room.
+          if (roof > 0 && cam.eyeZ > roof + 1e-3 && rayZ < -1e-6) {
+            const roofT = (roof - cam.eyeZ) / rayZ;
+            if (
+              roofT > NEAR_PLANE &&
+              roofT >= entry - 1e-4 &&
+              roofT <= nextEntry + 1e-4
+            ) {
+              const roofX = cam.x + roofT * rayX;
+              const roofY = cam.y + roofT * rayY;
+              if (Math.floor(roofX) === mapX && Math.floor(roofY) === mapY) {
+                hitT = roofT;
+                hitKind = 2;
+                hitTile = tile !== 0 ? tile : TOWER_TILE;
+                break;
+              }
+            }
+          }
+
+          // Entering a sector from outdoors through a carved cell: the band
+          // between the ceiling and the roof is solid tower mass, so paint the
+          // facade there. Without it a full-height doorway would read as a slot
+          // cut through the building to the sky.
+          if (
+            ceiling > 0 &&
+            tile === 0 &&
+            !interiorBefore &&
+            entry > NEAR_PLANE &&
+            zEntry >= ceiling - 1e-4 &&
+            zEntry <= roof + 1e-4
+          ) {
+            hitT = entry;
+            hitKind = 1;
+            hitSide = side;
+            hitU = side === 0 ? cam.y + entry * rayY : cam.x + entry * rayX;
+            hitU -= Math.floor(hitU);
+            if (side === 0 && rayX > 0) hitU = 1 - hitU;
+            if (side === 1 && rayY < 0) hitU = 1 - hitU;
+            hitHeight = roof;
+            hitTile = TOWER_TILE;
+            break;
+          }
+
+          // Slab underside: the ceiling plane closes the room above the player.
+          if (ceiling > 0 && rayZ > 1e-6 && cam.eyeZ < ceiling) {
+            const ceilingT = (ceiling - cam.eyeZ) / rayZ;
+            if (
+              ceilingT > NEAR_PLANE &&
+              ceilingT >= entry - 1e-4 &&
+              ceilingT <= nextEntry + 1e-4
+            ) {
+              const ceilX = cam.x + ceilingT * rayX;
+              const ceilY = cam.y + ceilingT * rayY;
+              if (Math.floor(ceilX) === mapX && Math.floor(ceilY) === mapY) {
+                hitT = ceilingT;
+                hitKind = 3;
+                hitTile = tile !== 0 ? tile : TOWER_TILE;
+                break;
+              }
+            }
+          }
+
           if (tile !== 0) {
             const cellHeight = world.heights[cell];
-            const zEntry = cam.eyeZ + entry * rayZ;
             if (entry > NEAR_PLANE && zEntry >= -1e-4 && zEntry <= cellHeight + 1e-4) {
               hitT = entry;
               hitKind = 1;
@@ -362,6 +451,7 @@ export class Renderer {
               }
             }
           }
+          interiorBefore = ceiling > 0;
 
           if (nextEntry > floorPlaneT + 1e-6) break;
           if (sideDistX < sideDistY) {
@@ -432,14 +522,20 @@ export class Renderer {
               src = (texY * topTexture.width + texX) * 4;
               const edgeDistance = Math.min(fx, 1 - fx, fy, 1 - fy);
               const bevel = 0.9 + clamp(edgeDistance / 0.06, 0, 1) * 0.1;
+              // Roofs share the wall-top shading; ceilings are the same slab
+              // seen from underneath, so they reuse the texture with a darker
+              // interior light instead of a second asset.
               const shade =
-                clamp(1 / (1 + hitT * 0.075 * fogScale), 0.06, 1) * 0.95 * bevel;
+                clamp(1 / (1 + hitT * 0.075 * fogScale), 0.06, 1) *
+                (hitKind === 3 ? 0.64 : 0.95) *
+                bevel;
               const fog = 1 - shade;
               pixels[dst] = topTexture.data[src] * shade + FOG_R * fog;
               pixels[dst + 1] = topTexture.data[src + 1] * shade + FOG_G * fog;
               pixels[dst + 2] = topTexture.data[src + 2] * shade + FOG_B * fog;
               pixels[dst + 3] = 255;
-              topPixels += 1;
+              if (hitKind === 3) ceilingPixels += 1;
+              else topPixels += 1;
             }
             depth[idx] = hitT;
             paintedColumns[x] = 1;
@@ -465,6 +561,7 @@ export class Renderer {
     this.stats.wallColumns = columns;
     this.stats.wallPixels = wallPixels;
     this.stats.topPixels = topPixels;
+    this.stats.ceilingPixels = ceilingPixels;
   }
 
   private drawSprites(cam: CameraState, sprites: SpriteDraw[]): void {

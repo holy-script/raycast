@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   canOccupy,
+  ceilingAt,
   createWorld,
   isSolidAt,
   resolveFootprint,
+  roofAt,
   STEP_UP,
   supportHeight,
   tileAt,
@@ -152,5 +154,93 @@ describe("tower legend", () => {
     expect(canOccupy(world, 2.5, 1.5, 0.2, 4)).toBe(true);
     expect(canOccupy(world, 2.5, 1.5, 0.2, 3.9)).toBe(false);
     expect(supportHeight(world, 2.5, 2.5)).toBe(12);
+  });
+});
+
+describe("interior sectors", () => {
+  const MAP = [
+    "########",
+    "#.aaaa.#",
+    "#.a.a..#",
+    "#.a....#",
+    "#.aaaa.#",
+    "#......#",
+    "########",
+  ];
+  const ROOM = {
+    id: "office",
+    x: 3,
+    y: 2,
+    width: 3,
+    height: 3,
+    ceilingZ: 3,
+    roofZ: 8,
+  };
+  const world = createWorld(MAP, { x: 1.5, y: 1.5 }, {
+    heights: { a: 8 },
+    rooms: [ROOM],
+  });
+
+  it("stamps a ceiling and a roof over the whole rectangle", () => {
+    expect(ceilingAt(world, 4.5, 3.5)).toBe(3);
+    expect(roofAt(world, 4.5, 3.5)).toBe(8);
+    // The solid cell inside the rectangle keeps its tower mass but still gets a
+    // roof, so the tower reads as one block from above.
+    expect(tileAt(world, 4.5, 2.5)).toBe(TOWER_TILE);
+    expect(tileHeightAt(world, 4.5, 2.5)).toBe(8);
+    expect(roofAt(world, 4.5, 2.5)).toBe(8);
+  });
+
+  it("leaves every cell outside the rectangle open to the sky", () => {
+    expect(ceilingAt(world, 1.5, 1.5)).toBe(0);
+    expect(roofAt(world, 1.5, 1.5)).toBe(0);
+    expect(ceilingAt(world, 6.5, 3.5)).toBe(0);
+    expect(ceilingAt(world, -1, 1)).toBe(0);
+    expect(roofAt(world, 99, 1)).toBe(0);
+  });
+
+  it("is floor from inside and roof from above", () => {
+    expect(supportHeight(world, 4.5, 3.5, 0)).toBe(0);
+    expect(supportHeight(world, 4.5, 3.5, 8)).toBe(8);
+    expect(supportHeight(world, 4.5, 3.5, 12)).toBe(8);
+    // The solid cell inside the sector stays a block below the roof.
+    expect(supportHeight(world, 4.5, 2.5, 0)).toBe(8);
+    expect(supportHeight(world, 4.5, 2.5, 8)).toBe(8);
+  });
+
+  it("walks the interior floor and the roof at their own altitude", () => {
+    expect(canOccupy(world, 4.5, 3.5, 0.19, 0)).toBe(true);
+    expect(canOccupy(world, 4.5, 3.5, 0.19, 8)).toBe(true);
+    // The tower cell inside the sector still blocks ground movement.
+    expect(canOccupy(world, 4.5, 2.5, 0.19, 0)).toBe(false);
+    expect(resolveFootprint(world, 4.5, 3.5, 0.19, 0)).toEqual({
+      x: 4.5,
+      y: 3.5,
+    });
+  });
+
+  it("rejects malformed sectors", () => {
+    expect(() =>
+      createWorld(MAP, undefined, {
+        rooms: [{ ...ROOM, ceilingZ: 8, roofZ: 3 }],
+      }),
+    ).toThrow(/ceilingZ/);
+    expect(() =>
+      createWorld(MAP, undefined, {
+        rooms: [{ ...ROOM, x: 6, width: 4 }],
+      }),
+    ).toThrow(/bounds/);
+    expect(() =>
+      createWorld(MAP, undefined, {
+        rooms: [ROOM, { ...ROOM, id: "clash" }],
+      }),
+    ).toThrow(/overlaps/);
+  });
+
+  it("keeps levels without sectors at zero ceiling and roof", () => {
+    const plain = createWorld(MAP, undefined, { heights: { a: 8 } });
+    expect(plain.ceilings.every((value) => value === 0)).toBe(true);
+    expect(plain.roofs.every((value) => value === 0)).toBe(true);
+    expect(plain.rooms).toEqual([]);
   });
 });

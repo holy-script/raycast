@@ -2,17 +2,73 @@ import { describe, expect, it } from "vitest";
 import { LEVELS, levelIndexById } from "../src/content/levels";
 import { hasLineOfSight } from "../src/engine/projectile";
 import {
+  canOccupy,
+  ceilingAt,
   COVER_CHAR,
   createWorld,
   isSolidAt,
+  roofAt,
   supportHeight,
   tileAt,
+  tileHeightAt,
+  type RoomSpec,
+  type World,
 } from "../src/engine/world";
 
 const SPRITES = new Set(["guardian"]);
 
 function worldOf(level: (typeof LEVELS)[number]) {
-  return createWorld(level.rows, level.spawn, { heights: level.heights });
+  return createWorld(level.rows, level.spawn, {
+    heights: level.heights,
+    rooms: level.rooms,
+  });
+}
+
+/** Open cells of a room reachable from its doorway over 4-neighbours. */
+function reachableFromDoor(world: World, room: RoomSpec) {
+  const inside = (x: number, y: number): boolean =>
+    x >= room.x &&
+    y >= room.y &&
+    x < room.x + room.width &&
+    y < room.y + room.height;
+  const open = (x: number, y: number): boolean =>
+    inside(x, y) && tileAt(world, x + 0.5, y + 0.5) === 0;
+
+  const doors: Array<[number, number]> = [];
+  for (let y = room.y; y < room.y + room.height; y += 1) {
+    for (let x = room.x; x < room.x + room.width; x += 1) {
+      if (!open(x, y)) continue;
+      const onEdge =
+        x === room.x || y === room.y || x === room.x + room.width - 1 || y === room.y + room.height - 1;
+      if (!onEdge) continue;
+      const outsideNeighbour = [
+        [x - 1, y],
+        [x + 1, y],
+        [x, y - 1],
+        [x, y + 1],
+      ].some(([nx, ny]) => !inside(nx, ny) && !isSolidAt(world, nx + 0.5, ny + 0.5));
+      if (outsideNeighbour) doors.push([x, y]);
+    }
+  }
+
+  const visited = new Set<string>();
+  const queue = [...doors];
+  for (const [x, y] of queue) visited.add(`${x},${y}`);
+  while (queue.length > 0) {
+    const [x, y] = queue.pop() as [number, number];
+    for (const [nx, ny] of [
+      [x - 1, y],
+      [x + 1, y],
+      [x, y - 1],
+      [x, y + 1],
+    ]) {
+      const key = `${nx},${ny}`;
+      if (visited.has(key) || !open(nx, ny)) continue;
+      visited.add(key);
+      queue.push([nx, ny]);
+    }
+  }
+  return { doors, visited };
 }
 
 describe("level definitions", () => {
@@ -206,5 +262,131 @@ describe("level definitions", () => {
     expect(supportHeight(world, 2.5, 2.5)).toBe(4);
     expect(supportHeight(world, 44.5, 17.5)).toBe(12);
     expect(supportHeight(world, 25.5, 10.5)).toBe(6);
+  });
+});
+
+describe("district tower interiors", () => {
+  const district = LEVELS[levelIndexById("district")];
+  const rooms = district.rooms ?? [];
+  const world = worldOf(district);
+
+  it("declares sectors only for the district", () => {
+    expect(rooms.length).toBe(2);
+    for (const level of LEVELS) {
+      const built = worldOf(level);
+      if (level.id === "district") continue;
+      expect(built.ceilings.every((value) => value === 0), level.id).toBe(true);
+      expect(built.roofs.every((value) => value === 0), level.id).toBe(true);
+    }
+  });
+
+  it("keeps every room inside the map with a valid slab", () => {
+    for (const room of rooms) {
+      const label = room.id;
+      expect(room.x, label).toBeGreaterThanOrEqual(0);
+      expect(room.y, label).toBeGreaterThanOrEqual(0);
+      expect(room.x + room.width, label).toBeLessThanOrEqual(world.width);
+      expect(room.y + room.height, label).toBeLessThanOrEqual(world.height);
+      expect(room.ceilingZ, label).toBe(3);
+      expect(room.roofZ, label).toBeGreaterThan(room.ceilingZ);
+      // The carved rectangle must contain open floor and at least one doorway.
+      expect(reachableFromDoor(world, room).doors.length, label).toBe(1);
+    }
+  });
+
+  it("caps every cell of a room with the same ceiling and roof", () => {
+    for (const room of rooms) {
+      for (let y = room.y; y < room.y + room.height; y += 1) {
+        for (let x = room.x; x < room.x + room.width; x += 1) {
+          const label = `${room.id}:${x},${y}`;
+          expect(ceilingAt(world, x + 0.5, y + 0.5), label).toBe(room.ceilingZ);
+          expect(roofAt(world, x + 0.5, y + 0.5), label).toBe(room.roofZ);
+        }
+      }
+    }
+  });
+
+  it("keeps the roof flush with the surrounding tower walls", () => {
+    for (const room of rooms) {
+      const neighbours: Array<[number, number]> = [];
+      for (let x = room.x; x < room.x + room.width; x += 1) {
+        neighbours.push([x, room.y - 1], [x, room.y + room.height]);
+      }
+      for (let y = room.y; y < room.y + room.height; y += 1) {
+        neighbours.push([room.x - 1, y], [room.x + room.width, y]);
+      }
+      let walls = 0;
+      for (const [x, y] of neighbours) {
+        if (!isSolidAt(world, x + 0.5, y + 0.5)) continue;
+        // Rooftop cover deliberately rises above the roof line.
+        if (district.rows[y]?.[x] === COVER_CHAR) continue;
+        walls += 1;
+        expect(tileHeightAt(world, x + 0.5, y + 0.5), `${room.id}:${x},${y}`).toBe(
+          room.roofZ,
+        );
+      }
+      expect(walls, room.id).toBeGreaterThan(8);
+    }
+  });
+
+  it("walks every interior cell from its doorway", () => {
+    for (const room of rooms) {
+      const { visited } = reachableFromDoor(world, room);
+      let open = 0;
+      for (let y = room.y; y < room.y + room.height; y += 1) {
+        for (let x = room.x; x < room.x + room.width; x += 1) {
+          if (tileAt(world, x + 0.5, y + 0.5) !== 0) continue;
+          open += 1;
+          expect(visited.has(`${x},${y}`), `${room.id}:${x},${y}`).toBe(true);
+          expect(ceilingAt(world, x + 0.5, y + 0.5), `${room.id}:${x},${y}`).toBe(
+            room.ceilingZ,
+          );
+        }
+      }
+      expect(open, room.id).toBeGreaterThan(12);
+    }
+  });
+
+  it("stands on the interior floor and on the roof above it", () => {
+    for (const room of rooms) {
+      // First open cell of the room: a carved floor, not an interior prop.
+      let cx = 0;
+      let cy = 0;
+      for (let y = room.y; y < room.y + room.height && cx === 0; y += 1) {
+        for (let x = room.x; x < room.x + room.width; x += 1) {
+          if (tileAt(world, x + 0.5, y + 0.5) !== 0) continue;
+          cx = x + 0.5;
+          cy = y + 0.5;
+          break;
+        }
+      }
+      expect(canOccupy(world, cx, cy, 0.19, 0), room.id).toBe(true);
+      expect(supportHeight(world, cx, cy, 0), room.id).toBe(0);
+      expect(supportHeight(world, cx, cy, room.roofZ), room.id).toBe(room.roofZ);
+      expect(canOccupy(world, cx, cy, 0.19, room.roofZ), room.id).toBe(true);
+    }
+  });
+
+  it("stocks each interior with one ground pickup", () => {
+    for (const room of rooms) {
+      const caches = district.pickups.filter(
+        (pickup) =>
+          pickup.x >= room.x &&
+          pickup.y >= room.y &&
+          pickup.x < room.x + room.width &&
+          pickup.y < room.y + room.height,
+      );
+      expect(caches.length, room.id).toBe(1);
+      const cache = caches[0];
+      expect(cache.z ?? 0, room.id).toBe(0);
+      expect(isSolidAt(world, cache.x, cache.y), room.id).toBe(false);
+      expect(supportHeight(world, cache.x, cache.y, 0), room.id).toBe(0);
+      expect(
+        reachableFromDoor(world, room).visited.has(
+          `${Math.floor(cache.x)},${Math.floor(cache.y)}`,
+        ),
+        room.id,
+      ).toBe(true);
+    }
   });
 });
