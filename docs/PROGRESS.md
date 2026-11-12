@@ -99,6 +99,11 @@ Browser verification (2026-11-11, headless Chrome over CDP):
   external matrix passes 743/743 assertions across 127 scenarios (including all five
   foundry scenarios) and the happy-path playtest passes 40/40, both with zero console
   errors.
+- Production run (2026-11-12, staggered channels): the live site serves
+  `index-DlHpFm6E.js` / `index-BAHy215h.css`; Vercel deployment `raycast-n1xxg8g86`
+  reached Ready in 18 s. The external matrix passes 750/750 assertions across 128
+  scenarios (including the staggered-channel scenario) and the happy-path playtest passes
+  40/40, both with zero console errors.
 - Production harness run (2026-11-11, after the 4-pitch deploy):
   `PLAYTEST_OUT=/tmp/rc-prod-check npm run playtest
   -- --url https://raycast-rosy.vercel.app/` passed 24/24 against the deployed build,
@@ -201,6 +206,9 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
 - Verification: typecheck clean, **148 unit tests**, matrix 750/750 assertions (887 checks
   with goldens) across 128 scenarios (157 captures, zero console errors), `playtest`
   40/40, `flight` 109/109, `states` 42/42, build 85.64 kB JS / 28.45 kB gzip.
+- Deployment: pushed `main` (`66ac21a`); Vercel built `raycast-n1xxg8g86` in 18 s.
+  Production serves `index-DlHpFm6E.js`; the external matrix passes 750/750 assertions
+  across 128 scenarios and the happy path 40/40, zero console errors.
 
 ### 2026-11-12 — M17 SLAGWORKS foundry biome
 
