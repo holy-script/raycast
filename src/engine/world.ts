@@ -28,6 +28,8 @@ export interface World {
   ceilings: Float32Array;
   /** Interior slab top per cell. 0 means the cell has no interior sector. */
   roofs: Float32Array;
+  /** 1 on walkable cells that cycle hot and burn whoever stands there. */
+  hazards: Uint8Array;
   spawn: { x: number; y: number };
   /** Sector definitions, kept for tests and tooling. */
   rooms: RoomSpec[];
@@ -67,6 +69,21 @@ export interface WorldOptions {
    * reactor deck keep exactly their previous geometry.
    */
   rooms?: RoomSpec[];
+  /**
+   * Slag channels and steam vents. Every cell in a rectangle must be open
+   * floor; the grid is stamped after heights so tools can query it directly.
+   */
+  hazards?: HazardArea[];
+}
+
+/** Rectangle of walkable cells that cycles between burning and safe. */
+export interface HazardArea {
+  /** Optional label used by tooling and playtest output. */
+  id?: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
 /** A digit 1-9 is a solid panel platform at 0.2 × digit world units. */
@@ -99,7 +116,9 @@ export function createWorld(
   const coverSet = new Set<number>();
   const ceilings = new Float32Array(width * height);
   const roofs = new Float32Array(width * height);
+  const hazards = new Uint8Array(width * height);
   const rooms = options.rooms ?? [];
+  const hazardAreas = options.hazards ?? [];
 
   for (let y = 0; y < height; y += 1) {
     const row = rows[y];
@@ -169,7 +188,39 @@ export function createWorld(
     }
   }
 
-  return { width, height, tiles, heights, ceilings, roofs, spawn, rooms };
+  for (const area of hazardAreas) {
+    if (
+      area.x < 0 ||
+      area.y < 0 ||
+      area.width <= 0 ||
+      area.height <= 0 ||
+      area.x + area.width > width ||
+      area.y + area.height > height
+    ) {
+      throw new Error(`Hazard area at ${area.x},${area.y} leaves the map bounds`);
+    }
+    for (let y = area.y; y < area.y + area.height; y += 1) {
+      for (let x = area.x; x < area.x + area.width; x += 1) {
+        const cell = y * width + x;
+        if (tiles[cell] !== 0) {
+          throw new Error(`Hazard area covers the solid cell at ${x},${y}`);
+        }
+        hazards[cell] = 1;
+      }
+    }
+  }
+
+  return {
+    width,
+    height,
+    tiles,
+    heights,
+    ceilings,
+    roofs,
+    hazards,
+    spawn,
+    rooms,
+  };
 }
 
 /** Underside of the interior slab over a cell; 0 means open sky. */
@@ -182,6 +233,12 @@ export function ceilingAt(world: World, x: number, y: number): number {
 export function roofAt(world: World, x: number, y: number): number {
   if (x < 0 || y < 0 || x >= world.width || y >= world.height) return 0;
   return world.roofs[Math.floor(y) * world.width + Math.floor(x)];
+}
+
+/** True when a cell cycles as a slag channel or steam vent. */
+export function hazardAt(world: World, x: number, y: number): boolean {
+  if (x < 0 || y < 0 || x >= world.width || y >= world.height) return false;
+  return world.hazards[Math.floor(y) * world.width + Math.floor(x)] !== 0;
 }
 
 export function isSolidAt(world: World, x: number, y: number): boolean {

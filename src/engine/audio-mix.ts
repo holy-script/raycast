@@ -28,6 +28,7 @@ const BEDS = new Set(["courtyard", "reactor", "district", "foundry"]);
 
 const STAGE_LEVEL: Record<MissionStage, number> = {
   hunt: 0.45,
+  collect: 0.45,
   boss: 0.68,
   extract: 0.3,
   clear: 0.2,

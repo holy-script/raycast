@@ -28,10 +28,12 @@ describe("audio mix", () => {
 
   it("pushes intensity from hunt through boss and settles on clear", () => {
     const hunt = mix({ stage: "hunt" }).intensity;
+    const collect = mix({ stage: "collect" }).intensity;
     const boss = mix({ stage: "boss" }).intensity;
     const extract = mix({ stage: "extract" }).intensity;
     const clear = mix({ stage: "clear" }).intensity;
     expect(boss).toBeGreaterThan(hunt);
+    expect(collect).toBeGreaterThan(extract);
     expect(hunt).toBeGreaterThan(extract);
     expect(extract).toBeGreaterThan(clear);
   });
@@ -66,7 +68,7 @@ describe("audio mix", () => {
   });
 
   it("keeps the bass above the pad at every intensity", () => {
-    for (const stage of ["hunt", "boss", "extract", "clear"] as const) {
+    for (const stage of ["hunt", "collect", "boss", "extract", "clear"] as const) {
       const values = mix({ stage });
       expect(values.bass).toBeGreaterThan(values.pad);
     }

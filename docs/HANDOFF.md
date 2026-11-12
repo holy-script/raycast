@@ -11,14 +11,15 @@ npm run typecheck
 npm test
 npm run build
 npm run playtest   # headless Chrome, 40 checks + screenshots
-npm run playtest:matrix  # 116 deterministic scenarios, 784 checks
+npm run playtest:matrix  # 127 deterministic scenarios, 874 checks (740 assertions + goldens)
 npm run playtest:flight  # 18 airborne poses + live jetpack, 109 checks
 npm run playtest:states  # 42 state checks, 21 paused-state captures
 npm run dev        # http://localhost:5173
 ```
 
-Expected: typecheck clean, 117 tests passing across 11 files, Vite build succeeds, playtest
-40/40, matrix 784/784, flight 109/109, state gallery 42/42 with zero console errors.
+Expected: typecheck clean, 145 tests passing across 14 files, Vite build succeeds (85.17 kB
+JS), playtest 40/40, matrix 874/874 (740 assertions + 134 goldens), flight 109/109, state
+gallery 42/42 with zero console errors.
 Click the canvas,
 move with WASD, hold Space to jetpack up to 18 m outdoors (or below the ceiling indoors),
 and look down to see the top-pitch
@@ -62,6 +63,20 @@ from its front arc and toasts `PLATING DEFLECTED · FLANK IT`; circle it or shoo
 behind. The other gunners, the seven-target hunt gate, and the overseer stage are
 unchanged.
 
+M15–M17 loop: the intro screen now opens a campaign panel (`L` from the victory overlay)
+with courtyard, district, reactor, and foundry cards, each showing objectives, best time,
+best kills, and a locked state; Enter opens a briefing and deploys. SLAGWORKS is the
+fourth level, entered from the courtyard beacon at (21.5, 22.5). Spawn faces north into
+two slag channels at y = 31 and y = 20: every channel is hot for 2 s of each 4 s cycle
+(12 dps, grounded players only), so cross cold or jetpack over. Collect the keycard at
+(6.5, 34.5), clear six hostiles, grab the three coolant cells at (8.5, 24.5),
+(24.5, 16.5), and (42.5, 26.5), then open the control-room door at (32, 10) and break the
+320 HP foreman on the catwalk. The control-room beacon at (32.5, 6.5) extracts only after
+hunt, coolant, and boss all clear. Victory writes `raycast.campaign.v1` and shows a
+`NEW BEST` badge when a record improves; `E` returns to the courtyard. Music follows the
+mission stage (bass/pad/percussion) with per-level ambience, and `audioDebug()` reports
+the mix.
+
 Asset pipeline after a fresh clone (raw renders are gitignored):
 
 ```bash
@@ -101,8 +116,14 @@ window.__raycast.automation.enable();         // scripted input, no pointer lock
 window.__raycast.automation.press("KeyW");
 window.__raycast.automation.look(120, 0);
 window.__raycast.automation.state();          // HudState
-window.__raycast.debug();                     // camera, player, actor rects, render stats
+window.__raycast.debug();                     // camera, player, actor rects, render stats, hazard
 window.__raycast.audioRunning();               // AudioContext is running (after a gesture)
+window.__raycast.audioDebug();                 // { bed, intensity, gains, lowHealth, muted, running }
+window.__raycast.campaign.load();              // current raycast.campaign.v1 record
+window.__raycast.campaign.reset();             // wipe progress and re-render the level cards
+window.__raycast.campaign.open();              // open the level-select panel
+window.__raycast.campaign.select("foundry");   // focus a card
+window.__raycast.campaign.deploy("foundry");   // load the level from the panel
 
 window.__raycast.automation.pause();          // freeze the live frame loop
 window.__raycast.automation.step(0.5);        // fixed-dt ticks while paused, then render
@@ -122,12 +143,15 @@ verified. `debug()` exposes `renderer.stats.wallColumns`, `wallPixels`, `topPixe
 per-sprite `contentW/contentH/pixels/occluded`, and the live `bolts` array
 (`x, y, z, fromPlayer`) so the harness can assert on what was actually drawn and in
 flight. `debug().actors[]` also reports `charge` (0–1 during a charged wind-up, else
-`null`), which `f14-lancer-charge` uses to prove the telegraph.
+`null`), which `f14-lancer-charge` uses to prove the telegraph. `debug().hazard` reports
+`{ hotNow, standing, coolant }`, and `getHudState().missions` carries the coolant gate and
+`hazardHot` flag.
 
 `?screenshot` hides the intro overlay for headless captures. Prefer the harnesses:
 `npm run playtest` is the happy-path browser check, `npm run playtest:matrix` walks
-116 deterministic state/route scenarios (784 checks, labelled contact sheet, golden
-frames), `npm run playtest:states` pauses the sim in every player/guardian body state
+127 deterministic state/route scenarios (874 checks with goldens, 740 assertions,
+labelled contact sheet), `npm run playtest:states` pauses the sim in every
+player/guardian body state
 for 21 gallery captures (42 checks), and `npm run playtest:flight` sweeps 18
 altitude/pitch poses plus a live jetpack flight (109 checks) while asserting no sky
 holes, straight wall-top projection, unclipped overhead sprites, and ≥45 FPS. All start
@@ -265,6 +289,26 @@ alone can leave HUD values at `--`.
   transition leaves stray projectiles and flashes in the new map.
 - **Doors and exits:** opening a door clears both its tile id and height so movement and
   raycasts agree; exits and pickups are radius checks in `update`, not tile triggers.
+- **Hazard grid:** `createWorld` stamps `hazards` into `world.hazards` after validating
+  bounds and walkability. Never mutate it at runtime; a level reload must rebuild it.
+  Damage is grounded-only and batched at ≥0.25 s, and `hazardAccum` must clear when the
+  player leaves the cell or lifts off, or a later landing inherits a stale batch.
+- **Hazard phase:** `hazardHotAt` is the single source of truth for hot/cold; the
+  renderer, minimap, HUD, and damage all call it with the same level time. Adding a
+  per-channel offset means threading a second clock everywhere, not just the renderer.
+- **Mission gates:** `exitsUnlocked()` requires `huntKills >= huntTargets`,
+  `coolant >= coolantTargets`, and no live `spec.boss`. `huntTargets`/`coolantTargets` must
+  match the level content or the beacon can never open; `tests/levels.test.ts` locks the
+  foundry counts.
+- **Boss identity:** `spec.boss` marks the boss; do not reintroduce a hardcoded actor id.
+  The HUD, stage, gate toast, and audio all resolve through that flag.
+- **Campaign writes:** records update only from `onMissionClear` (victory), never on death
+  or level load. `sanitizeCampaign` is the only reader of stored JSON; keep the version
+  check and courtyard fallback when changing the schema.
+- **Per-level facade:** `wallTexture` overrides texture tiles 1 and 4 after `createWorld`;
+  rooms and tops keep their own surfaces. Levels without the field must be unchanged.
+- **Audio buses:** all playback is created inside `unlock()`; `computeAudioMix` stays pure
+  so the harness can assert it without an AudioContext. Do not start nodes at boot.
 
 ## Conventions
 
@@ -304,9 +348,14 @@ alone can leave HUD values at `--`.
   sunken floors/pits, overhangs, multi-storey interiors, or interior stairs. Legend
   characters (`a`–`e`) create solid towers up to 12 m; rooms are single-volume sectors with
   a `ceilingZ` and a separate `roofZ`. Interiors exist only where a level declares
-  `rooms` (the district office and vault). Interior wall faces and ceilings sample the
-  shared panel texture on a world grid, so they show riveted cladding instead of windows;
-  the roof and lintel keep the exterior materials.
+  `rooms` (the district office and vault, and the foundry control room). Interior wall
+  faces and ceilings sample the shared panel texture on a world grid, so they show riveted
+  cladding instead of windows; the roof and lintel keep the exterior materials.
+- Slag hazards are floor-only and global: every channel runs the same 4 s hot/cold cycle,
+  damage lands only when grounded, and there is no per-channel phase offset or visual
+  edge lip. The jetpack therefore trivializes a channel crossing by design.
+- The foundry foreman reuses the sentry chassis with scale 1.36 and no unique art, phases,
+  or telegraphed attack.
 - Actors are non-blocking (no player/actor or actor/actor collision). Hostiles deal melee
   contact damage and gunners/sentries fire bolts; both can be killed. The district roster
   adds a fast rusher, a charged lancer, and a frontal-armor bulwark via spec fields, not
@@ -331,32 +380,36 @@ alone can leave HUD values at `--`.
 - Intro overlay can stick on a cold Vite start if HMR interrupts boot; reload fixes it.
 - Pointer-lock release now pauses the simulation and opens the settings panel. Scripted
   automation bypasses that path, so matrix timing is unaffected.
-- Audio is fully procedural and needs a user gesture; there is no music, no external
-  audio asset, and no audio assertion in the harness. Settings live in localStorage
-  (`raycast.settings.v1`) and fail open when storage is blocked.
+- Audio is a procedural director (bass/pad/percussion plus ambience beds) with no music or
+  sample assets, and needs a user gesture. Settings live in localStorage
+  (`raycast.settings.v1`) and campaign progress in `raycast.campaign.v1`; both fail open
+  when storage is blocked. The harness never creates an AudioContext, so the mix is
+  asserted through `audioDebug()`, not by listening.
 - No license file yet.
 
-## Next task: M14 owner playtest and tuning
+## Next task: M15–M17 owner playtest and tuning
 
-M14 is complete and deployed (production serves `index-C6EDvFgC.js`): the district roster
-has a fast rusher, a charged lancer with a muzzle telegraph, and a frontal-armor bulwark,
-while the hunt gate stays at seven targets plus the overseer. The owner should playtest the
-three roles and the flanking read before starting M15.
+M15–M17 are complete: campaign
+persistence and level select, the layered audio director, and the SLAGWORKS foundry with
+cycling slag channels, a coolant gate, and the foreman. The owner playtest is the next
+step.
 
-1. Tune the new roles in `src/content/actors.ts`: rusher speed/HP, lancer charge/damage/
-   cooldown, bulwark HP/armor/melee. Keep `huntTargets` equal to the non-boss hostile count
-   (7) and leave the overseer spec alone unless the encounter needs it.
-2. The armor arc is `frontalArmorScale` in `src/engine/math.ts` (dot > 0.34). If flanking
-   feels too forgiving or too harsh, change the threshold and the unit tests together.
-3. If a visual change lands, run `npm run playtest:matrix`; only use `--update-golden`
-   after inspecting the first mismatching run. Then run typecheck/tests/build, both
-   playtests, flight, states, and check Vercel.
-4. Then start M15 (campaign persistence and level select) from the roadmap, followed by
-   M16 (audio/game feel) and M17 (SLAGWORKS foundry). Research for all three is parked in
-   [ROADMAP.md](ROADMAP.md); M17 should land last because it touches hazards, textures, and
-   mission gating.
-5. Deferred: dedicated overseer art, campaign persistence, music, hazards, stairs between
-   floors, projectile drop/penetration, and an AutoSprite/Gamelabs adapter.
+1. Play SLAGWORKS from the level-select card or the courtyard beacon at (21.5, 22.5).
+   Check the hot/cold channel read, the coolant search, the keycard door, and that the
+   beacon refuses until hunt + coolant + foreman all clear.
+2. Tune the foundry in `src/content/foundry-map.ts` (hazard layout, coolant placement,
+   door/beacon positions) and `src/content/actors.ts` (roster, foreman HP). Keep
+   `huntTargets` at 6 and `coolantTargets` at 3, and re-run `tests/levels.test.ts` after
+   moving any pickup, exit, or ground actor.
+3. Listen for the per-level ambience and the stage intensity lift, and confirm campaign
+   bests survive a reload (`NEW BEST` badge on an improved run). Settings and campaign are
+   separate localStorage keys.
+4. If a visual change lands, run `npm run playtest:matrix`; only use `--update-golden`
+   after inspecting the first mismatching run. Then run typecheck/tests/build, playtest,
+   flight, states, and check Vercel.
+5. Deferred: per-channel hazard phases, a dedicated foreman chassis and telegraphed heavy
+   attack, campaign-wide statistics, stairs between floors, projectile drop/penetration,
+   and an AutoSprite/Gamelabs adapter.
 
 If a design choice could go either way, record it in [DECISIONS.md](DECISIONS.md) with the
 tradeoff, then proceed.

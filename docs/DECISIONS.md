@@ -413,3 +413,64 @@ feint; armor only models the horizontal front arc (an elevated shot from directl
 counts as a front hit if the horizontal dot product agrees); and the lancer's strength is
 tuned by spec, not by a special AI. The timing constants remain global, so per-actor
 recovery times would need another spec field.
+
+## ADR-022 — A global slag cycle over a stamped hazard grid
+
+**Context:** M17 needed movement pressure that reads in a first-person raycaster without
+sprite or geometry support. The renderer already casts per-pixel floors from a texture,
+and the world is a fixed grid rebuilt per level load, so both the damage model and the
+visual could ride on a per-cell flag.
+
+**Decision:**
+
+- Levels declare `hazards?: HazardArea[]`; `createWorld` stamps those rectangles into a
+  `Uint8Array` beside the tile grid, rejecting out-of-bounds or solid cells at load time.
+  Everything downstream (`hazardAt`, the renderer, the minimap, tests) reads that grid,
+  so hazards cannot drift from the collision map.
+- The hot/cold phase is one pure function of level time, not per-cell state:
+  `hazardHotAt(t)` is hot for the first 2 s of every 4 s and wraps negative time. Every
+  channel therefore burns together, and automation can pose a channel and step to an exact
+  phase without storing anything.
+- Damage is applied only when a living player is grounded inside a hazard cell and the
+  phase is hot. Batching at ≥0.25 s keeps a per-frame `damagePlayer` call from spamming
+  hurt flashes and audio while keeping the schedule deterministic. The accumulator clears
+  immediately when the player leaves or lifts off, so a jetpack hop is a real escape.
+- The renderer receives `FloorHazards { hot, cold, hotNow }` and swaps only the floor
+  texture, plus an ember tint while hot. No new geometry pass or sprite states were added;
+  vent plumes reuse the glow billboard path, tinted with the phase.
+
+**Consequences:** The foundry gains a readable rhythm (wait for the crust, cross, or fly
+over) with no new collision or render code paths, and the route is never hard-gated. The
+tradeoffs are that the whole foundry shares one phase (no interleaved safe lanes), the
+0.25 s batch can lose 12–13 HP rather than an exact 12 dps, and airborne players are
+immune by design, which makes the jetpack a hard counter to the hazard.
+
+## ADR-023 — Generalize the boss and the facade, and gate on collected coolant
+
+**Context:** M13 and M14 hardcoded the district's overseer in stage, HUD, toast, and
+renderer assumptions. M17 needed a second boss and a second objective on a fourth level
+with a different palette. Forking the mission code per level would have duplicated the
+gate logic that the matrix already covers.
+
+**Decision:**
+
+- Boss identity moves onto the spec (`ActorSpec.boss`). `Game` finds the live boss by that
+  flag, so stage `boss`, the HUD name/HP/distance, the exposure toast, and the audio cue
+  all follow whichever actor the level marks. `LevelSpec.bossObjective` and
+  `extractionObjective` let the foundry say "Put the foreman down" without a per-level
+  branch.
+- Mission stages extend to `hunt → collect → boss → extract → clear`. `LevelSpec.coolantTargets`
+  adds one more derived gate; `exitsUnlocked()` checks hunt, coolant, and boss, and
+  `gateToast()` names whichever remains. A level that omits the fields behaves exactly as
+  before, so courtyard, reactor, and district code paths are unchanged.
+- Victory copy is data (`CLEAR_LABELS` + `#victory-title`) instead of a hardcoded
+  "District cleared" heading, because the overlay now serves four levels.
+- Per-level facades are a `LevelSpec.wallTexture` key resolved through `GameAssets.walls`
+  in `loadLevel`; the default texture tiles stay untouched for other levels. This keeps
+  the foundry palette in one PNG set rather than layering palette swaps onto the renderer.
+
+**Consequences:** A new boss or objective is content, not engine work, and the existing
+gate tests still cover the shared logic. Tradeoffs: the boss is still a tinted sentry
+chassis (no dedicated art or phases), the overlay copy is a lookup table keyed by level
+id, and the wall override is a load-time mutation of two texture tiles rather than a true
+per-level material system.

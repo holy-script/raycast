@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-12T06:53:32.350Z",
+  "generatedAt": "2026-11-12T08:03:21.446Z",
   "url": "http://127.0.0.1:5201/?screenshot",
-  "durationMs": 14459,
+  "durationMs": 12324,
   "scenarios": [
     "g01-spawn-idle",
     "g02-walk-forward",
@@ -75,6 +75,12 @@
     "u05-pause-resume",
     "u06-hud-values",
     "u07-fuel-readout",
+    "u08-campaign-menu",
+    "n01-courtyard-mix",
+    "n02-reactor-bed",
+    "n03-indoor-bed",
+    "n04-boss-swings-music",
+    "n05-low-health-heartbeat",
     "r01-jet-over-wall",
     "r02-jet-forward-climb",
     "r03-aerial-lookdown",
@@ -118,9 +124,14 @@
     "l14-vault-entry",
     "l15-vault-fuel",
     "l16-ceiling-jet-cap",
-    "l17-roof-over-vault"
+    "l17-roof-over-vault",
+    "l18-foundry-arrival",
+    "l19-hot-channel-burns",
+    "l20-cold-channel-safe",
+    "l21-coolant-cell",
+    "l22-foundry-clear"
   ],
-  "passed": 784,
+  "passed": 874,
   "failed": 0,
   "checks": [
     {
@@ -163,7 +174,7 @@
       "group": "ground",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "14 rects"
+      "detail": "15 rects"
     },
     {
       "scenario": "g01-spawn-idle",
@@ -205,7 +216,7 @@
       "group": "ground",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "g02-walk-forward",
@@ -247,7 +258,7 @@
       "group": "ground",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "16 rects"
+      "detail": "17 rects"
     },
     {
       "scenario": "g03-walk-backward",
@@ -289,7 +300,7 @@
       "group": "ground",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "g04-strafe-right",
@@ -331,7 +342,7 @@
       "group": "ground",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "g05-strafe-left",
@@ -373,7 +384,7 @@
       "group": "ground",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "11 rects"
+      "detail": "12 rects"
     },
     {
       "scenario": "g06-sprint-forward",
@@ -415,7 +426,7 @@
       "group": "ground",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "12 rects"
+      "detail": "13 rects"
     },
     {
       "scenario": "g07-diagonal-walk",
@@ -548,7 +559,7 @@
       "group": "ground",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "14 rects"
+      "detail": "15 rects"
     },
     {
       "scenario": "g10-respawn-key",
@@ -597,7 +608,7 @@
       "group": "vertical",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "v01-jump-burst",
@@ -653,7 +664,7 @@
       "group": "vertical",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "v02-jet-burn",
@@ -695,7 +706,7 @@
       "group": "vertical",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "v03-jet-ceiling",
@@ -744,7 +755,7 @@
       "group": "vertical",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "v04-jet-empty-fuel",
@@ -786,7 +797,7 @@
       "group": "vertical",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "v05-fall-land",
@@ -828,7 +839,7 @@
       "group": "vertical",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "v06-ground-refuel",
@@ -877,7 +888,7 @@
       "group": "vertical",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "v07-freefly-up",
@@ -919,7 +930,7 @@
       "group": "vertical",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "v08-freefly-descend-crate",
@@ -961,7 +972,7 @@
       "group": "vertical",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "v09-freefly-off-fall",
@@ -1003,7 +1014,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "a01-ground-pitch-clamp-down",
@@ -1045,7 +1056,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "14 rects"
+      "detail": "15 rects"
     },
     {
       "scenario": "a02-ground-pitch-clamp-up",
@@ -1087,7 +1098,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "18 rects"
+      "detail": "19 rects"
     },
     {
       "scenario": "a03-air-pitch-top",
@@ -1129,7 +1140,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "15 rects"
+      "detail": "16 rects"
     },
     {
       "scenario": "a04-mouse-yaw",
@@ -1171,7 +1182,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "a05-mouse-pitch",
@@ -1213,7 +1224,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "7 rects"
+      "detail": "8 rects"
     },
     {
       "scenario": "a06-sector-front",
@@ -1255,7 +1266,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "18 rects"
+      "detail": "19 rects"
     },
     {
       "scenario": "a07-sector-back",
@@ -1339,7 +1350,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "17 rects"
+      "detail": "18 rects"
     },
     {
       "scenario": "a09-sector-north",
@@ -1381,7 +1392,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "8 rects"
+      "detail": "9 rects"
     },
     {
       "scenario": "a10-sector-ne",
@@ -1507,7 +1518,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "18 rects"
+      "detail": "19 rects"
     },
     {
       "scenario": "a13-sector-nw",
@@ -1549,7 +1560,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "15 rects"
+      "detail": "16 rects"
     },
     {
       "scenario": "a14-pitch-band-low",
@@ -1591,7 +1602,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "a15-pitch-band-level",
@@ -1633,7 +1644,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "a16-pitch-band-high",
@@ -1675,7 +1686,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "18 rects"
+      "detail": "19 rects"
     },
     {
       "scenario": "a17-pitch-band-top",
@@ -1717,7 +1728,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "18 rects"
+      "detail": "19 rects"
     },
     {
       "scenario": "a18-fov-stable-altitude",
@@ -1759,7 +1770,7 @@
       "group": "aim",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "18 rects"
+      "detail": "19 rects"
     },
     {
       "scenario": "a19-topdown-scale",
@@ -1934,7 +1945,7 @@
       "group": "surfaces",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "8 rects"
+      "detail": "9 rects"
     },
     {
       "scenario": "s04-platform-stand",
@@ -2018,7 +2029,7 @@
       "group": "surfaces",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "14 rects"
+      "detail": "15 rects"
     },
     {
       "scenario": "s06-crate-perch",
@@ -2067,7 +2078,7 @@
       "group": "surfaces",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "14 rects"
+      "detail": "15 rects"
     },
     {
       "scenario": "s07-wall-land",
@@ -2109,7 +2120,7 @@
       "group": "surfaces",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "12 rects"
+      "detail": "13 rects"
     },
     {
       "scenario": "s08-wall-stepoff",
@@ -2151,7 +2162,7 @@
       "group": "surfaces",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "17 rects"
+      "detail": "18 rects"
     },
     {
       "scenario": "s09-wall-perch-down",
@@ -2284,7 +2295,7 @@
       "group": "surfaces",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "14 rects"
+      "detail": "15 rects"
     },
     {
       "scenario": "s12-wall-side-landing",
@@ -2333,7 +2344,7 @@
       "group": "surfaces",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "18 rects"
+      "detail": "19 rects"
     },
     {
       "scenario": "s13-corner-landing",
@@ -2382,7 +2393,7 @@
       "group": "actors",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "8 rects"
+      "detail": "9 rects"
     },
     {
       "scenario": "c01-watcher-tracks",
@@ -2424,7 +2435,7 @@
       "group": "actors",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "9 rects"
+      "detail": "10 rects"
     },
     {
       "scenario": "c02-patrol-advance",
@@ -2466,7 +2477,7 @@
       "group": "actors",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "9 rects"
+      "detail": "10 rects"
     },
     {
       "scenario": "c03-patrol-reverse",
@@ -2508,7 +2519,7 @@
       "group": "actors",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "7 rects"
+      "detail": "8 rects"
     },
     {
       "scenario": "c04-chase-approach",
@@ -2550,7 +2561,7 @@
       "group": "actors",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "9 rects"
+      "detail": "10 rects"
     },
     {
       "scenario": "c05-hover-bob",
@@ -2592,7 +2603,7 @@
       "group": "actors",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "c06-idle-animation",
@@ -2718,7 +2729,7 @@
       "group": "actors",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "18 rects"
+      "detail": "19 rects"
     },
     {
       "scenario": "c09-overhead-guard",
@@ -2760,7 +2771,7 @@
       "group": "actors",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "18 rects"
+      "detail": "19 rects"
     },
     {
       "scenario": "c10-overhead-edge-actor",
@@ -2802,7 +2813,7 @@
       "group": "actors",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "18 rects"
+      "detail": "19 rects"
     },
     {
       "scenario": "c11-multi-actor-aerial",
@@ -2851,7 +2862,7 @@
       "group": "viewmodel",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "w01-idle-overlay",
@@ -2893,7 +2904,7 @@
       "group": "viewmodel",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "14 rects"
+      "detail": "15 rects"
     },
     {
       "scenario": "w02-attack-swing",
@@ -2928,7 +2939,7 @@
       "group": "viewmodel",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "14 rects"
+      "detail": "15 rects"
     },
     {
       "scenario": "w03-swing-recovery",
@@ -2956,7 +2967,7 @@
       "group": "ui",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "14 rects"
+      "detail": "15 rects"
     },
     {
       "scenario": "u01-minimap-visible",
@@ -2991,7 +3002,7 @@
       "group": "ui",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "14 rects"
+      "detail": "15 rects"
     },
     {
       "scenario": "u02-minimap-hidden",
@@ -3026,7 +3037,7 @@
       "group": "ui",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "14 rects"
+      "detail": "15 rects"
     },
     {
       "scenario": "u03-hud-minimal",
@@ -3075,7 +3086,7 @@
       "group": "ui",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "u04-pause-freeze",
@@ -3089,7 +3100,7 @@
       "group": "ui",
       "name": "resuming advances the simulation",
       "ok": true,
-      "detail": "patrol dx 0.39, 21 frames, paused=false, 6.43% pixels changed"
+      "detail": "patrol dx 0.37, 22 frames, paused=false, 6.40% pixels changed"
     },
     {
       "scenario": "u05-pause-resume",
@@ -3110,7 +3121,7 @@
       "group": "ui",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "11 rects"
+      "detail": "12 rects"
     },
     {
       "scenario": "u05-pause-resume",
@@ -3159,7 +3170,7 @@
       "group": "ui",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "12 rects"
+      "detail": "13 rects"
     },
     {
       "scenario": "u06-hud-values",
@@ -3201,7 +3212,7 @@
       "group": "ui",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "14 rects"
+      "detail": "15 rects"
     },
     {
       "scenario": "u07-fuel-readout",
@@ -3209,6 +3220,300 @@
       "name": "HUD is populated",
       "ok": true,
       "detail": "WALK · ATTRACT · fuel 37%"
+    },
+    {
+      "scenario": "u08-campaign-menu",
+      "group": "ui",
+      "name": "a fresh campaign unlocks only the courtyard",
+      "ok": true,
+      "detail": "courtyard:open reactor:locked district:locked foundry:locked"
+    },
+    {
+      "scenario": "u08-campaign-menu",
+      "group": "ui",
+      "name": "a locked card opens its briefing with deploy disabled",
+      "ok": true,
+      "detail": "ROOFTOP DISTRICT · LOCKED · reach this sector in the field to unlock deployment."
+    },
+    {
+      "scenario": "u08-campaign-menu",
+      "group": "ui",
+      "name": "a locked level cannot be deployed",
+      "ok": true,
+      "detail": "deploy district returned false"
+    },
+    {
+      "scenario": "u08-campaign-menu",
+      "group": "ui",
+      "name": "deploying an unlocked level closes the menu and loads it",
+      "ok": true,
+      "detail": "deployed=true · open=false · level=courtyard"
+    },
+    {
+      "scenario": "u08-campaign-menu",
+      "group": "ui",
+      "name": "reaching a level unlocks its card and persists it",
+      "ok": true,
+      "detail": "NO CLEAR · reached courtyard,district"
+    },
+    {
+      "scenario": "u08-campaign-menu",
+      "group": "ui",
+      "name": "closing the menu returns to the frozen simulation",
+      "ok": true,
+      "detail": "menu closed"
+    },
+    {
+      "scenario": "u08-campaign-menu",
+      "group": "ui",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "32.50, 58.50, 0.00, 1.00, 384.00, 39173.00, 0.00"
+    },
+    {
+      "scenario": "u08-campaign-menu",
+      "group": "ui",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "16 rects"
+    },
+    {
+      "scenario": "u08-campaign-menu",
+      "group": "ui",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · LIVE · fuel 100%"
+    },
+    {
+      "scenario": "n01-courtyard-mix",
+      "group": "audio",
+      "name": "the courtyard runs its outdoor ambience bed",
+      "ok": true,
+      "detail": "courtyard"
+    },
+    {
+      "scenario": "n01-courtyard-mix",
+      "group": "audio",
+      "name": "the music stays calm before any hunting",
+      "ok": true,
+      "detail": "0.120"
+    },
+    {
+      "scenario": "n01-courtyard-mix",
+      "group": "audio",
+      "name": "every layer scales from the intensity",
+      "ok": true,
+      "detail": "bass 0.216 · pad 0.154 · perc 0.098"
+    },
+    {
+      "scenario": "n01-courtyard-mix",
+      "group": "audio",
+      "name": "n01-courtyard-mix matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "n01-courtyard-mix",
+      "group": "audio",
+      "name": "n01-courtyard-mix renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 51.6"
+    },
+    {
+      "scenario": "n01-courtyard-mix",
+      "group": "audio",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 67138.00, 0.00"
+    },
+    {
+      "scenario": "n01-courtyard-mix",
+      "group": "audio",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "15 rects"
+    },
+    {
+      "scenario": "n01-courtyard-mix",
+      "group": "audio",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · LIVE · fuel 100%"
+    },
+    {
+      "scenario": "n02-reactor-bed",
+      "group": "audio",
+      "name": "the reactor deck retunes to its industrial bed",
+      "ok": true,
+      "detail": "reactor"
+    },
+    {
+      "scenario": "n02-reactor-bed",
+      "group": "audio",
+      "name": "n02-reactor-bed matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "n02-reactor-bed",
+      "group": "audio",
+      "name": "n02-reactor-bed renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 42.5"
+    },
+    {
+      "scenario": "n02-reactor-bed",
+      "group": "audio",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "2.50, 20.50, 0.00, 1.00, 384.00, 26555.00, 55.00"
+    },
+    {
+      "scenario": "n02-reactor-bed",
+      "group": "audio",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "7 rects"
+    },
+    {
+      "scenario": "n02-reactor-bed",
+      "group": "audio",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · LIVE · fuel 100%"
+    },
+    {
+      "scenario": "n03-indoor-bed",
+      "group": "audio",
+      "name": "standing under a ceiling switches to the indoor bed",
+      "ok": true,
+      "detail": "ceiling 3.00 · indoor"
+    },
+    {
+      "scenario": "n03-indoor-bed",
+      "group": "audio",
+      "name": "n03-indoor-bed matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "n03-indoor-bed",
+      "group": "audio",
+      "name": "n03-indoor-bed renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 59.1"
+    },
+    {
+      "scenario": "n03-indoor-bed",
+      "group": "audio",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "6.50, 6.50, 0.00, 1.00, 384.00, 0.00, 99.00"
+    },
+    {
+      "scenario": "n03-indoor-bed",
+      "group": "audio",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "13 rects"
+    },
+    {
+      "scenario": "n03-indoor-bed",
+      "group": "audio",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · LIVE · fuel 100%"
+    },
+    {
+      "scenario": "n04-boss-swings-music",
+      "group": "audio",
+      "name": "the boss stage drives the mix harder than the hunt",
+      "ok": true,
+      "detail": "boss · 0.45 → 0.88"
+    },
+    {
+      "scenario": "n04-boss-swings-music",
+      "group": "audio",
+      "name": "n04-boss-swings-music matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "n04-boss-swings-music",
+      "group": "audio",
+      "name": "n04-boss-swings-music renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 44.8"
+    },
+    {
+      "scenario": "n04-boss-swings-music",
+      "group": "audio",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "32.50, 58.50, 0.00, 1.00, 384.00, 39173.00, 0.00"
+    },
+    {
+      "scenario": "n04-boss-swings-music",
+      "group": "audio",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "16 rects"
+    },
+    {
+      "scenario": "n04-boss-swings-music",
+      "group": "audio",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · LIVE · fuel 100%"
+    },
+    {
+      "scenario": "n05-low-health-heartbeat",
+      "group": "audio",
+      "name": "low health starts the heartbeat",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "scenario": "n05-low-health-heartbeat",
+      "group": "audio",
+      "name": "healing above a third stops the heartbeat",
+      "ok": true,
+      "detail": "false"
+    },
+    {
+      "scenario": "n05-low-health-heartbeat",
+      "group": "audio",
+      "name": "n05-low-health-heartbeat matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "n05-low-health-heartbeat",
+      "group": "audio",
+      "name": "n05-low-health-heartbeat renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 44.8"
+    },
+    {
+      "scenario": "n05-low-health-heartbeat",
+      "group": "audio",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "32.50, 58.50, 0.00, 1.00, 384.00, 39173.00, 0.00"
+    },
+    {
+      "scenario": "n05-low-health-heartbeat",
+      "group": "audio",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "16 rects"
+    },
+    {
+      "scenario": "n05-low-health-heartbeat",
+      "group": "audio",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "r01-jet-over-wall",
@@ -3243,7 +3548,7 @@
       "group": "routes",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "14 rects"
+      "detail": "15 rects"
     },
     {
       "scenario": "r01-jet-over-wall",
@@ -3285,7 +3590,7 @@
       "group": "routes",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "7 rects"
+      "detail": "8 rects"
     },
     {
       "scenario": "r02-jet-forward-climb",
@@ -3327,7 +3632,7 @@
       "group": "routes",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "18 rects"
+      "detail": "19 rects"
     },
     {
       "scenario": "r03-aerial-lookdown",
@@ -3369,14 +3674,14 @@
       "group": "routes",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "14 rects"
+      "detail": "15 rects"
     },
     {
       "scenario": "r04-respawn-midair",
       "group": "routes",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "r05-sprint-route",
@@ -3411,14 +3716,14 @@
       "group": "routes",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "11 rects"
+      "detail": "12 rects"
     },
     {
       "scenario": "r05-sprint-route",
       "group": "routes",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "i01-keycard-pickup",
@@ -3467,14 +3772,14 @@
       "group": "interaction",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "6 rects"
+      "detail": "7 rects"
     },
     {
       "scenario": "i01-keycard-pickup",
       "group": "interaction",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "i02-door-locked",
@@ -3523,14 +3828,14 @@
       "group": "interaction",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "12 rects"
+      "detail": "13 rects"
     },
     {
       "scenario": "i02-door-locked",
       "group": "interaction",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "i03-door-unlock",
@@ -3586,14 +3891,14 @@
       "group": "interaction",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "10 rects"
+      "detail": "11 rects"
     },
     {
       "scenario": "i03-door-unlock",
       "group": "interaction",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "i04-talk-cycle",
@@ -3649,7 +3954,7 @@
       "group": "interaction",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "i05-medkit-heal",
@@ -3691,14 +3996,14 @@
       "group": "interaction",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "16 rects"
+      "detail": "17 rects"
     },
     {
       "scenario": "i05-medkit-heal",
       "group": "interaction",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "i06-fuel-refill",
@@ -3747,7 +4052,7 @@
       "group": "interaction",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "i07-empty-interact",
@@ -3789,14 +4094,14 @@
       "group": "interaction",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "13 rects"
+      "detail": "14 rects"
     },
     {
       "scenario": "i07-empty-interact",
       "group": "interaction",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "f01-player-shot",
@@ -3852,14 +4157,14 @@
       "group": "combat",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "8 rects"
+      "detail": "9 rects"
     },
     {
       "scenario": "f01-player-shot",
       "group": "combat",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "f02-player-kill",
@@ -3929,14 +4234,14 @@
       "group": "combat",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "7 rects"
+      "detail": "8 rects"
     },
     {
       "scenario": "f02-player-kill",
       "group": "combat",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "f03-bolt-miss",
@@ -3978,7 +4283,7 @@
       "group": "combat",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "f04-bolt-travel",
@@ -4013,14 +4318,14 @@
       "group": "combat",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "8 rects"
+      "detail": "9 rects"
     },
     {
       "scenario": "f04-bolt-travel",
       "group": "combat",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "f05-hostile-damage",
@@ -4062,14 +4367,14 @@
       "group": "combat",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "6 rects"
+      "detail": "7 rects"
     },
     {
       "scenario": "f05-hostile-damage",
       "group": "combat",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "f06-death-redeploy",
@@ -4125,14 +4430,14 @@
       "group": "combat",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "14 rects"
+      "detail": "15 rects"
     },
     {
       "scenario": "f06-death-redeploy",
       "group": "combat",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "f07-fire-cooldown",
@@ -4167,14 +4472,14 @@
       "group": "combat",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "8 rects"
+      "detail": "9 rects"
     },
     {
       "scenario": "f07-fire-cooldown",
       "group": "combat",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "f08-enemy-windup",
@@ -4209,14 +4514,14 @@
       "group": "combat",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "6 rects"
+      "detail": "7 rects"
     },
     {
       "scenario": "f08-enemy-windup",
       "group": "combat",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "f09-bolt-blocked",
@@ -4272,7 +4577,7 @@
       "group": "combat",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "f10-enemy-gun",
@@ -4293,7 +4598,7 @@
       "group": "combat",
       "name": "f10-enemy-bolt renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 55.5"
+      "detail": "512 colors, mean luma 55.8"
     },
     {
       "scenario": "f10-enemy-gun",
@@ -4314,7 +4619,7 @@
       "group": "combat",
       "name": "f10-enemy-gun renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 54.7"
+      "detail": "512 colors, mean luma 54.9"
     },
     {
       "scenario": "f10-enemy-gun",
@@ -4328,14 +4633,14 @@
       "group": "combat",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "7 rects"
+      "detail": "8 rects"
     },
     {
       "scenario": "f10-enemy-gun",
       "group": "combat",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "f11-muzzle-spawn",
@@ -4370,14 +4675,14 @@
       "group": "combat",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "14 rects"
+      "detail": "15 rects"
     },
     {
       "scenario": "f11-muzzle-spawn",
       "group": "combat",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "f12-crate-destroy",
@@ -4447,7 +4752,7 @@
       "group": "combat",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "f13-boss-encounter",
@@ -4615,7 +4920,7 @@
       "group": "combat",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "l01-transition-reactor",
@@ -4685,7 +4990,7 @@
       "group": "levels",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "l02-vault-return",
@@ -4734,14 +5039,14 @@
       "group": "levels",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "14 rects"
+      "detail": "15 rects"
     },
     {
       "scenario": "l02-vault-return",
       "group": "levels",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "l03-terrace-climb",
@@ -4804,7 +5109,7 @@
       "group": "levels",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "l04-reactor-hover",
@@ -4846,7 +5151,7 @@
       "group": "levels",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "l05-beacon-loop",
@@ -4888,14 +5193,14 @@
       "group": "levels",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "14 rects"
+      "detail": "15 rects"
     },
     {
       "scenario": "l05-beacon-loop",
       "group": "levels",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "l06-district-arrival",
@@ -4972,7 +5277,7 @@
       "group": "levels",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "l07-rooftop-landing",
@@ -5091,14 +5396,14 @@
       "group": "levels",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "l09-hunt-gate",
       "group": "levels",
       "name": "the beacon refuses extraction before the hunt",
       "ok": true,
-      "detail": "district · EXTRACTION LOCKED · 7 HUNTERS REMAIN"
+      "detail": "district · EXTRACTION LOCKED · HUNT · 7 HUNTERS REMAIN"
     },
     {
       "scenario": "l09-hunt-gate",
@@ -5117,9 +5422,23 @@
     {
       "scenario": "l09-hunt-gate",
       "group": "levels",
-      "name": "the victory overlay reports the mission clock and kills",
+      "name": "the victory overlay reports the mission clock, kills, and deaths",
       "ok": true,
-      "detail": "TIME 00:00 · 7 HOSTILES DOWN"
+      "detail": "TIME 00:00 · 7 HOSTILES DOWN · 0 DEATHS"
+    },
+    {
+      "scenario": "l09-hunt-gate",
+      "group": "levels",
+      "name": "a first clear shows the new-best summary",
+      "ok": true,
+      "detail": "NEW BEST · 7 KILLS · BEST 00:00"
+    },
+    {
+      "scenario": "l09-hunt-gate",
+      "group": "levels",
+      "name": "the clear is persisted to the campaign record",
+      "ok": true,
+      "detail": "district best 7 kills · 0.8 s"
     },
     {
       "scenario": "l09-hunt-gate",
@@ -5154,14 +5473,14 @@
       "group": "levels",
       "name": "sprite projections are sane",
       "ok": true,
-      "detail": "14 rects"
+      "detail": "15 rects"
     },
     {
       "scenario": "l09-hunt-gate",
       "group": "levels",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "l10-jetpack-roof",
@@ -5252,7 +5571,7 @@
       "group": "levels",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "l12-office-entry",
@@ -5350,7 +5669,7 @@
       "group": "levels",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "l13-office-medkit",
@@ -5392,7 +5711,7 @@
       "group": "levels",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "l14-vault-entry",
@@ -5448,7 +5767,7 @@
       "group": "levels",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "l15-vault-fuel",
@@ -5490,7 +5809,7 @@
       "group": "levels",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "l16-ceiling-jet-cap",
@@ -5553,7 +5872,7 @@
       "group": "levels",
       "name": "HUD is populated",
       "ok": true,
-      "detail": "WALK · ATTRACT · fuel 100%"
+      "detail": "WALK · LIVE · fuel 100%"
     },
     {
       "scenario": "l17-roof-over-vault",
@@ -5605,7 +5924,329 @@
       "detail": "PERCH · 12.0 m · fuel 100%"
     },
     {
-      "scenario": "l17-roof-over-vault",
+      "scenario": "l18-foundry-arrival",
+      "group": "levels",
+      "name": "the courtyard beacon loads the slagworks hall",
+      "ok": true,
+      "detail": "foundry · SLAGWORKS"
+    },
+    {
+      "scenario": "l18-foundry-arrival",
+      "group": "levels",
+      "name": "the foundry spawns on the south loading floor",
+      "ok": true,
+      "detail": "24.50, 44.50 · support 0"
+    },
+    {
+      "scenario": "l18-foundry-arrival",
+      "group": "levels",
+      "name": "the hunt objective counts the furnace crew",
+      "ok": true,
+      "detail": "Cross the slag channels, recover three coolant cells, and break the foreman. · 0/6"
+    },
+    {
+      "scenario": "l18-foundry-arrival",
+      "group": "levels",
+      "name": "the foreman and the catwalk crew hold the hall",
+      "ok": true,
+      "detail": "320 hp · elevated cinder-lancer@3, catwalk-gunner@6"
+    },
+    {
+      "scenario": "l18-foundry-arrival",
+      "group": "levels",
+      "name": "the hazard grid exposes the slag cycle",
+      "ok": true,
+      "detail": "hot true · standing false · coolant 0/3"
+    },
+    {
+      "scenario": "l18-foundry-arrival",
+      "group": "levels",
+      "name": "l18-foundry-arrival matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l18-foundry-arrival",
+      "group": "levels",
+      "name": "l18-foundry-arrival renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 32.1"
+    },
+    {
+      "scenario": "l18-foundry-arrival",
+      "group": "levels",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "24.50, 44.50, 0.00, 1.00, 384.00, 16575.00, 0.00"
+    },
+    {
+      "scenario": "l18-foundry-arrival",
+      "group": "levels",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "20 rects"
+    },
+    {
+      "scenario": "l18-foundry-arrival",
+      "group": "levels",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · LIVE · fuel 100%"
+    },
+    {
+      "scenario": "l19-hot-channel-burns",
+      "group": "levels",
+      "name": "standing on a hot channel burns the player",
+      "ok": true,
+      "detail": "health 87.2 · hot true · SLAG BURN · CLEAR THE CHANNEL"
+    },
+    {
+      "scenario": "l19-hot-channel-burns",
+      "group": "levels",
+      "name": "l19-hot-channel matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l19-hot-channel-burns",
+      "group": "levels",
+      "name": "l19-hot-channel renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 63.8"
+    },
+    {
+      "scenario": "l19-hot-channel-burns",
+      "group": "levels",
+      "name": "l19-hot-channel-burns matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l19-hot-channel-burns",
+      "group": "levels",
+      "name": "l19-hot-channel-burns renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 63.8"
+    },
+    {
+      "scenario": "l19-hot-channel-burns",
+      "group": "levels",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "24.50, 31.50, 0.00, 1.00, 0.00, 0.00, 0.00"
+    },
+    {
+      "scenario": "l19-hot-channel-burns",
+      "group": "levels",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "16 rects"
+    },
+    {
+      "scenario": "l19-hot-channel-burns",
+      "group": "levels",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · LIVE · fuel 100%"
+    },
+    {
+      "scenario": "l20-cold-channel-safe",
+      "group": "levels",
+      "name": "the same channel is safe through the cold phase",
+      "ok": true,
+      "detail": "health 100 · hot false"
+    },
+    {
+      "scenario": "l20-cold-channel-safe",
+      "group": "levels",
+      "name": "l20-cold-channel matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l20-cold-channel-safe",
+      "group": "levels",
+      "name": "l20-cold-channel renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 40.0"
+    },
+    {
+      "scenario": "l20-cold-channel-safe",
+      "group": "levels",
+      "name": "the channel reignites on the next cycle",
+      "ok": true,
+      "detail": "health 96.8 · hot true"
+    },
+    {
+      "scenario": "l20-cold-channel-safe",
+      "group": "levels",
+      "name": "l20-cold-channel-safe matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l20-cold-channel-safe",
+      "group": "levels",
+      "name": "l20-cold-channel-safe renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 63.9"
+    },
+    {
+      "scenario": "l20-cold-channel-safe",
+      "group": "levels",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "24.50, 31.50, 0.00, 1.00, 0.00, 0.00, 0.00"
+    },
+    {
+      "scenario": "l20-cold-channel-safe",
+      "group": "levels",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "16 rects"
+    },
+    {
+      "scenario": "l20-cold-channel-safe",
+      "group": "levels",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · LIVE · fuel 100%"
+    },
+    {
+      "scenario": "l21-coolant-cell",
+      "group": "levels",
+      "name": "the coolant cell is collected on E",
+      "ok": true,
+      "detail": "pickup · 1/3 · COOLANT CELL 1/3"
+    },
+    {
+      "scenario": "l21-coolant-cell",
+      "group": "levels",
+      "name": "l21-coolant-cell matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l21-coolant-cell",
+      "group": "levels",
+      "name": "l21-coolant-cell renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 32.5"
+    },
+    {
+      "scenario": "l21-coolant-cell",
+      "group": "levels",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "8.50, 24.50, 0.00, 1.00, 384.00, 18032.00, 0.00"
+    },
+    {
+      "scenario": "l21-coolant-cell",
+      "group": "levels",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "18 rects"
+    },
+    {
+      "scenario": "l21-coolant-cell",
+      "group": "levels",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · LIVE · fuel 100%"
+    },
+    {
+      "scenario": "l22-foundry-clear",
+      "group": "levels",
+      "name": "the keycard opens the control-room door",
+      "ok": true,
+      "detail": "card pickup · door door · control:open"
+    },
+    {
+      "scenario": "l22-foundry-clear",
+      "group": "levels",
+      "name": "all three coolant cells gate the foreman",
+      "ok": true,
+      "detail": "3/3 · stage hunt"
+    },
+    {
+      "scenario": "l22-foundry-clear",
+      "group": "levels",
+      "name": "clearing the crew exposes the foreman",
+      "ok": true,
+      "detail": "6/6 · stage boss"
+    },
+    {
+      "scenario": "l22-foundry-clear",
+      "group": "levels",
+      "name": "killing the foreman unlocks extraction",
+      "ok": true,
+      "detail": "stage extract · kills 6"
+    },
+    {
+      "scenario": "l22-foundry-clear",
+      "group": "levels",
+      "name": "the control-room beacon ends the mission",
+      "ok": true,
+      "detail": "clear · victory shown"
+    },
+    {
+      "scenario": "l22-foundry-clear",
+      "group": "levels",
+      "name": "the overlay names the foundry instead of the district",
+      "ok": true,
+      "detail": "Foundry cleared"
+    },
+    {
+      "scenario": "l22-foundry-clear",
+      "group": "levels",
+      "name": "the foundry clear is persisted with its furnace record",
+      "ok": true,
+      "detail": "reached courtyard,foundry · best 6 kills · 0.9 s"
+    },
+    {
+      "scenario": "l22-foundry-clear",
+      "group": "levels",
+      "name": "E on the foundry victory returns to the courtyard",
+      "ok": true,
+      "detail": "continue · courtyard"
+    },
+    {
+      "scenario": "l22-foundry-clear",
+      "group": "levels",
+      "name": "l22-foundry-clear matches baseline",
+      "ok": true,
+      "detail": "0.00% of pixels differ"
+    },
+    {
+      "scenario": "l22-foundry-clear",
+      "group": "levels",
+      "name": "l22-foundry-clear renders content",
+      "ok": true,
+      "detail": "512 colors, mean luma 51.6"
+    },
+    {
+      "scenario": "l22-foundry-clear",
+      "group": "levels",
+      "name": "state and geometry stay finite",
+      "ok": true,
+      "detail": "3.50, 1.50, 0.00, 1.00, 384.00, 67138.00, 0.00"
+    },
+    {
+      "scenario": "l22-foundry-clear",
+      "group": "levels",
+      "name": "sprite projections are sane",
+      "ok": true,
+      "detail": "15 rects"
+    },
+    {
+      "scenario": "l22-foundry-clear",
+      "group": "levels",
+      "name": "HUD is populated",
+      "ok": true,
+      "detail": "WALK · LIVE · fuel 100%"
+    },
+    {
+      "scenario": "l22-foundry-clear",
       "group": "levels",
       "name": "no page errors",
       "ok": true,
@@ -6049,6 +6690,41 @@
       "baseline": "compared"
     },
     {
+      "name": "u08-campaign-menu",
+      "kind": "page",
+      "baseline": "skipped"
+    },
+    {
+      "name": "n01-courtyard-mix",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "n02-reactor-bed",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "n03-indoor-bed",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "n04-boss-swings-music",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "n05-low-health-heartbeat",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
       "name": "r01-jet-over-wall",
       "kind": "canvas",
       "diff": 0,
@@ -6431,6 +7107,53 @@
     },
     {
       "name": "l17-roof-over-vault",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l18-foundry-arrival",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l19-hot-channel",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l19-hot-channel-burns",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l20-cold-channel",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l20-cold-channel-safe",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l21-coolant-cell",
+      "kind": "canvas",
+      "diff": 0,
+      "baseline": "compared"
+    },
+    {
+      "name": "l22-foundry-victory",
+      "kind": "page",
+      "baseline": "skipped"
+    },
+    {
+      "name": "l22-foundry-clear",
       "kind": "canvas",
       "diff": 0,
       "baseline": "compared"

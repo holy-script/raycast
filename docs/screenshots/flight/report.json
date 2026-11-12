@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-12T07:44:56.934Z",
+  "generatedAt": "2026-11-12T08:03:55.291Z",
   "url": "http://127.0.0.1:5202/?screenshot",
-  "durationMs": 7372,
+  "durationMs": 5706,
   "poses": [
     {
       "id": "f01-ground-level",
@@ -166,7 +166,7 @@
       "pitch": -1.2
     }
   ],
-  "fps": 59.36073059360731,
+  "fps": 59.750492449113594,
   "passed": 109,
   "failed": 0,
   "checks": [
@@ -810,7 +810,7 @@
       "scenario": "flight-realtime",
       "name": "the live loop sustains interactive frame rate",
       "ok": true,
-      "detail": "59.4 fps over 1.53 s"
+      "detail": "59.8 fps over 1.52 s"
     },
     {
       "scenario": "flight-realtime",

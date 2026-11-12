@@ -23,7 +23,7 @@ Last updated: **2026-11-12**
 | Enemy roster and AI | M14 | ✅ Rusher, charged lancer with muzzle telegraph, frontal-armor bulwark; 117 unit tests, 784 matrix checks, all browser suites green; deployed |
 | Campaign and progression | M15 | ✅ Versioned `raycast.campaign.v1` record, unlock/best-time/kills persistence, keyboard level select with briefings, `NEW BEST` victory summary; 125 unit tests |
 | Audio and game feel | M16 | ✅ Pure audio mix director, per-level ambience beds, stage-driven bass/pad/percussion, boss/extract/victory cues, low-health heartbeat, `audioDebug()` hook; 133 unit tests |
-| Foundry biome | M17 | 📋 Planned: SLAGWORKS 48×48 foundry, cycling slag hazards, coolant collection + foreman boss; research complete |
+| Foundry biome | M17 | ✅ SLAGWORKS 48×48 foundry, cycling slag channels, coolant collection gate, foreman boss, foundry palette; stage audio extended; 145 unit tests, 874 matrix checks |
 
 ## Verification snapshot
 
@@ -32,10 +32,10 @@ Run from a clean checkout:
 ```bash
 npm ci
 npm run typecheck   # passes
-npm test            # 11 files, 117 tests pass
-npm run build       # tsc + vite build (68.09 kB JS / 23.15 kB gzip)
+npm test            # 14 files, 145 tests pass
+npm run build       # tsc + vite build (85.17 kB JS / 28.30 kB gzip)
 npm run playtest    # 40/40 browser checks pass
-npm run playtest:matrix  # 116 scenarios, 784/784 checks, 140 captures, 0 console errors
+npm run playtest:matrix  # 127 scenarios, 874/874 checks (740 assertions + 134 goldens), 154 captures, 0 console errors
 npm run playtest:flight  # 18 poses + live jetpack, 109/109 checks, 30 captures
 npm run playtest:states  # 42/42 state checks, 21 captures, 0 console errors
 npm run assets:verify -- --min-iou 0.4  # 1,216-frame guardian atlas; min IoU 0.43, mean 0.90
@@ -170,6 +170,47 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
 
 ## Session log
 
+### 2026-11-12 — M17 SLAGWORKS foundry biome
+
+- `src/content/foundry-map.ts` builds a 48×48 map with perimeter walls, machinery at six
+  spots, a catwalk block, and a sealed control room (`fill(30,5,6,6,"b")` shell around a
+  4×4 interior, keycard door at 32,10). Spawn is the south loading bay at (24.5,44.5);
+  the control-room beacon is the only extraction. `FOUNDRY_HEIGHTS` keeps the catwalk at
+  6 m, and `FOUNDRY_ROOMS` gives the control room a 3 m ceiling under a 6 m roof.
+- `src/engine/hazard.ts` is a pure cycle: 4 s period, 2 s hot, negative time wraps.
+  `World` gains a `hazards: Uint8Array` stamped from `HazardArea[]` at creation with
+  bounds and solid-cell validation; `hazardAt()` reads it. Levels declare three rows of
+  slag (south channel y=31, mid channel y=20, both 46 cells wide) plus two 1×1 vents.
+- `Game.tickHazards()` only damages a grounded, living player; it batches
+  `HAZARD_DPS (12) × elapsed` every ≥0.25 s, toasts `SLAG BURN · CLEAR THE CHANNEL` at
+  most every 1.6 s, and clears the accumulator the moment the player leaves. Jetpack
+  clears channels by construction, so the route is never gated on a hazard phase.
+- Renderer: `FloorHazards { hot, cold, hotNow }` swaps hazard floors between `slag-hot`
+  and `slag-cold` and adds an ember tint (+30/+9/0) while hot. Each 1×1 vent grows
+  stacked glow plumes that tint ember during the hot phase. The minimap paints channels
+  by phase and coolant pickups in mint.
+- Mission stages extend to `hunt → collect → boss → extract → clear`; `gateToast()` names
+  the remaining hunters, coolant cells, then the foreman. The beacon refuses extraction
+  through the same `exitsUnlocked()` gate. The boss search now uses `spec.boss`, so the
+  foundry runs the foreman while the district keeps the overseer; the boss name flows
+  through toasts, objectives, and the HUD.
+- Victory heading is data-driven (`victory-title` + `CLEAR_LABELS`), so the foundry says
+  "Foundry cleared" instead of the old hardcoded district label.
+- Level surfaces are data-driven via `LevelSpec.wallTexture` and `GameAssets.walls`;
+  `main.ts` loads `foundry-wall/floor/top`, `slag-hot/cold`, and `coolant`. Audio stage
+  levels add `collect` at 0.45, so the coolant hunt sounds like the hunt stage.
+- Tests: new `tests/hazard.test.ts` covers the cycle and negative wrap; `world.test.ts`
+  covers stamping, the empty default, bounds, and solid-cell rejection; `levels.test.ts`
+  covers the 48×48 surfaces, 94 walkable hazard cells, 6 hunt targets, 3 coolant cells,
+  the seven-hostile-plus-foreman roster, reachability of every pickup/exit/ground actor,
+  and the sealed beacon. Matrix adds `l18`–`l22`: arrival, hot-channel burn, cold-channel
+  wait and reignition, coolant pickup, and the full keycard → coolant → foreman → beacon
+  clear with campaign-record assertions.
+- Verification: typecheck clean, **145 unit tests**, matrix 740/740 assertions (874 checks
+  with goldens) across 127 scenarios (154 captures, zero console errors), `playtest`
+  40/40, `flight` 109/109, `states` 42/42, build 85.17 kB JS / 28.30 kB gzip. Goldens
+  regenerated for every changed harness.
+
 ### 2026-11-12 — M16 audio director and game feel
 
 - `src/engine/audio-mix.ts` is a pure `computeAudioMix(input)` over level id, indoor flag,
@@ -202,7 +243,7 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
   0.45 → 0.88, and the heartbeat starting at 20 HP and stopping at 90.
 - Verification: typecheck clean, **133 unit tests**, matrix 701/701 across 122 scenarios
   in a scratch capture dir, `playtest` 40/40, `flight` 109/109, `states` 42/42, zero
-  console errors, build 78.17 kB JS / 26.45 kB gzip (goldens are regenerated with M17).
+  console errors, build 78.17 kB JS / 26.45 kB gzip; goldens were regenerated with M17.
 
 ### 2026-11-12 — M15 campaign and level select
 
@@ -658,8 +699,9 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
 - Heights are blocks grown from `z = 0` alongside carved room sectors. There are still no
   sunken floors/pits, overhangs, or multi-storey interior stairs; rooms are single-volume
   sectors with a ceiling and a separate roof slab.
-- Interiors exist only where a level declares `rooms` (the district office and vault).
-  Interior faces reuse the facade texture, so lit windows can appear on interior walls.
+- Interiors exist only where a level declares `rooms` (the district office and vault, and
+  the foundry control room). Interior faces reuse the level's facade texture, so lit
+  windows can appear on interior walls.
 - Actors are non-blocking (no player/actor or actor/actor collision). Hostiles deal melee
   contact damage; marauders and sentries also fire bolts with line of sight. Actors still
   cannot push each other or the player.
@@ -690,28 +732,32 @@ State-gallery verification (2026-11-11, `npm run playtest:states`):
   frames are committed, but the viewmodel has no per-altitude or per-FOV variants.
 - Sprites are still masked to the Blender silhouette, so AI cannot invent limbs outside
   the render; a reference-image lock for costume details is also not implemented.
-- Audio is synthesized (no music, no assets) and starts only after a user gesture; the
-  mute state, sensitivity, and FOV persist in localStorage. Headless playtests never
-  create an AudioContext, so sound is reviewed by code and manual play, not the harness.
+- Slag channels only damage while the player is grounded; jetpacking over them is always
+  safe, and the hazard state is global (every channel is hot at the same time), so no
+  per-channel phase offset exists yet.
+- Foundry floor damage is batched at ≥0.25 s, so a scripted crossing can lose
+  12–13 HP per batch rather than an exact 12 dps total.
+- Audio is synthesized (a procedural director, no music or sample assets) and starts only
+  after a user gesture; the mute state, sensitivity, and FOV persist in localStorage.
+  Headless playtests never create an AudioContext, so sound is reviewed by code and
+  manual play, not the harness.
 - The six-state guardian atlas is 1536×7296 (~45 MB decoded); the five viewmodel frames
   add ~1 MB. Splitting the atlas per state (or per state/pitch) is the obvious
   optimization if load time or mobile memory becomes a problem.
 
 ## Immediate next steps
 
-1. Owner playtest of M14: fight the district roster and confirm the three roles read
-   differently — rush the fast `rusher-north`, watch the lancer's muzzle glow before its
-   heavy bolt, and flank the `bulwark` after the `PLATING DEFLECTED` toast. Confirm the
-   hunt still clears at 7/7 and the overseer stage is unchanged.
-2. Tune the new roles in `src/content/actors.ts` (rusher speed, lancer charge/damage,
-   bulwark HP/armor) without changing `huntTargets` (7 non-boss hostiles).
-3. Start M15 (campaign and progression): versioned `raycast.campaign.v1` storage, level
-   select/briefings, best time/kills, and the victory summary. The design is in
-   [ROADMAP.md](ROADMAP.md#m15--campaign-and-progression).
-4. Then M16 (audio/game feel) and M17 (foundry biome). Research for all three is parked in
-   the roadmap; M17 touches hazards, textures, and mission gating, so it should land last.
-5. Optional: dedicated overseer art and a telegraphed heavy attack so the boss reads
-   differently from a tinted sentry.
-6. Optional: stairs between interior floors and a second room per building; extend
+1. Owner playtest of M15–M17: open the level select, deploy into SLAGWORKS, and confirm
+   the slag channels read hot/cold without the HUD, the coolant cells are findable, the
+   foreman stage is clear, and extraction only opens after both gates. Listen for the
+   per-level ambience and stage intensity lift. Confirm campaign bests persist after a
+   reload. The M14 roster check (rush the rusher, read the lancer's glow, flank the
+   bulwark) still applies in the district.
+2. Tune the foundry in `src/content/foundry-map.ts` and `src/content/actors.ts`:
+   hazard dps/period, coolant placement, foreman HP, and the vent chokepoints. Keep
+   `huntTargets` at 6 and `coolantTargets` at 3.
+3. Optional: per-channel hazard phase offsets, a visible channel-edge lip, and a
+   dedicated foreman chassis instead of the tinted sentry.
+4. Optional: stairs between interior floors and a second room per building; extend
    `RoomSpec` with an entry side and a per-room floor texture.
-7. Optional: AutoSprite/Gamelabs adapter behind the same CLI/workflow boundary.
+5. Optional: AutoSprite/Gamelabs adapter behind the same CLI/workflow boundary.

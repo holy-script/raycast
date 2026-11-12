@@ -64,6 +64,7 @@ async function boot(): Promise<void> {
   const prompt = byId<HTMLDivElement>("prompt");
   const toast = byId<HTMLDivElement>("toast");
   const victory = byId<HTMLDivElement>("victory");
+  const victoryTitle = byId<HTMLHeadingElement>("victory-title");
   const victoryStats = byId<HTMLParagraphElement>("victory-stats");
   const victoryBest = byId<HTMLParagraphElement>("victory-best");
   const campaignPanel = byId<HTMLDivElement>("campaign");
@@ -91,9 +92,15 @@ async function boot(): Promise<void> {
       asphalt,
       topSlab,
       roofSlab,
+      foundryWall,
+      foundryFloor,
+      foundryTop,
+      slagHot,
+      slagCold,
       keycard,
       medkit,
       fuel,
+      coolant,
       beacon,
       guardian,
       vmIdle0,
@@ -110,9 +117,15 @@ async function boot(): Promise<void> {
       loadTexture(`${BASE}assets/textures/asphalt.png`),
       loadTexture(`${BASE}assets/textures/top.png`),
       loadTexture(`${BASE}assets/textures/roof.png`),
+      loadTexture(`${BASE}assets/textures/foundry-wall.png`),
+      loadTexture(`${BASE}assets/textures/foundry-floor.png`),
+      loadTexture(`${BASE}assets/textures/foundry-top.png`),
+      loadTexture(`${BASE}assets/textures/slag-hot.png`),
+      loadTexture(`${BASE}assets/textures/slag-cold.png`),
       loadTexture(`${BASE}assets/textures/keycard.png`),
       loadTexture(`${BASE}assets/textures/medkit.png`),
       loadTexture(`${BASE}assets/textures/fuel.png`),
+      loadTexture(`${BASE}assets/textures/coolant.png`),
       loadTexture(`${BASE}assets/textures/beacon.png`),
       loadAtlas(`${BASE}assets/sprites/guardian/atlas.json`),
       loadTexture(`${BASE}assets/sprites/player/idle0.png`),
@@ -123,9 +136,16 @@ async function boot(): Promise<void> {
     ]);
     assets = {
       textures: { 1: brick, 2: panel, 3: door, 4: facade },
-      floors: { floor, asphalt },
-      tops: { top: topSlab, roof: roofSlab },
-      props: { keycard, medkit, fuel, beacon },
+      floors: {
+        floor,
+        asphalt,
+        "foundry-floor": foundryFloor,
+        "slag-hot": slagHot,
+        "slag-cold": slagCold,
+      },
+      tops: { top: topSlab, roof: roofSlab, "foundry-top": foundryTop },
+      walls: { "foundry-wall": foundryWall },
+      props: { keycard, medkit, fuel, coolant, beacon },
       atlases: { guardian },
       viewmodel: {
         idle0: vmIdle0,
@@ -209,6 +229,13 @@ async function boot(): Promise<void> {
   let campaignReturnFocus: HTMLElement | null = null;
 
   const levelById = (id: string) => LEVELS.find((level) => level.id === id);
+
+  const CLEAR_LABELS: Record<string, string> = {
+    courtyard: "Courtyard cleared",
+    reactor: "Reactor cleared",
+    district: "District cleared",
+    foundry: "Foundry cleared",
+  };
 
   const describeRecord = (record: LevelRecord): string => {
     if (!record.cleared) return "NO CLEAR";
@@ -434,6 +461,7 @@ async function boot(): Promise<void> {
     victory.classList.toggle("hidden", !state.victory);
     if (state.victory && state.mission) {
       const clock = formatClock(state.mission.time);
+      victoryTitle.textContent = CLEAR_LABELS[state.levelId] ?? "Mission cleared";
       const deathLabel = state.deaths === 1 ? "DEATH" : "DEATHS";
       victoryStats.textContent = `TIME ${clock} · ${state.mission.targets} HOSTILES DOWN · ${state.deaths} ${deathLabel}`;
       const record = campaign.levels[state.levelId];

@@ -19,6 +19,7 @@ import {
 import {
   Renderer,
   type CameraState,
+  type FloorHazards,
   type RenderStats,
   type SpriteDraw,
   type Texture,
@@ -28,12 +29,14 @@ import {
   canOccupy,
   ceilingAt,
   createWorld,
+  hazardAt,
   resolveFootprint,
   roofAt,
   STEP_UP,
   supportHeight,
   type World,
 } from "./engine/world";
+import { HAZARD_DPS, hazardHotAt } from "./engine/hazard";
 import type { ActorSpec } from "./content/actors";
 import {
   applyCrateDamage,
@@ -144,6 +147,8 @@ export interface GameAssets {
   textures: Record<number, Texture>;
   floors: Record<string, Texture>;
   tops: Record<string, Texture>;
+  /** Themed wall surfaces keyed by `LevelSpec.wallTexture`. */
+  walls: Record<string, Texture>;
   props: Record<PickupKind | "beacon", Texture>;
   viewmodel: Record<ViewmodelPose, Texture>;
 }
@@ -195,7 +200,7 @@ interface WorldDoor extends DoorSpec {
   open: boolean;
 }
 
-export type MissionStage = "hunt" | "boss" | "extract" | "clear";
+export type MissionStage = "hunt" | "collect" | "boss" | "extract" | "clear";
 
 export interface HudState {
   x: number;
@@ -232,10 +237,16 @@ export interface HudState {
     time: number;
     kills: number;
     targets: number;
+    coolant: { got: number; target: number } | null;
   } | null;
   victory: boolean;
   huntKills: number;
   huntTargets: number;
+  /** Coolant cells recovered in the current level. */
+  coolantGot: number;
+  coolantTargets: number;
+  /** True while the player stands on a burning slag cell. */
+  hazardHot: boolean;
   /** Player deaths in the current level (reset on every load). */
   deaths: number;
   prompt: string;
@@ -269,6 +280,11 @@ export interface RenderDebug {
   level: string;
   hunt: { kills: number; targets: number };
   mission: { stage: MissionStage; time: number; victory: boolean };
+  hazard: {
+    hotNow: boolean;
+    standing: boolean;
+    coolant: { got: number; target: number } | null;
+  };
   viewmodel: { pose: string; dx: number; dy: number };
   actors: Array<{
     name: string;
@@ -324,10 +340,14 @@ export class Game {
   private crateHits = new Map<number, number>();
   private keycard = false;
   private huntKills = 0;
+  private coolant = 0;
   private time = 0;
   private victory = false;
   private victoryTime = 0;
   private levelDeaths = 0;
+  private hazardHot = false;
+  private hazardAccum = 0;
+  private hazardNotice = 0;
   private lastMissionStage: MissionStage = "hunt";
   private toastText = "";
   private toastT = 0;
@@ -335,6 +355,7 @@ export class Game {
   private events: GameEvent[] = [];
   private bolts: Projectile[] = [];
   private impacts: Impact[] = [];
+  private wallTextures: Record<number, Texture> = {};
   private readonly glowTexture = createGlowTexture(32);
 
   constructor(renderer: Renderer, assets: GameAssets, canvas: HTMLCanvasElement) {
@@ -343,6 +364,7 @@ export class Game {
     this.world = createWorld(LEVELS[0].rows, undefined, {
       heights: LEVELS[0].heights,
       rooms: LEVELS[0].rooms,
+      hazards: LEVELS[0].hazards,
     });
     this.input = new InputController(canvas);
 
@@ -392,6 +414,7 @@ export class Game {
     this.time += dt;
     this.toastT = Math.max(0, this.toastT - dt);
     this.armorNotice = Math.max(0, this.armorNotice - dt);
+    this.hazardNotice = Math.max(0, this.hazardNotice - dt);
     this.player.hitFlash = Math.max(0, this.player.hitFlash - dt);
     this.player.attackCooldown = Math.max(0, this.player.attackCooldown - dt);
     this.updateActors(dt);
@@ -568,9 +591,37 @@ export class Game {
     }
     this.player.eyeBob = lerp(this.player.eyeBob, bobTarget, Math.min(1, dt * 12));
 
+    this.tickHazards(dt);
     this.trackMissionStage();
     this.collectPickups();
     this.checkExits();
+  }
+
+  /**
+   * Burns the player while they stand on a hot slag cell. Damage is applied in
+   * short batches so a long frame cannot skip the tick entirely, and the
+   * jetpack clears a channel: only standing feet take heat.
+   */
+  private tickHazards(dt: number): void {
+    const standing =
+      !this.player.dead &&
+      this.player.onGround &&
+      hazardAt(this.world, this.player.x, this.player.y);
+    const hot = hazardHotAt(this.time);
+    this.hazardHot = standing && hot;
+    if (!this.hazardHot) {
+      this.hazardAccum = 0;
+      return;
+    }
+    this.hazardAccum += dt;
+    if (this.hazardAccum < 0.25) return;
+    const elapsed = this.hazardAccum;
+    this.hazardAccum = 0;
+    this.damagePlayer(HAZARD_DPS * elapsed);
+    if (this.hazardNotice <= 0) {
+      this.setToast("SLAG BURN · CLEAR THE CHANNEL", 1.2);
+      this.hazardNotice = 1.6;
+    }
   }
 
   /** Emits one cue when the mission stage changes, never on load. */
@@ -1071,13 +1122,15 @@ export class Game {
       actor.state = "death";
       if (actor.spec.hostile && !actor.spec.boss) this.huntKills += 1;
       if (actor.spec.boss) {
-        this.setToast("OVERSEER DOWN · EXTRACTION UNLOCKED", 3);
+        this.setToast(
+          `${actor.spec.name.toUpperCase()} DOWN · EXTRACTION UNLOCKED`,
+          3,
+        );
       } else if (
         this.level.huntTargets !== undefined &&
-        this.huntKills === this.level.huntTargets &&
-        this.bossActor()
+        this.huntKills === this.level.huntTargets
       ) {
-        this.setToast("HUNT COMPLETE · OVERSEER EXPOSED", 2.4);
+        this.setToast(this.gateToast(), 2.4);
       } else {
         this.setToast(`${actor.spec.name.toUpperCase()} DOWN`, 1.6);
       }
@@ -1261,6 +1314,14 @@ export class Game {
     } else if (pickup.kind === "medkit") {
       this.player.health = Math.min(PLAYER_MAX_HEALTH, this.player.health + 40);
       this.setToast("MEDKIT · +40 HP", 2);
+    } else if (pickup.kind === "coolant") {
+      this.coolant += 1;
+      const target = this.level.coolantTargets ?? 0;
+      if (this.coolant >= target && this.huntDone()) {
+        this.setToast(`COOLANT STABLE · ${this.gateToast()}`, 2.6);
+      } else {
+        this.setToast(`COOLANT CELL ${this.coolant}/${target}`, 2);
+      }
     } else {
       this.player.fuel = 1;
       this.setToast("JET FUEL REPLENISHED", 2);
@@ -1271,15 +1332,39 @@ export class Game {
     return this.actors.find((actor) => actor.alive && actor.spec.boss) ?? null;
   }
 
+  private huntDone(): boolean {
+    return this.huntKills >= (this.level.huntTargets ?? 0);
+  }
+
+  private coolantDone(): boolean {
+    return this.coolant >= (this.level.coolantTargets ?? 0);
+  }
+
+  /** Next gate the mission still has to clear, phrased for the toast line. */
+  private gateToast(): string {
+    const bossName = this.bossActor()?.spec.name.toUpperCase();
+    const coolantLeft = (this.level.coolantTargets ?? 0) - this.coolant;
+    if (!this.huntDone()) {
+      const left = (this.level.huntTargets ?? 0) - this.huntKills;
+      return `HUNT · ${left} HUNTER${left === 1 ? "" : "S"} REMAIN`;
+    }
+    if (coolantLeft > 0) {
+      return `COOLANT CELLS · ${coolantLeft} REMAIN`;
+    }
+    if (bossName) return `${bossName} EXPOSED`;
+    return "EXTRACTION UNLOCKED";
+  }
+
   private missionStage(): MissionStage {
     if (this.victory) return "clear";
-    if (this.huntKills < (this.level.huntTargets ?? 0)) return "hunt";
+    if (!this.huntDone()) return "hunt";
+    if (!this.coolantDone()) return "collect";
     return this.bossActor() ? "boss" : "extract";
   }
 
   private exitsUnlocked(): boolean {
     if (this.level.huntTargets === undefined) return true;
-    return this.huntKills >= this.level.huntTargets && !this.bossActor();
+    return this.huntDone() && this.coolantDone() && !this.bossActor();
   }
 
   private checkExits(): void {
@@ -1296,13 +1381,7 @@ export class Game {
       }
       if (!this.exitsUnlocked()) {
         if (this.toastT <= 0) {
-          const left = (this.level.huntTargets ?? 0) - this.huntKills;
-          this.setToast(
-            left > 0
-              ? `EXTRACTION LOCKED · ${left} HUNTER${left === 1 ? "" : "S"} REMAIN`
-              : "EXTRACTION LOCKED · OVERSEER ACTIVE",
-            2,
-          );
+          this.setToast(`EXTRACTION LOCKED · ${this.gateToast()}`, 2);
         }
         continue;
       }
@@ -1351,8 +1430,15 @@ export class Game {
         x: level.spawn.x,
         y: level.spawn.y,
       },
-      { heights: level.heights, rooms: level.rooms },
+      { heights: level.heights, rooms: level.rooms, hazards: level.hazards },
     );
+    this.wallTextures = level.wallTexture
+      ? {
+          ...this.assets.textures,
+          1: this.assets.walls[level.wallTexture] ?? this.assets.textures[1],
+          4: this.assets.walls[level.wallTexture] ?? this.assets.textures[4],
+        }
+      : this.assets.textures;
     this.actors = level.actors.map((spec, i) => this.createActor(spec, i));
     this.pickups = level.pickups.map((pickup, i) => ({
       ...pickup,
@@ -1367,7 +1453,11 @@ export class Game {
     this.impacts = [];
     this.keycard = false;
     this.huntKills = 0;
+    this.coolant = 0;
     this.levelDeaths = 0;
+    this.hazardHot = false;
+    this.hazardAccum = 0;
+    this.hazardNotice = 0;
     this.victory = false;
     this.victoryTime = 0;
     this.placeAtSpawn();
@@ -1414,14 +1504,25 @@ export class Game {
     const top =
       this.assets.tops[this.level.topTexture ?? "top"] ??
       this.assets.tops.top;
+    const hot = this.assets.floors["slag-hot"];
+    const cold = this.assets.floors["slag-cold"];
+    const hazards: FloorHazards | undefined =
+      hot && cold
+        ? { hot, cold, hotNow: hazardHotAt(this.time) }
+        : undefined;
     this.renderer.render(
       camera,
       this.world,
-      this.assets.textures,
+      this.wallTextures,
       floor,
       top,
-      [...this.buildSprites(camera), ...this.buildPropSprites(), ...this.buildBoltSprites()],
+      [
+        ...this.buildSprites(camera),
+        ...this.buildPropSprites(),
+        ...this.buildBoltSprites(),
+      ],
       this.viewmodelVisible ? this.buildViewmodel() : undefined,
+      hazards,
     );
   }
 
@@ -1655,6 +1756,24 @@ export class Game {
       });
     }
 
+    // Single-cell hazard areas are steam vents; two stacked glows read as a
+    // plume that glows ember-hot while the vent is in its burn phase.
+    const hotNow = hazardHotAt(this.time);
+    const ventTint: [number, number, number] = hotNow
+      ? [1.4, 0.85, 0.5]
+      : [0.72, 1.0, 1.12];
+    for (const vent of this.level.hazards ?? []) {
+      if (vent.width !== 1 || vent.height !== 1) continue;
+      const x = vent.x + 0.5;
+      const y = vent.y + 0.5;
+      const pulse = 0.78 + Math.sin(this.time * 5 + x + y) * 0.14;
+      const id = vent.id ?? `${vent.x},${vent.y}`;
+      draws.push(
+        this.glowSprite(x, y, 0.42, 0.55, ventTint, (hotNow ? 0.6 : 0.3) * pulse, `vent:${id}`),
+        this.glowSprite(x, y, 0.95, 0.85, ventTint, (hotNow ? 0.32 : 0.16) * pulse, `vent-top:${id}`),
+      );
+    }
+
     return draws;
   }
 
@@ -1786,7 +1905,7 @@ export class Game {
 
     let boss: HudState["boss"] = null;
     const bossActor = this.actors.find(
-      (actor) => actor.alive && actor.spec.name === "overseer",
+      (actor) => actor.alive && actor.spec.boss,
     );
     if (bossActor) {
       const distance = Math.hypot(camera.x - bossActor.x, camera.y - bossActor.y);
@@ -1806,11 +1925,15 @@ export class Game {
         ? this.level.objective
         : stage === "hunt"
           ? `${this.level.objective} · ${this.huntKills}/${this.level.huntTargets}`
-          : stage === "boss"
-            ? "Defeat the overseer on the 12 m rooftop."
-            : stage === "extract"
-              ? "Reach the extraction beacon."
-              : this.level.objective;
+          : stage === "collect"
+            ? `Recover coolant cells · ${this.coolant}/${this.level.coolantTargets ?? 0}`
+            : stage === "boss"
+              ? (this.level.bossObjective ??
+                "Defeat the overseer on the 12 m rooftop.")
+              : stage === "extract"
+                ? (this.level.extractionObjective ??
+                  "Reach the extraction beacon.")
+                : this.level.objective;
 
     return {
       x: this.player.x,
@@ -1846,11 +1969,18 @@ export class Game {
               time: this.victory ? this.victoryTime : this.time,
               kills: this.huntKills,
               targets: this.level.huntTargets,
+              coolant:
+                this.level.coolantTargets !== undefined
+                  ? { got: this.coolant, target: this.level.coolantTargets }
+                  : null,
             }
           : null,
       victory: this.victory,
       huntKills: this.huntKills,
       huntTargets: this.level.huntTargets ?? 0,
+      coolantGot: this.coolant,
+      coolantTargets: this.level.coolantTargets ?? 0,
+      hazardHot: this.hazardHot,
       deaths: this.levelDeaths,
       prompt: this.interactionPrompt(),
       toast: this.toastT > 0 ? this.toastText : "",
@@ -1909,6 +2039,14 @@ export class Game {
         stage: this.missionStage(),
         time: this.victory ? this.victoryTime : this.time,
         victory: this.victory,
+      },
+      hazard: {
+        hotNow: hazardHotAt(this.time),
+        standing: hazardAt(this.world, this.player.x, this.player.y),
+        coolant:
+          this.level.coolantTargets !== undefined
+            ? { got: this.coolant, target: this.level.coolantTargets }
+            : null,
       },
       viewmodel: this.viewmodelState(),
       actors: this.actors.map((actor) => {
@@ -1970,13 +2108,26 @@ export class Game {
     ctx.fillStyle = "#0a0c12";
     ctx.fillRect(0, 0, size, size);
 
+    const hotNow = hazardHotAt(this.time);
     for (let y = 0; y < world.height; y += 1) {
       for (let x = 0; x < world.width; x += 1) {
-        const tile = world.tiles[y * world.width + x];
-        if (tile === 0) continue;
+        const cell = y * world.width + x;
+        const tile = world.tiles[cell];
+        const mirroredX = world.width - 1 - x;
+        if (tile === 0) {
+          if (world.hazards[cell] === 0) continue;
+          ctx.fillStyle = hotNow ? "#7a3d26" : "#1f3b40";
+          ctx.fillRect(
+            mirroredX * scale,
+            (world.height - 1 - y) * scale,
+            scale - 0.5,
+            scale - 0.5,
+          );
+          continue;
+        }
         ctx.fillStyle = tile === 2 ? "#39434f" : tile === 3 ? "#8a6b3a" : "#2a2f3c";
         ctx.fillRect(
-          (world.width - 1 - x) * scale,
+          mirroredX * scale,
           (world.height - 1 - y) * scale,
           scale - 0.5,
           scale - 0.5,
@@ -1998,7 +2149,9 @@ export class Game {
           ? "#6ce0ef"
           : pickup.kind === "medkit"
             ? "#f0e4c8"
-            : "#8fb7d0";
+            : pickup.kind === "coolant"
+              ? "#7fe0b4"
+              : "#8fb7d0";
       ctx.fillRect(at.x - 1.2, at.y - 1.2, 2.4, 2.4);
     }
 

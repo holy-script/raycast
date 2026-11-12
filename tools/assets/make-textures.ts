@@ -383,6 +383,190 @@ function beaconProp(): void {
   });
 }
 
+/** Foundry wall: soot-dark steel with riveted seams and heat-scorched streaks. */
+function foundryWallTexture(): void {
+  const rng = mulberry32(1947);
+
+  writePng("foundry-wall.png", (x, y) => {
+    const seam = x < 2 || y < 2 || x > 61 || y > 61 || Math.abs(x - 31.5) < 1;
+    const beam = y > 26 && y < 31;
+    const noise = (rng() - 0.5) * 9;
+    const soot = 10 - (y / SIZE) * 16;
+
+    if (seam) return [21 + noise, 24 + noise, 27 + noise];
+    if (beam) return [58 + noise + soot, 54 + noise + soot, 48 + noise + soot];
+
+    let r = 44 + noise + soot;
+    let g = 47 + noise + soot;
+    let b = 50 + noise + soot;
+
+    // Rust bleed under the rivet rows reads as heat damage, not random noise.
+    const rust = Math.sin(x * 0.7 + y * 0.11) > 0.92 && y > 31 ? 14 : 0;
+    r += rust * 1.6;
+    g += rust * 0.7;
+
+    for (const [rx, ry] of [
+      [6, 6],
+      [57, 6],
+      [6, 57],
+      [57, 57],
+      [16, 14],
+      [47, 14],
+      [16, 48],
+      [47, 48],
+    ]) {
+      const d = Math.hypot(x - rx, y - ry);
+      if (d < 1.5) {
+        r += 30;
+        g += 26;
+        b += 20;
+      } else if (d < 2.5) {
+        r -= 16;
+        g -= 15;
+        b -= 14;
+      }
+    }
+
+    return [r, g, b];
+  });
+}
+
+/** Foundry floor: oil-stained steel plate with a tread grid and slag pitting. */
+function foundryFloorTexture(): void {
+  const rng = mulberry32(6120);
+  const tread = new Map<string, number>();
+
+  writePng("foundry-floor.png", (x, y) => {
+    const plate = x < 2 || y < 2 || x > 61 || y > 61;
+    const groove = Math.abs((x + 16) % 32) < 1 || Math.abs((y + 16) % 32) < 1;
+    const noise = (rng() - 0.5) * 8;
+
+    if (plate) return [22 + noise, 24 + noise, 26 + noise];
+    if (groove) return [29 + noise, 32 + noise, 34 + noise];
+
+    const key = `${Math.floor(x / 8)}:${Math.floor(y / 8)}`;
+    if (!tread.has(key)) tread.set(key, (rng() - 0.5) * 14);
+    const variation = tread.get(key)!;
+
+    let r = 48 + noise + variation;
+    let g = 49 + noise + variation;
+    let b = 52 + noise + variation;
+
+    // Diamond-plate studs on the diagonal.
+    const stud = (x + y) % 16 < 2 && (y - x + 64) % 16 < 2;
+    if (stud) {
+      r += 16;
+      g += 16;
+      b += 16;
+    }
+    // Oil pool in the lower-left corner and a scorch bloom upper-right.
+    if (Math.hypot((x - 14) / 12, (y - 50) / 8) < 1) {
+      r -= 14;
+      g -= 12;
+      b -= 8;
+    }
+    if (Math.hypot((x - 48) / 14, (y - 16) / 12) < 1) {
+      r += 10;
+      g += 3;
+      b -= 4;
+    }
+
+    return [r, g, b];
+  });
+}
+
+/** Foundry slab top: soot-stained plate matching the wall height steps. */
+function foundryTopTexture(): void {
+  const rng = mulberry32(7781);
+
+  writePng("foundry-top.png", (x, y) => {
+    const border = x < 2 || y < 2 || x > 61 || y > 61;
+    const groove = Math.abs(x - 31.5) < 1 || Math.abs(y - 31.5) < 1;
+    const brushed = (rng() - 0.5) * 8;
+    const soot = 6 - (y / SIZE) * 8;
+
+    if (border) return [19 + brushed, 21 + brushed, 23 + brushed];
+    if (groove) return [26 + brushed, 28 + brushed, 31 + brushed];
+
+    let r = 46 + brushed + soot;
+    let g = 45 + brushed + soot;
+    let b = 45 + brushed + soot;
+
+    for (const [rx, ry] of [
+      [8, 8],
+      [55, 8],
+      [8, 55],
+      [55, 55],
+    ]) {
+      const d = Math.hypot(x - rx, y - ry);
+      if (d < 1.4) {
+        r += 24;
+        g += 22;
+        b += 20;
+      } else if (d < 2.4) {
+        r -= 13;
+        g -= 12;
+        b -= 12;
+      }
+    }
+
+    return [r, g, b];
+  });
+}
+
+/** Molten slag: bright veins in a cooling black crust. */
+function slagHotTexture(): void {
+  const rng = mulberry32(4510);
+
+  writePng("slag-hot.png", (x, y) => {
+    const noise = (rng() - 0.5) * 16;
+    const vein =
+      Math.abs(Math.sin(x * 0.38 + Math.cos(y * 0.21) * 2.4)) > 0.9 ||
+      Math.abs(Math.sin(x * 0.21 + y * 0.44 + 1.7)) > 0.94;
+    const core = Math.hypot((x - 32) / 26, (y - 32) / 26) < 1;
+    const heat = vein ? 1 : core ? 0.55 : 0.28;
+
+    return [
+      40 + heat * 175 + noise,
+      18 + heat * 92 + noise * 0.7,
+      8 + heat * 26 + noise * 0.4,
+    ];
+  });
+}
+
+/** Cold slag: dark basalt crust with faint residual heat in the cracks. */
+function slagColdTexture(): void {
+  const rng = mulberry32(4511);
+
+  writePng("slag-cold.png", (x, y) => {
+    const noise = (rng() - 0.5) * 12;
+    const crack =
+      Math.abs(Math.sin(x * 0.38 + Math.cos(y * 0.21) * 2.4)) > 0.92 ||
+      Math.abs(Math.sin(x * 0.21 + y * 0.44 + 1.7)) > 0.95;
+    const scale = x % 16 < 1.5 || y % 16 < 1.5;
+
+    if (scale) return [18 + noise, 19 + noise, 21 + noise];
+    if (crack) return [58 + noise, 34 + noise, 22 + noise];
+    return [30 + noise, 29 + noise, 29 + noise];
+  });
+}
+
+function coolantProp(): void {
+  writePropPng("coolant.png", (x, y) => {
+    const shell = insideRoundedRect(x, y, 8, 6, 23, 28, 3);
+    if (!shell) {
+      const halo = insideRoundedRect(x, y, 7, 5, 24, 29, 3);
+      return halo ? [120, 224, 190, 70] : [0, 0, 0, 0];
+    }
+    const cap = y >= 3 && y <= 6 && x >= 12 && x <= 19;
+    if (cap) return [74, 104, 90, 255];
+    const band = y >= 15 && y <= 20;
+    if (band) return [126, 236, 196, 255];
+    const frost = x <= 11 && y >= 8 && y <= 24;
+    return frost ? [178, 220, 210, 255] : [82, 148, 130, 255];
+  });
+}
+
 function doorTexture(): void {
   const rng = mulberry32(6060);
   writePng("door.png", (x, y) => {
@@ -410,9 +594,15 @@ topTexture();
 facadeTexture();
 asphaltTexture();
 roofTexture();
+foundryWallTexture();
+foundryFloorTexture();
+foundryTopTexture();
+slagHotTexture();
+slagColdTexture();
 keycardProp();
 medkitProp();
 fuelProp();
+coolantProp();
 beaconProp();
 doorTexture();
 

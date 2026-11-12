@@ -132,6 +132,16 @@ export interface ViewmodelDraw {
   y: number;
 }
 
+/**
+ * Slag surfaces drawn over hazard cells. The cycle phase is resolved by the
+ * game so the renderer stays a pure function of its arguments.
+ */
+export interface FloorHazards {
+  hot: Texture;
+  cold: Texture;
+  hotNow: boolean;
+}
+
 export interface RenderStats {
   wallColumns: number;
   wallPixels: number;
@@ -207,6 +217,7 @@ export class Renderer {
     topTexture: Texture,
     sprites: SpriteDraw[],
     viewmodel?: ViewmodelDraw,
+    floorHazards?: FloorHazards,
   ): void {
     this.stats.wallColumns = 0;
     this.stats.wallPixels = 0;
@@ -217,7 +228,7 @@ export class Renderer {
     this.stats.spriteRects = [];
     this.drawSky();
     this.depth.fill(Infinity);
-    this.drawGeometry(cam, world, textures, floorTexture, topTexture);
+    this.drawGeometry(cam, world, textures, floorTexture, topTexture, floorHazards);
     this.drawSprites(cam, sprites);
     if (viewmodel) this.drawViewmodel(viewmodel);
     this.ctx.putImageData(this.image, 0, 0);
@@ -261,6 +272,7 @@ export class Renderer {
     textures: Record<number, Texture>,
     floorTexture: Texture,
     topTexture: Texture,
+    floorHazards?: FloorHazards,
   ): void {
     const { width, height, pixels, depth } = this;
     const cosP = Math.cos(cam.pitch);
@@ -581,15 +593,29 @@ export class Renderer {
             paintedColumns[x] = 1;
           }
         } else if (floorT < Infinity) {
-          const texX = Math.floor(fract(floorWorldX) * floorTexture.width);
-          const texY = Math.floor(fract(floorWorldY) * floorTexture.height);
-          const src = (texY * floorTexture.width + texX) * 4;
+          const hazardCell =
+            floorHazards !== undefined &&
+            world.hazards[
+              Math.floor(floorWorldY) * world.width + Math.floor(floorWorldX)
+            ] !== 0;
+          const surface =
+            hazardCell && floorHazards
+              ? floorHazards.hotNow
+                ? floorHazards.hot
+                : floorHazards.cold
+              : floorTexture;
+          const texX = Math.floor(fract(floorWorldX) * surface.width);
+          const texY = Math.floor(fract(floorWorldY) * surface.height);
+          const src = (texY * surface.width + texX) * 4;
           const dst = idx * 4;
+          // Hot slag keeps a small additive ember glow on top of the distance
+          // falloff so a burning channel reads at range.
           const shade = clamp(1 / (1 + floorT * 0.075 * fogScale), 0.06, 1);
+          const ember = hazardCell && floorHazards?.hotNow ? 1 : 0;
           const fog = 1 - shade;
-          pixels[dst] = floorTexture.data[src] * shade + FOG_R * fog;
-          pixels[dst + 1] = floorTexture.data[src + 1] * shade + FOG_G * fog;
-          pixels[dst + 2] = floorTexture.data[src + 2] * shade + FOG_B * fog;
+          pixels[dst] = surface.data[src] * shade + FOG_R * fog + ember * 30;
+          pixels[dst + 1] = surface.data[src + 1] * shade + FOG_G * fog + ember * 9;
+          pixels[dst + 2] = surface.data[src + 2] * shade + FOG_B * fog;
           pixels[dst + 3] = 255;
           depth[idx] = floorT;
         }

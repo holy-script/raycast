@@ -1,14 +1,22 @@
 import {
   COURTYARD_ACTORS,
+  FOUNDRY_ACTORS,
   REACTOR_ACTORS,
   ROOFTOP_ACTORS,
   type ActorSpec,
 } from "./actors";
 import { DEMO_MAP, DEMO_SPAWN } from "./demo-map";
 import { DISTRICT_HEIGHTS, DISTRICT_MAP, DISTRICT_ROOMS, DISTRICT_SPAWN } from "./district-map";
-import type { RoomSpec } from "../engine/world";
+import {
+  FOUNDRY_HAZARDS,
+  FOUNDRY_HEIGHTS,
+  FOUNDRY_MAP,
+  FOUNDRY_ROOMS,
+  FOUNDRY_SPAWN,
+} from "./foundry-map";
+import type { HazardArea, RoomSpec } from "../engine/world";
 
-export type PickupKind = "keycard" | "medkit" | "fuel";
+export type PickupKind = "keycard" | "medkit" | "fuel" | "coolant";
 
 export interface PickupSpec {
   kind: PickupKind;
@@ -42,9 +50,13 @@ export interface LevelSpec {
   heights?: Record<string, number>;
   /** Interior sectors carved into towers: ceiling plane plus roof plane. */
   rooms?: RoomSpec[];
-  /** Floor and wall-top surface keys from the loaded texture sets. */
+  /** Slag channels and steam vents that cycle between burning and safe. */
+  hazards?: HazardArea[];
+  /** Floor, wall-top, and wall surface keys from the loaded texture sets. */
   floorTexture?: string;
   topTexture?: string;
+  /** Swaps the brick/panel wall tiles for a themed surface. */
+  wallTexture?: string;
   spawn: { x: number; y: number; yaw: number };
   actors: ActorSpec[];
   pickups: PickupSpec[];
@@ -52,6 +64,12 @@ export interface LevelSpec {
   exits: ExitSpec[];
   /** Hostiles that must die before the exits unlock; omitted when ungated. */
   huntTargets?: number;
+  /** Coolant cells that must be recovered before the exits unlock. */
+  coolantTargets?: number;
+  /** Objective line shown once the coolant run is done and the boss wakes. */
+  bossObjective?: string;
+  /** Objective line shown once every gate is satisfied. */
+  extractionObjective?: string;
 }
 
 // Reactor deck: a stepped pyramid, a vault, and terrace platforms at 0.2–1.8 m.
@@ -99,6 +117,7 @@ export const LEVELS: LevelSpec[] = [
     exits: [
       { id: "lift", x: 11.5, y: 11.5, target: "reactor" },
       { id: "district", x: 2.5, y: 22.5, target: "district" },
+      { id: "foundry", x: 21.5, y: 22.5, target: "foundry" },
     ],
   },
   {
@@ -139,6 +158,35 @@ export const LEVELS: LevelSpec[] = [
     doors: [],
     exits: [{ id: "extraction", x: 32.5, y: 32.5, target: "courtyard" }],
     huntTargets: 7,
+  },
+  {
+    id: "foundry",
+    title: "SLAGWORKS",
+    objective: "Cross the slag channels, recover three coolant cells, and break the foreman.",
+    bossObjective: "Coolant stable. Put the foreman down.",
+    extractionObjective: "Foreman down. Reach the control-room beacon.",
+    rows: FOUNDRY_MAP,
+    heights: FOUNDRY_HEIGHTS,
+    rooms: FOUNDRY_ROOMS,
+    hazards: FOUNDRY_HAZARDS,
+    floorTexture: "foundry-floor",
+    topTexture: "foundry-top",
+    wallTexture: "foundry-wall",
+    spawn: { x: FOUNDRY_SPAWN.x, y: FOUNDRY_SPAWN.y, yaw: -Math.PI * 0.5 },
+    actors: FOUNDRY_ACTORS,
+    pickups: [
+      { kind: "keycard", x: 6.5, y: 34.5 },
+      { kind: "coolant", x: 8.5, y: 24.5 },
+      { kind: "coolant", x: 24.5, y: 16.5 },
+      { kind: "coolant", x: 42.5, y: 26.5 },
+      { kind: "medkit", x: 24.5, y: 36.5 },
+      { kind: "fuel", x: 42.5, y: 36.5 },
+      { kind: "medkit", x: 33.5, y: 8.5 },
+    ],
+    doors: [{ id: "control", x: 32, y: 10, requires: "keycard" }],
+    exits: [{ id: "extraction", x: 32.5, y: 6.5, target: "courtyard" }],
+    huntTargets: 6,
+    coolantTargets: 3,
   },
 ];
 

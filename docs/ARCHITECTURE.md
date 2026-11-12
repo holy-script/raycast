@@ -24,15 +24,20 @@ solid diorama from jetpack altitude and the player can land on a wall to look do
 | File | Responsibility |
 | --- | --- |
 | `src/engine/dda.ts` | Grid traversal helpers used by tests and editors; the renderer walks DDA inline per pixel |
-| `src/engine/world.ts` | ASCII map parsing, legend heights, room sectors (`ceilings`/`roofs`), solid lookup, wall height / support height, height-aware collision |
+| `src/engine/world.ts` | ASCII map parsing, legend heights, room sectors (`ceilings`/`roofs`), hazard-cell stamping (`hazards`), solid lookup, wall height / support height, height-aware collision |
+| `src/engine/hazard.ts` | Pure slag-cycle clock (4 s period, 2 s hot) and the 12 dps damage constant |
 | `src/engine/crates.ts` | Destructible crate cells, hit counting, debris rules, cell clearing |
 | `src/engine/math.ts` | Angle wrap, yaw/pitch quantization, elevation angle |
-| `src/engine/renderer.ts` | Sky, per-pixel floors/faces/tops, roof/lintel/ceiling planes, facade storey sampling, sprites with depth slices, shadows, depth buffer |
+| `src/engine/renderer.ts` | Sky, per-pixel floors/faces/tops, roof/lintel/ceiling planes, facade storey sampling, hazard floor swap, sprites with depth slices, shadows, depth buffer |
 | `src/engine/atlas.ts` | Manifest parsing, frame lookup with fallback, slice atlas loading, image loading |
 | `src/engine/input.ts` | Pointer lock, key state, one-shot actions, scripted playtest input |
-| `src/game.ts` | Player physics, jetpack, combat/interaction, level loading, actor behavior, sprite selection, HUD |
-| `src/content/` | Level definitions (rows, heights, surfaces, spawn, actors, pickups, doors, exits) and actor specs |
+| `src/engine/audio-mix.ts` | Pure music/ambience mix over level, stage, kills, boss distance, health, death |
+| `src/engine/audio.ts` | Web Audio `Soundscape`: gesture-gated buses, ambience beds, music layers, one-shot cues |
+| `src/campaign.ts` | Versioned `raycast.campaign.v1` record, sanitisation, best-time/kills updates |
+| `src/game.ts` | Player physics, jetpack, combat/interaction, hazards, mission stages, level loading, actor behavior, sprite selection, HUD |
+| `src/content/` | Level definitions (rows, heights, surfaces, hazards, spawn, actors, pickups, doors, exits) and actor specs |
 | `src/content/district-map.ts` | 64×64 Rooftop District rows and legend |
+| `src/content/foundry-map.ts` | 48×48 SLAGWORKS rows, legend, rooms, and hazard areas |
 | `src/main.ts` | Asset boot, render loop, DOM/HUD wiring, debug API |
 | `tools/blender/` | Headless turntable: raw RGBA, depth, and normal passes |
 | `tools/stylize/` | Palette stylizer, shared premultiplied downsample, ComfyUI CLI |
@@ -303,21 +308,27 @@ and straight lines stay stable while flying. Only fog attenuation scales down at
 ## Levels, combat, and interaction
 
 `src/content/levels.ts` defines each level as `{ id, title, objective, rows, heights?,
-rooms?, floorTexture?, topTexture?, spawn, actors, pickups, doors, exits, huntTargets? }`.
+rooms?, hazards?, floorTexture?, topTexture?, wallTexture?, spawn, actors, pickups, doors,
+exits, huntTargets?, coolantTargets?, bossObjective?, extractionObjective? }`.
 `Game.loadLevel(index)` rebuilds the `World` from the rows, then deterministically resets
-time, player pose/health/fuel/cooldown, keycard, hunt progress, crate hits, and actor
-animation phase (`index × 0.37`). Exits target another level id; the beacon prop marks the
-pad. Because the world is rebuilt, pickups, opened doors, crates, and the keycard reset on
-every transition — the demo loop is one-way per visit.
+time, player pose/health/fuel/cooldown, keycard, hunt/coolant progress, crate hits, and
+actor animation phase (`index × 0.37`). Exits target another level id; the beacon prop
+marks the pad. Because the world is rebuilt, pickups, opened doors, crates, and the
+keycard reset on every transition — the demo loop is one-way per visit.
 
-Three levels ship: the 24×24 courtyard, the 24×24 reactor deck, and the 64×64 Rooftop
-District. The district declares legend heights, asphalt floors, roof tops,
-`rooms: DISTRICT_ROOMS`, and `huntTargets: 7`; its actors, pickups, and exits can carry a
-`z` altitude. Two rooms are carved: the NW security office (x 2–8, y 4–8, ceiling 3 m
-under a 4 m roof) and the SE vault (x 51–57, y 54–59, ceiling 3 m under the 12 m tower),
-each with a doorway and an indoor pickup. Grounded content validates against open floor,
-while elevated content must sit on a solid cell whose surface matches its `z`. The
-courtyard gate beacon at (2.5, 22.5) enters the district, and the plaza beacon returns.
+Four levels ship: the 24×24 courtyard, the 24×24 reactor deck, the 64×64 Rooftop
+District, and the 48×48 SLAGWORKS foundry. The district declares legend heights, asphalt
+floors, roof tops, `rooms: DISTRICT_ROOMS`, and `huntTargets: 7`; its actors, pickups, and
+exits can carry a `z` altitude. Two rooms are carved: the NW security office (x 2–8,
+y 4–8, ceiling 3 m under a 4 m roof) and the SE vault (x 51–57, y 54–59, ceiling 3 m
+under the 12 m tower), each with a doorway and an indoor pickup. Grounded content
+validates against open floor, while elevated content must sit on a solid cell whose
+surface matches its `z`. The courtyard gate beacon at (2.5, 22.5) enters the district,
+the plaza beacon returns, and a second courtyard beacon at (21.5, 22.5) enters the
+foundry. The foundry spawns in the south loading bay at (24.5, 44.5), carves a sealed
+control room (x 30–35, y 5–10, ceiling 3 m), and gates the control-room beacon behind a
+keycard door at (32, 10). `wallTexture` selects a per-level facade: `loadLevel` overrides
+texture tiles 1 and 4 from `GameAssets.walls`, so foundry walls stay in palette.
 
 Actor states are `idle | walk | attack | hurt | death | talk`. Hostiles (`hostile: true`)
 either stalk the player (`chase`) or hold a position and shoot when they have line of
@@ -339,6 +350,14 @@ inward, the parapet clips their own downward sight line. Once within reach, chas
 | Lancer (`spire-se`) | 95 HP, 0.9 s charge, 20 dmg, 24 m range, 18 m/s bolt |
 | Bulwark (`bulwark`) | 180 HP, 0.85 m/s, 18 dmg melee, 50% frontal damage reduction |
 | District overseer (boss) | 260 HP, 5 dmg × 3-bolt volley (±0.12 rad), 18 m range, 1.7 s cooldown, 11 m/s bolt, 1.4 rad/s turn |
+| Foundry slag-rusher | 48 HP, 2.5 m/s, 6 dmg melee |
+| Foundry smelter-gunner | 8 dmg, 14 m range gun |
+| Foundry slag-bulwark | 180 HP, 0.85 m/s, 50% frontal damage reduction |
+| Foundry cinder-lancer (z 3) | 0.9 s charge, 20 dmg sentry |
+| Foundry vent-rusher | 55 HP, 2.4 m/s chaser |
+| Foundry catwalk-gunner (z 6) | 9 dmg, 18 m range sentry |
+| Foreman (foundry boss) | 320 HP, 1.36 scale, 3-bolt volley (±0.12 rad), 1.5 rad/s turn |
+| Slag channel | 12 dps while hot (2 s of every 4 s), grounded players only |
 | Destructible crate | 1.4 m tall, 2 player bolts, `CRATE DESTROYED` toast |
 | Interaction radius | talk/door 2.4 m, pickup 0.5 m, exit pad 0.6 m |
 
@@ -376,23 +395,57 @@ its forward arc (`frontalArmorScale`: facing/source dot product > 0.34, roughly 
 Side and rear hits land full damage, blocked hits round to at least 1 and emit `blocked`,
 and the HUD toasts `PLATING DEFLECTED · FLANK IT` at most once every 2.5 s. Damage calls
 without a source position (the automation kill loop) always land full damage, which keeps
-the mission gate deterministic. The district bulwark is the only plated actor.
+the mission gate deterministic. Plated actors are the district bulwark and the foundry
+slag-bulwark.
 
 Mission state is derived, not stored as a counter machine: `missionStage()` returns
-`hunt` while the non-boss kill count is below `huntTargets`, `boss` while the overseer
-lives, `extract` once both are satisfied, and `clear` after victory. Only non-boss
-hostiles increment `huntKills`, so killing the boss early cannot skip the hunt. A level
-with `huntTargets` keeps every exit locked until the hunt is complete **and** the boss is
-gone; a refused exit names the remaining hunter count or the active overseer. Reaching an
-unlocked beacon sets `victory`, which freezes the simulation and mission clock and raises
-a mission-complete overlay; `E` on that overlay loads the courtyard. The HUD also exposes
-the live stage objective and, within 24 m, the overseer's name, HP, and distance.
+`clear` after victory, `hunt` while the non-boss kill count is below `huntTargets`,
+`collect` while `coolant < coolantTargets`, `boss` while `spec.boss` is alive, and
+`extract` once every gate is satisfied. Only non-boss hostiles increment `huntKills`, so
+killing the boss early cannot skip the hunt. A gated level keeps every exit locked until
+the hunt, coolant, and boss gates pass; a refused exit names the remaining hunters, the
+missing cells (`gateToast()`), or the boss. Reaching an unlocked beacon sets `victory`,
+which freezes the simulation and mission clock, writes the campaign record, and raises a
+mission-complete overlay titled per level (`CLEAR_LABELS`); `E` returns to the courtyard
+and `L` opens level select. The HUD exposes the stage objective (including
+`bossObjective`/`extractionObjective`), the coolant count, and, within 24 m, the boss
+name, HP, and distance. The boss is data-driven: `spec.boss` selects the actor, so the
+district runs the overseer and the foundry runs the foreman.
+
+### Slag hazards
+
+`hazards?: HazardArea[]` on a level is stamped into `world.hazards` at creation: every
+cell in each rectangle is set to 1 after bounds and solid-cell validation. The foundry
+declares two 46-cell channels (y = 31 and y = 20) and two 1×1 vents. `hazardHotAt(time)` is
+pure and global — a 4 s cycle with the first 2 s hot — so every channel burns together.
+`Game.tickHazards()` damages only a living, grounded player while the current cell is a
+hazard and the phase is hot; damage is `HAZARD_DPS (12) × elapsed` in batches no shorter
+than 0.25 s, with the accumulator cleared as soon as the player leaves or jumps. The
+renderer receives `FloorHazards { hot, cold, hotNow }` and swaps the floor texture for
+hazard cells, adding an ember tint (+30/+9/0) while hot; vents render stacked glow plumes
+that tint with the phase, and the minimap paints channels by phase.
+
+### Campaign and audio
+
+`src/campaign.ts` owns `raycast.campaign.v1` in localStorage: reached level ids, per-level
+`{ cleared, bestTime, bestKills, deaths }`, and `lastLevel`. `sanitizeCampaign` rejects
+unknown versions and level ids, clamps numbers, ignores malformed JSON, and always keeps
+the courtyard reachable. `recordMission` runs only on a clear report and returns whether
+the run improved a best. The shell renders level cards and briefings from that record and
+never infers progress from HUD text.
+
+`computeAudioMix` is a pure function of level, indoor flag, mission stage, kills/targets,
+boss distance, health, and death; `Soundscape` applies the result to persistent Web Audio
+buses. Stage weights are hunt/collect 0.45, boss 0.68, extract 0.30, clear 0.20, plus
+hunt-progress and boss-proximity lifts; bass, pad, and percussion gains scale linearly
+with intensity. Every bed change retunes the level's filtered wind and hum; the heartbeat
+runs at ≤34% health. All nodes are created inside the gesture-gated `unlock()`.
 
 `interact()` returns `none | talk | door | locked | pickup | continue`. Doors are grid
 cells marked `D` with a `DoorSpec`; opening one clears both the tile id and its height so
 movement and raycasts agree, and a door with `requires: "keycard"` refuses until the
 player has one. Pickups are billboards collected within a 0.5 m 3D radius: keycard sets
-the flag, medkit heals, fuel refills. Exits compare horizontal distance and the player's
+the flag, medkit heals, fuel refills, coolant increments the coolant gate. Exits compare horizontal distance and the player's
 altitude to the pad's `z`, so a beacon on a roof cannot be triggered from the street.
 The HUD surfaces the current prompt (`E · talk`, `E · sealed — keycard required`, …) and a
 transient toast for outcomes.
@@ -524,7 +577,8 @@ Screenshots and a JSON report land in `docs/screenshots/playtest/`.
 The companion harnesses share `tools/playtest/support.ts` (contact sheets, sky-row
 classification, image metrics):
 
-- `playtest:matrix` — 116 deterministic scenarios, 784 checks, golden-frame comparison.
+- `playtest:matrix` — 127 deterministic scenarios, 874 checks (740 assertions + goldens),
+  golden-frame comparison.
 - `playtest:states` — paused player/guardian animation gallery, 42 checks.
 - `playtest:flight` — 18 altitude/pitch poses plus a live jetpack flight, 109 checks. It
   classifies every canvas pixel against the sky gradient, flags enclosed sky holes, fits the

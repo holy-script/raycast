@@ -3,6 +3,7 @@ import {
   canOccupy,
   ceilingAt,
   createWorld,
+  hazardAt,
   isSolidAt,
   resolveFootprint,
   roofAt,
@@ -242,5 +243,48 @@ describe("interior sectors", () => {
     expect(plain.ceilings.every((value) => value === 0)).toBe(true);
     expect(plain.roofs.every((value) => value === 0)).toBe(true);
     expect(plain.rooms).toEqual([]);
+  });
+});
+
+describe("hazard cells", () => {
+  const MAP = [
+    "########",
+    "#......#",
+    "#..a...#",
+    "#......#",
+    "########",
+  ];
+
+  it("stamps walkable cells inside each area", () => {
+    const world = createWorld(MAP, undefined, {
+      heights: { a: 8 },
+      hazards: [{ id: "channel", x: 1, y: 2, width: 2, height: 1 }],
+    });
+    expect(hazardAt(world, 1.5, 2.5)).toBe(true);
+    expect(hazardAt(world, 2.5, 2.5)).toBe(true);
+    expect(hazardAt(world, 3.5, 2.5)).toBe(false);
+    expect(hazardAt(world, 1.5, 1.5)).toBe(false);
+    expect(hazardAt(world, -1, 2)).toBe(false);
+    expect(hazardAt(world, 99, 2)).toBe(false);
+  });
+
+  it("keeps levels without hazards at an empty grid", () => {
+    const plain = createWorld(MAP, undefined, { heights: { a: 8 } });
+    expect(plain.hazards.every((value) => value === 0)).toBe(true);
+  });
+
+  it("rejects areas that leave the map or cover solid cells", () => {
+    expect(() =>
+      createWorld(MAP, undefined, {
+        heights: { a: 8 },
+        hazards: [{ x: 7, y: 1, width: 2, height: 1 }],
+      }),
+    ).toThrow(/bounds/);
+    expect(() =>
+      createWorld(MAP, undefined, {
+        heights: { a: 8 },
+        hazards: [{ x: 3, y: 2, width: 1, height: 1 }],
+      }),
+    ).toThrow(/solid cell/);
   });
 });

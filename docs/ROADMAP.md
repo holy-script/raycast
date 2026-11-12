@@ -4,11 +4,13 @@ Milestones are ordered. A milestone is complete only when every acceptance crite
 is checked and the verification command passes. Update this file and
 [PROGRESS.md](PROGRESS.md) whenever a milestone starts or finishes.
 
-Current position: **M0–M14 complete and deployed.**
-Ranged combat, interaction, doors/pickups, level transitions, the reactor map, and the
-Rooftop District are playable and covered by 784 deterministic matrix checks (116
-scenarios), a 40-check happy-path run, a 109-check flight sweep, and a 42-check paused-state
-gallery. The guardian is the only shipped chassis, with all six states in a 16×4×19 atlas;
+Current position: **M0–M17 complete.**
+Ranged combat, interaction, doors/pickups, level transitions, the reactor map, the
+Rooftop District, the SLAGWORKS foundry, campaign persistence, and the stage-driven audio
+director are playable and covered by 740 deterministic matrix assertions (127 scenarios,
+874 checks with goldens), a 40-check happy-path run, a 109-check flight sweep, and a
+42-check paused-state gallery. The guardian is the only shipped chassis, with all six
+states in a 16×4×19 atlas;
 the scout and brute prototypes were removed until their art pass exists. M8 delivered
 procedural audio, a pause/settings menu (sensitivity, FOV, mute) with persisted settings,
 a profiled render loop, and a clean five-minute production session. M9 added the
@@ -24,8 +26,10 @@ and stacked-slice sprite impostors. M13 turns the district into a staged mission
 boss, extraction, and a victory overlay, with a three-bolt overseer volley and rooftop
 cover. M13 is complete and deployed. M14 adds a three-role enemy roster: a fast rusher, a
 charged-shot lancer with a visible muzzle telegraph, and a frontal-armor bulwark that must
-be flanked. M15–M17 are documented plans (campaign persistence, an audio/game-feel pass,
-and a fourth foundry biome); their research is parked in the sections below.
+be flanked. M15 adds a persistent campaign with a level-select screen and mission
+briefings. M16 adds a procedural music director, per-level ambience beds, and event cues.
+M17 adds SLAGWORKS: a 48×48 foundry with cycling slag channels, a coolant collection gate,
+and the foreman boss. M15–M17 shipped on 2026-11-12; the owner playtest is next.
 
 ## M0 — Foundation
 
@@ -494,30 +498,37 @@ covered by unit/matrix checks; all existing suites stay green.
 Goal: a fourth level with a new material palette, a movement hazard, and a
 collection objective.
 
-Research complete; implementation not started.
+Implemented 2026-11-12.
 
 **SLAGWORKS map**
 
-- [ ] 48×48 `src/content/foundry-map.ts` with a furnace hall and control-room sectors,
-  `a`/`b` legend blocks at 3 m and 6 m, and a foundry palette
-- [ ] `HazardSpec[]` on `LevelSpec`: one-cell slag channels that cycle 2 s hot / 2 s cold,
-  dealing 12 dps while hot; steam vents mark the chokepoints
-- [ ] Per-cell hazard grid stamped like rooms, ticked from `update()` through
-  `damagePlayer(dps * dt)`; the floor tints while a channel is hot and steam plumes use
-  the existing glow/prop path
-- [ ] Deterministic textures generated in `make-textures.ts` and loaded in `main.ts`;
-  the stale texture list in `docs/PIPELINE.md` is corrected
+- [x] 48×48 `src/content/foundry-map.ts` with a furnace hall, a sealed control room, and
+  `a`/`b` legend blocks at 3 m and 6 m; `foundry-wall`, `foundry-floor`, and
+  `foundry-top` replace the default tiles for this level
+- [x] `hazards?: HazardArea[]` on `LevelSpec` stamped into a per-cell `Uint8Array` at world
+  creation (with bounds and solid-cell validation); `hazardHotAt()` cycles 4 s — 2 s hot,
+  2 s cold — and hot cells deal 12 dps in batches no shorter than 0.25 s
+- [x] The renderer swaps hazard floors to `slag-hot`/`slag-cold` (`FloorHazards`) and adds
+  an ember glow while hot; each 1×1 vent gets stacked glow plumes; the minimap paints
+  channels by phase
+- [x] `make-textures.ts` generates the foundry surfaces, slag pair, and coolant canister;
+  `main.ts` loads them; the stale texture list in `docs/PIPELINE.md` is corrected
 
 **Objective**
 
-- [ ] Keycard gate, three coolant cells, six hostiles plus a foreman boss, then extraction
-  to the courtyard
-- [ ] The HUD names the coolant count and the foreman stage; the beacon refuses extraction
-  until the cells and boss are cleared
-- [ ] Unit tests cover the map legend, hazard cycle, spawn/exit surfaces, and mission gate;
-  matrix scenarios cover a hot-channel crossing, a coolant pickup, and the boss clear
-- [ ] Route remains jetpack-safe: no hazard cell blocks the only path when cold
+- [x] Keycard gate, three coolant cells, six hostiles plus the foreman, then extraction to
+  the courtyard
+- [x] Mission stages extend to `hunt → collect → boss → extract → clear`; the HUD names
+  the coolant count and the boss stage, and the beacon refuses extraction until both are
+  cleared
+- [x] Unit tests cover the map legend, hazard cycle and stamping, surfaces, roster, and
+  reachability; matrix scenarios cover a hot-channel burn, a cold-channel wait, a coolant
+  pickup, and the full foundry clear
+- [x] Route remains jetpack-safe: hazards only damage on the ground, and every hazard row
+  is cold half the cycle
 
 **Acceptance:** the foundry loads with no missing textures, hazards cycle and damage on
 schedule, the collection gate and boss stage work end to end, and every existing suite
-stays green.
+stays green. Verified 2026-11-12: 145 unit tests, 740/740 matrix assertions across 127
+scenarios (874 checks with goldens), 40/40 happy path, 109/109 flight, 42/42 paused states,
+and a clean production build (`index-B1q8EU2d.js`, 85.17 kB / 28.30 kB gzip).

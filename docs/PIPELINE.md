@@ -1,6 +1,6 @@
 # Asset pipeline
 
-The renderer consumes three character atlases plus three wall/floor textures. Everything
+The renderer consumes one character atlas plus the wall/floor/prop textures. Everything
 is generated locally and deterministically except for Blender's renderer, which is
 deterministic given the same version and samples.
 
@@ -10,7 +10,7 @@ ASCII map ─────────────┐
 textures ──────────────┤
 3 × atlas.{png,json} ──┘
 
-Blender chassis ─► 1,216 RGBA renders + depth/normal controls ─► 1,216 stylized frames per character ─► 3 × 1536×7296 atlases
+Blender chassis ─► 1,216 RGBA renders + depth/normal controls ─► 1,216 stylized frames per character ─► 1536×7296 atlas
 ```
 
 ## Commands
@@ -52,9 +52,24 @@ Pure TypeScript + `pngjs`, no external image tools. Produces:
 
 | File | Tile | Look |
 | --- | --- | --- |
-| `brick.png` | `#` | Staggered brick, mortar, bevel highlights |
+| `brick.png` | `#` (courtyard) | Staggered brick, mortar, bevel highlights |
 | `panel.png` | `X` | Teal tech panel with rivets and seams |
-| `floor.png` | floor | Slate tiles with grout and variation |
+| `floor.png` | floor (courtyard) | Slate tiles with grout and variation |
+| `top.png` / `roof.png` | wall top / roof | Slab surfaces |
+| `facade.png` | `#` (district) | Windowed tower facade |
+| `asphalt.png` | floor (district) | Street asphalt |
+| `foundry-wall.png` | `#` (foundry, via `wallTexture`) | Riveted furnace plating, soot and heat staining |
+| `foundry-floor.png` | floor (foundry) | Scorched plate with grate seams |
+| `foundry-top.png` | top (foundry) | Slagged slab |
+| `slag-hot.png` | hazard floor (hot) | Molten orange veins over dark crust |
+| `slag-cold.png` | hazard floor (cold) | Cooling crust with residual ember cracks |
+| `door.png` | `D` | Sealed door panel |
+| `keycard.png`, `medkit.png`, `fuel.png`, `coolant.png`, `beacon.png` | props | Pickup and beacon billboards |
+
+Foundry textures are authored at 64×64 like the rest and selected per level: the district
+and foundry set `floorTexture`/`topTexture`, and the foundry also sets `wallTexture`, which
+replaces texture tiles 1 and 4 at load time. The slag pair is swapped per cell by the
+hazard phase rather than by a tile id.
 
 Textures are 64×64, tiled by the renderer. Rerunning the script gives identical bytes.
 

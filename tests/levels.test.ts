@@ -6,6 +6,7 @@ import {
   ceilingAt,
   COVER_CHAR,
   createWorld,
+  hazardAt,
   isSolidAt,
   roofAt,
   supportHeight,
@@ -21,7 +22,40 @@ function worldOf(level: (typeof LEVELS)[number]) {
   return createWorld(level.rows, level.spawn, {
     heights: level.heights,
     rooms: level.rooms,
+    hazards: level.hazards,
   });
+}
+
+/**
+ * Ground-reachable cells from the spawn. Doors count as passable because the
+ * mission expects the player to open them; every other solid tile blocks.
+ */
+function reachableCells(level: (typeof LEVELS)[number], world: World) {
+  const width = world.width;
+  const start = Math.floor(level.spawn.y) * width + Math.floor(level.spawn.x);
+  const seen = new Set<number>([start]);
+  const queue = [start];
+  while (queue.length > 0) {
+    const cell = queue.pop() as number;
+    const x = cell % width;
+    const y = Math.floor(cell / width);
+    for (const [nx, ny] of [
+      [x - 1, y],
+      [x + 1, y],
+      [x, y - 1],
+      [x, y + 1],
+    ]) {
+      if (nx < 0 || ny < 0 || nx >= width || ny >= world.height) continue;
+      const next = ny * width + nx;
+      if (seen.has(next)) continue;
+      const tile = world.tiles[next];
+      if (tile !== 0 && tile !== 3) continue;
+      seen.add(next);
+      queue.push(next);
+    }
+  }
+  return (x: number, y: number): boolean =>
+    seen.has(Math.floor(y) * width + Math.floor(x));
 }
 
 /** Open cells of a room reachable from its doorway over 4-neighbours. */
@@ -76,6 +110,7 @@ describe("level definitions", () => {
     expect(levelIndexById("courtyard")).toBe(0);
     expect(levelIndexById("reactor")).toBe(1);
     expect(levelIndexById("district")).toBe(2);
+    expect(levelIndexById("foundry")).toBe(3);
     expect(() => levelIndexById("vault")).toThrow(/Unknown level id/);
   });
 
@@ -300,7 +335,7 @@ describe("district tower interiors", () => {
     expect(rooms.length).toBe(2);
     for (const level of LEVELS) {
       const built = worldOf(level);
-      if (level.id === "district") continue;
+      if (level.id === "district" || (level.rooms?.length ?? 0) > 0) continue;
       expect(built.ceilings.every((value) => value === 0), level.id).toBe(true);
       expect(built.roofs.every((value) => value === 0), level.id).toBe(true);
     }
@@ -414,5 +449,118 @@ describe("district tower interiors", () => {
         room.id,
       ).toBe(true);
     }
+  });
+});
+
+describe("slagworks foundry", () => {
+  const foundry = LEVELS[levelIndexById("foundry")];
+  const world = worldOf(foundry);
+  const hazardCells: Array<[number, number]> = [];
+  for (let y = 0; y < world.height; y += 1) {
+    for (let x = 0; x < world.width; x += 1) {
+      if (hazardAt(world, x + 0.5, y + 0.5)) hazardCells.push([x, y]);
+    }
+  }
+
+  it("authors a 48 m furnace hall with its own surfaces", () => {
+    expect(foundry.title).toBe("SLAGWORKS");
+    expect(foundry.rows.length).toBe(48);
+    expect(world.width).toBe(48);
+    expect(foundry.floorTexture).toBe("foundry-floor");
+    expect(foundry.topTexture).toBe("foundry-top");
+    expect(foundry.wallTexture).toBe("foundry-wall");
+  });
+
+  it("stamps two slag channels and two vents as walkable hazards", () => {
+    expect(foundry.hazards?.length).toBe(4);
+    // 46 cells per full-width channel plus two single-cell vents.
+    expect(hazardCells.length).toBe(94);
+    for (const [x, y] of hazardCells) {
+      expect(tileAt(world, x + 0.5, y + 0.5), `${x},${y}`).toBe(0);
+      expect(supportHeight(world, x + 0.5, y + 0.5), `${x},${y}`).toBe(0);
+    }
+    expect(hazardAt(world, 1.5, 31.5)).toBe(true);
+    expect(hazardAt(world, 46.5, 31.5)).toBe(true);
+    expect(hazardAt(world, 30.5, 11.5)).toBe(true);
+    expect(hazardAt(world, 34.5, 11.5)).toBe(true);
+    expect(hazardAt(world, 20.5, 25.5)).toBe(false);
+  });
+
+  it("gates extraction on the hunt, three coolant cells, and the foreman", () => {
+    expect(foundry.huntTargets).toBe(6);
+    expect(foundry.coolantTargets).toBe(3);
+    const hostiles = foundry.actors.filter((actor) => actor.hostile);
+    const bosses = hostiles.filter((actor) => actor.boss);
+    expect(hostiles.length).toBe(7);
+    expect(bosses.length).toBe(1);
+    expect(bosses[0].name).toBe("foreman");
+    expect(bosses[0].hp).toBe(320);
+    expect(bosses[0].gun?.volley).toBe(3);
+    expect(foundry.bossObjective).toMatch(/foreman/i);
+    const coolants = foundry.pickups.filter((pickup) => pickup.kind === "coolant");
+    expect(coolants.length).toBe(foundry.coolantTargets);
+  });
+
+  it("mixes the furnace roster roles", () => {
+    const spec = (name: string) =>
+      foundry.actors.find((actor) => actor.name === name);
+    expect(spec("slag-bulwark")?.armor).toEqual({ front: 0.5 });
+    expect(spec("cinder-lancer")?.gun?.charge).toBeCloseTo(0.9);
+    expect(spec("slag-rusher")?.gun).toBeUndefined();
+    expect(spec("slag-rusher")?.chase?.speed).toBeGreaterThan(2);
+    expect(spec("engineer")?.talk?.length).toBeGreaterThan(0);
+  });
+
+  it("keeps the keycard, coolant, and beacon reachable on foot", () => {
+    const reachable = reachableCells(foundry, world);
+    for (const pickup of foundry.pickups) {
+      expect(reachable(pickup.x, pickup.y), `${pickup.kind}:${pickup.x},${pickup.y}`).toBe(
+        true,
+      );
+    }
+    for (const exit of foundry.exits) {
+      expect(reachable(exit.x, exit.y), `exit:${exit.id}`).toBe(true);
+    }
+    for (const actor of foundry.actors) {
+      if ((actor.z ?? 0) > 0 || actor.hostile) continue;
+      expect(reachable(actor.x, actor.y), actor.name).toBe(true);
+    }
+  });
+
+  it("places the control-room beacon behind the keycard door", () => {
+    const door = foundry.doors.find((entry) => entry.requires === "keycard");
+    expect(door).toBeDefined();
+    const exit = foundry.exits[0];
+    // Without the door the beacon is enclosed: the door is its only aperture.
+    const sealed = (() => {
+      const width = world.width;
+      const seen = new Set<number>();
+      const start =
+        Math.floor(exit.y) * width + Math.floor(exit.x);
+      seen.add(start);
+      const queue = [start];
+      while (queue.length > 0) {
+        const cell = queue.pop() as number;
+        const x = cell % width;
+        const y = Math.floor(cell / width);
+        for (const [nx, ny] of [
+          [x - 1, y],
+          [x + 1, y],
+          [x, y - 1],
+          [x, y + 1],
+        ]) {
+          const next = ny * width + nx;
+          if (seen.has(next)) continue;
+          if (world.tiles[next] !== 0) continue;
+          seen.add(next);
+          queue.push(next);
+        }
+      }
+      const reach = Math.floor(foundry.spawn.y) * width + Math.floor(foundry.spawn.x);
+      return !seen.has(reach);
+    })();
+    expect(sealed, "beacon must not be reachable without opening the door").toBe(
+      true,
+    );
   });
 });

@@ -13,8 +13,11 @@ reproducible pipeline for multi-angle character sprites, based on
 > impostors, and M13 turns the district into a staged mission with a three-bolt overseer
 > volley, boss HP bar, and a mission-complete overlay. M14 gives the district a roster: a
 > fast rusher, a charged-shot lancer with a visible muzzle telegraph, and a frontal-armor
-> bulwark that must be flanked. The guardian is the only shipped
-> chassis, so every actor renders through its six-state atlas
+> bulwark that must be flanked. M15 adds a persistent campaign with keyboard level select,
+> mission briefings, best time/kills, and a `NEW BEST` badge. M16 adds a procedural music
+> director, per-level ambience, and stage-driven cues. M17 adds SLAGWORKS, a 48×48 foundry
+> with cycling slag channels, a coolant collection gate, and the foreman boss. The guardian
+> is the only shipped chassis, so every actor renders through its six-state atlas
 > (idle/walk/attack/hurt/death/talk).
 
 ![Courtyard gameplay](docs/screenshots/gameplay.png)
@@ -45,15 +48,20 @@ mission-complete screen. The district fields three distinct roles: a fast low-HP
 lancer whose orange muzzle glow telegraphs a 20-damage charged bolt, and a slow bulwark
 whose frontal plating halves damage until the player flanks it. Actor billboards carry four
 depth bands from a separate slice atlas, so near walls cut through the correct part of a
-sprite.
+sprite. A fourth level, SLAGWORKS, is a 48×48 foundry: two slag channels burn for 2 s of
+every 4 s cycle, three coolant cells and six hostiles gate the 320 HP foreman, and only the
+control-room beacon extracts. Campaign progress, best times, and settings persist in
+localStorage, and the synthesized audio director follows the mission stage.
 
-**Status:** playable build with three levels, ranged and melee combat with hurt/death
-states, NPC dialogue, doors, keycard/medkit/fuel pickups, level transitions, a 64×64
-Rooftop District with 4–12 m towers, enterable interiors, and a boss-gated extraction,
-synthesized audio, and a pause/settings menu. Verification runs a 116-scenario
-deterministic matrix (784 checks), a 40-check happy-path browser run, an 18-pose airborne
-flight sweep with a live jetpack sequence (109 checks), and a 42-check paused-state gallery
-capturing every body state.
+**Status:** playable build with four levels, ranged and melee combat with hurt/death
+states, NPC dialogue, doors, keycard/medkit/fuel/coolant pickups, level transitions, a
+64×64 Rooftop District with 4–12 m towers, enterable interiors, and a boss-gated
+extraction, a 48×48 foundry with cycling hazards and a collection gate, a persistent
+campaign with level select, synthesized audio with a stage-driven music director, and a
+pause/settings menu. Verification runs a 127-scenario deterministic matrix (874 checks,
+740 assertions), a 40-check happy-path browser run, an 18-pose airborne flight sweep with
+a live jetpack sequence (109 checks), and a 42-check paused-state gallery capturing every
+body state.
 The M6 AI stylization infrastructure (Blender depth/normal controls, ComfyUI
 img2img + ControlNet, silhouette/palette verification, MCP studio server) remains the
 asset path. See the [roadmap](docs/ROADMAP.md), [pipeline](docs/PIPELINE.md), and
@@ -70,7 +78,7 @@ npm test           # unit tests
 npm run typecheck
 npm run build      # static build in dist/
 npm run playtest   # headless Chrome: input, physics, atlas, viewmodel, screenshot checks
-npm run playtest:matrix  # 116 deterministic state/interaction/combat/level/district scenarios
+npm run playtest:matrix  # 127 deterministic state/interaction/combat/level/foundry scenarios
 npm run playtest:flight  # 18 airborne poses + live jetpack sweep, wall/sky/sprite analysis
 npm run playtest:states  # paused-state gallery: 42 checks, 21 captures
 ```
@@ -86,15 +94,17 @@ npm run playtest:states  # paused-state gallery: 42 checks, 21 captures
 | `Space` | Ignite/hold jetpack (ground jump or sustained lift) |
 | `F` / left click | Fire plasma bolt (45 damage, 22 m/s, 0.9 s life, 0.45 s cooldown) |
 | `E` | Interact: talk, open doors, collect pickups |
+| `L` | Open level select from the victory overlay (also in the pause menu) |
 | `F2` | Toggle freefly debug mode (`Space` up, `Ctrl`/`C` down) |
 | `M` / `Tab` | Toggle minimap |
 | `F3` | Toggle detailed HUD |
 | `R` | Respawn |
 | `Esc` | Release pointer and pause (opens settings) |
 
-The pause panel adjusts mouse sensitivity, field of view, and audio mute; settings
-persist locally. Audio is synthesized with WebAudio and starts on the first click.
-Append `?screenshot` to the URL to hide the overlays for automated captures.
+The pause panel adjusts mouse sensitivity, field of view, and audio mute; settings and
+campaign progress persist locally. Audio is synthesized with WebAudio (a procedural music
+director plus per-level ambience) and starts on the first click. Append `?screenshot` to
+the URL to hide the overlays for automated captures.
 
 ## Asset pipeline
 
@@ -116,7 +126,7 @@ stylized frames are reproducible and gitignored; the packed atlas is committed.
 
 | Command | Output |
 | --- | --- |
-| `npm run assets:textures` | `public/assets/textures/{brick,panel,floor}.png` |
+| `npm run assets:textures` | `public/assets/textures/*.png` (walls, floors, tops, hazards, props) |
 | `npm run assets:blender` | 1,216 raw + 2,432 control PNGs in `assets-src/characters/<id>/` |
 | `npm run assets:stylize` | 96×96 palette frames per character |
 | `npm run assets:comfy` | 96×96 AI frames (or `--fallback`/`--palette`) |
@@ -130,10 +140,11 @@ renders and a stylized frame set.
 ## Repository map
 
 ```
-src/engine/      DDA, world/collision, renderer, projectiles, glow, atlas loader, input, audio, math
-src/content/      courtyard + reactor level definitions, actors, props
-src/game.ts       player physics, jetpack, camera, animation, minimap, HUD
-src/main.ts       asset boot, render loop, pointer lock, debug API
+src/engine/      DDA, world/collision, renderer, projectiles, glow, atlas loader, input, hazards, audio, math
+src/content/      courtyard, reactor, district, and foundry level definitions, actors, props
+src/campaign.ts   versioned localStorage campaign record
+src/game.ts       player physics, jetpack, camera, animation, minimap, HUD, mission stages
+src/main.ts       asset boot, render loop, pointer lock, level select, debug API
 tools/assets/     deterministic wall/floor texture generator
 tools/blender/    headless turntable + viewmodel: raw, depth, and normal passes
 tools/stylize/    palette stylizer, shared downsample, ComfyUI CLI wrapper

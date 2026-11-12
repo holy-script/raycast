@@ -1,10 +1,10 @@
 # Playtest matrix
 
 `npm run playtest:matrix` drives the same headless-Chrome/CDP harness as
-`npm run playtest`, but instead of one happy path it walks the game through 116
-deterministic state, interaction, combat, level, district, interior, route, and viewmodel
-scenarios: 784 checks (assertions plus golden-frame comparisons) and 140 captures
-(canvas frames plus full-page UI overlays).
+`npm run playtest`, but instead of one happy path it walks the game through 127
+deterministic state, interaction, combat, level, district, interior, foundry, route, and
+viewmodel scenarios: 874 checks (740 assertions plus 134 golden-frame comparisons) and
+154 captures (canvas frames plus full-page UI overlays).
 
 The point is coverage the owner should not have to repeat by hand — every movement axis,
 vertical state, camera pitch band, collision surface, actor behavior, NPC/pickup/door
@@ -48,7 +48,7 @@ The in-page automation API makes runs reproducible instead of timing-dependent:
 | `setHealth(value)` | Pin health for hit/death overlay tests. |
 | `attack()` | Fire one plasma bolt; returns false while dead or cooling down, otherwise true even if the bolt eventually misses. |
 | `interact()` | Run one interaction; returns `none`, `talk`, `door`, `locked`, or `pickup`. |
-| `loadLevel(id)` | Swap to `courtyard`, `reactor`, or `district` through the deterministic loader. |
+| `loadLevel(id)` | Swap to `courtyard`, `reactor`, `district`, or `foundry` through the deterministic loader. |
 | `frameCount()` | Count real rAF ticks; used to prove the live loop is alive. |
 | `press` / `release` / `look` | Scripted input with no pointer lock. |
 
@@ -76,7 +76,7 @@ Two harness details matter when extending it:
 | Routes | `r01`–`r05` | Jet over a wall, jet forward climb, aerial look-down, mid-air respawn, sprint route. |
 | Interaction | `i01`–`i07` | Keycard pickup + toast, locked door refusal, door unlock (tile cleared), talk-line cycle, medkit heal, fuel refill, empty interact. |
 | Combat | `f01`–`f13` | Bolt hit, kill → corpse, fired-away miss, 4 m bolt travel, hostile melee damage overlay, player death → redeploy, cooldown gate, enemy wind-up timing, wall absorption, marauder gunner shot + damage, muzzle-aligned spawn, two-bolt crate destruction, and the overseer volley/boss HUD/cover/stage transition. |
-| Levels | `l01`–`l17` | Courtyard → reactor transition, vault return with reloaded state, terrace climb, reactor hover actor, beacon loop, district arrival/landing/sentry/hunt gate with victory overlay/gate entry, and office/vault interiors with ceilings, panel walls, and roofs. |
+| Levels | `l01`–`l22` | Courtyard → reactor transition, vault return with reloaded state, terrace climb, reactor hover actor, beacon loop, district arrival/landing/sentry/hunt gate with victory overlay/gate entry, office/vault interiors with ceilings, panel walls, and roofs, and the foundry arrival, hazard crossings, coolant pickup, and full mission clear. |
 
 Every scenario also runs universal checks: finite player/render state, sane projected
 sprite rectangles, populated HUD, a non-blank rendered frame, and (for canvas captures) a
@@ -290,6 +290,26 @@ path (no source position), which is also the regression guard for the armor rule
 kills must stay full damage. The bulwark test calls `damageActor` with explicit source
 positions rather than relying on projectile travel, so it exercises the armor math without
 timing dependencies.
+
+## M15–M17 campaign, audio, and foundry extension (2026-11-12)
+
+M15 and M16 added the level-select/campaign scenarios (`n01`–`n05` cover the audio beds
+and heartbeat; the campaign round-trip is asserted directly through
+`window.__raycast.campaign`). M17 adds five foundry scenarios, taking the suite to
+**127 scenarios / 874 checks (740 assertions + 134 goldens) / 154 captures**:
+
+| Scenario | Assertion |
+| --- | --- |
+| `l18-foundry-arrival` | The courtyard beacon at `(21.5, 22.5)` loads `foundry` / `SLAGWORKS`, spawns at `(24.5, 44.5)`, reads `0/6`, reports the foreman at 320 HP, places the cinder-lancer at 3 m and the catwalk-gunner at 6 m, and exposes `hazard { hotNow: true, standing: false, coolant: 0/3 }`. |
+| `l19-hot-channel-burns` | With every hostile dead, standing in the south slag channel during the hot phase steps 1.2 s and drops health from 100 into 70–95, sets `hazardHot`, and toasts `SLAG BURN`. |
+| `l20-cold-channel-safe` | The same pose during the cold phase steps 0.8 s with health still 100, then 1.6 s more re-enters the hot phase and damages the player. |
+| `l21-coolant-cell` | `interact()` at the first coolant cell returns `"pickup"`, increments the gate to 1/3, removes the billboard, and toasts `COOLANT CELL 1/3`. |
+| `l22-foundry-clear` | The keycard opens the control-room door, three coolant pickups flip the stage to `boss`, the six non-boss kills keep it there, the foreman's 0.67 s death topple flips it to `extract`, and the sealed beacon then reports `clear` with the victory overlay, the `Foundry cleared` heading, and a campaign record (`reached`, `cleared`, `bestKills = 6`, `bestTime > 0`). `E` returns to the courtyard. |
+
+`l19`/`l20` deliberately batch damage: the hazard applies 12 dps in ≥0.25 s chunks, so a
+1.2 s crossing can lose 12–13 HP rather than exactly 14.4. Assert ranges, not exact
+health. `l22` must wait out the death topple before checking the boss gate; the boss is
+only considered gone once `alive === false`, which is set at the end of the animation.
 
 ## Extending it
 

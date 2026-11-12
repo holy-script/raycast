@@ -2443,6 +2443,241 @@ async function main(): Promise<void> {
       await saveCanvas("l17-roof-over-vault", true);
     });
 
+    // ------------------------------------------------------- slagworks foundry
+    define("levels", "l18-foundry-arrival", async () => {
+      // The courtyard's third beacon loads SLAGWORKS without hunting or cards.
+      await pose(21.5, 22.5, 0, 0, 0);
+      await step(0.15);
+      const current = await state();
+      const values = await hud();
+      const dbg = await debug();
+      check(
+        "the courtyard beacon loads the slagworks hall",
+        dbg.level === "foundry" && values.level === "SLAGWORKS",
+        `${dbg.level} · ${values.level}`,
+      );
+      check(
+        "the foundry spawns on the south loading floor",
+        near(current.x, 24.5, 0.01) &&
+          near(current.y, 44.5, 0.01) &&
+          current.support === 0 &&
+          current.onGround,
+        `${current.x.toFixed(2)}, ${current.y.toFixed(2)} · support ${current.support}`,
+      );
+      check(
+        "the hunt objective counts the furnace crew",
+        current.objective.includes("0/6"),
+        current.objective,
+      );
+      const foreman = dbg.actors.find((actor) => actor.name === "foreman");
+      const elevated = dbg.actors.filter((actor) => actor.z > 0);
+      check(
+        "the foreman and the catwalk crew hold the hall",
+        foreman?.hostile === true &&
+          foreman.maxHp === 320 &&
+          elevated.length === 2 &&
+          elevated.every((actor) => actor.z === 3 || actor.z === 6),
+        `${foreman?.maxHp ?? "missing"} hp · elevated ${elevated
+          .map((actor) => `${actor.name}@${actor.z}`)
+          .join(", ")}`,
+      );
+      check(
+        "the hazard grid exposes the slag cycle",
+        dbg.hazard.hotNow === true &&
+          dbg.hazard.standing === false &&
+          dbg.hazard.coolant?.target === 3,
+        `hot ${dbg.hazard.hotNow} · standing ${dbg.hazard.standing} · coolant ${dbg.hazard.coolant?.got}/${dbg.hazard.coolant?.target}`,
+      );
+      await saveCanvas("l18-foundry-arrival", true);
+    });
+
+    define("levels", "l19-hot-channel-burns", async () => {
+      await loadLevel("foundry");
+      // Clear the crew so only the slag can move the health bar.
+      await evaluate(`(() => {
+        const game = window.__raycast.game;
+        for (const actor of game.actors) {
+          if (actor.spec.hostile) game.damageActor(actor, 999);
+        }
+      })()`);
+      await step(0);
+      await pose(24.5, 31.5, 0, -Math.PI / 2, -0.75);
+      await step(1.2);
+      const current = await state();
+      const values = await hud();
+      check(
+        "standing on a hot channel burns the player",
+        current.hazardHot &&
+          current.health < 95 &&
+          current.health > 70 &&
+          values.toast.includes("SLAG BURN"),
+        `health ${current.health.toFixed(1)} · hot ${current.hazardHot} · ${values.toast}`,
+      );
+      await saveCanvas("l19-hot-channel", true);
+    });
+
+    define("levels", "l20-cold-channel-safe", async () => {
+      await loadLevel("foundry");
+      await evaluate(`(() => {
+        const game = window.__raycast.game;
+        for (const actor of game.actors) {
+          if (actor.spec.hostile) game.damageActor(actor, 999);
+        }
+      })()`);
+      await step(0);
+      // Wait out the first hot phase on dry floor, then stand in the channel.
+      await pose(24.5, 32.5, 0, -Math.PI / 2, -0.75);
+      await step(2.1);
+      await pose(24.5, 31.5, 0, -Math.PI / 2, -0.75);
+      await step(0.8);
+      const cold = await state();
+      check(
+        "the same channel is safe through the cold phase",
+        cold.health === 100 && !cold.hazardHot,
+        `health ${cold.health} · hot ${cold.hazardHot}`,
+      );
+      await saveCanvas("l20-cold-channel", true);
+      // The cycle wraps: the channel burns again four seconds after load.
+      await step(1.6);
+      const hot = await state();
+      check(
+        "the channel reignites on the next cycle",
+        hot.health < 100 && hot.hazardHot,
+        `health ${hot.health.toFixed(1)} · hot ${hot.hazardHot}`,
+      );
+    });
+
+    define("levels", "l21-coolant-cell", async () => {
+      await loadLevel("foundry");
+      await evaluate(`(() => {
+        const game = window.__raycast.game;
+        for (const actor of game.actors) {
+          if (actor.spec.hostile) game.damageActor(actor, 999);
+        }
+      })()`);
+      await step(0);
+      await pose(8.5, 24.5, 0, 0, 0);
+      const result = await interact();
+      await step(0.05);
+      const current = await state();
+      const values = await hud();
+      const dbg = await debug();
+      const pickup = dbg.pickups.find(
+        (entry) => entry.kind === "coolant" && entry.x === 8.5,
+      );
+      check(
+        "the coolant cell is collected on E",
+        result === "pickup" &&
+          current.coolantGot === 1 &&
+          current.coolantTargets === 3 &&
+          pickup?.taken === true &&
+          values.toast.includes("COOLANT CELL 1/3"),
+        `${result} · ${current.coolantGot}/${current.coolantTargets} · ${values.toast}`,
+      );
+      await saveCanvas("l21-coolant-cell", true);
+    });
+
+    define("levels", "l22-foundry-clear", async () => {
+      await loadLevel("foundry");
+      await pose(6.5, 34.5, 0, 0, 0);
+      const card = await interact();
+      await pose(32.5, 11.2, 0, Math.PI, 0);
+      const door = await interact();
+      await step(0.05);
+      let dbg = await debug();
+      check(
+        "the keycard opens the control-room door",
+        card === "pickup" &&
+          door === "door" &&
+          dbg.doors.some((entry) => entry.id === "control" && entry.open),
+        `card ${card} · door ${door} · ${dbg.doors
+          .map((entry) => `${entry.id}:${entry.open ? "open" : "sealed"}`)
+          .join(" ")}`,
+      );
+      for (const [x, y] of [
+        [8.5, 24.5],
+        [24.5, 16.5],
+        [42.5, 26.5],
+      ] as const) {
+        await pose(x, y, 0, 0, 0);
+        await interact();
+      }
+      await step(0.05);
+      let current = await state();
+      check(
+        "all three coolant cells gate the foreman",
+        current.coolantGot === 3 && current.mission?.coolant?.got === 3,
+        `${current.coolantGot}/${current.coolantTargets} · stage ${current.mission?.stage}`,
+      );
+      await evaluate(`(() => {
+        const game = window.__raycast.game;
+        for (const actor of game.actors) {
+          if (actor.spec.hostile && !actor.spec.boss) game.damageActor(actor, 999);
+        }
+      })()`);
+      await step(0);
+      current = await state();
+      check(
+        "clearing the crew exposes the foreman",
+        current.huntKills === 6 && current.mission?.stage === "boss",
+        `${current.huntKills}/${current.huntTargets} · stage ${current.mission?.stage}`,
+      );
+      await evaluate(`(() => {
+        const game = window.__raycast.game;
+        const boss = game.actors.find((actor) => actor.spec.boss);
+        if (boss) game.damageActor(boss, 999);
+      })()`);
+      // The death topple holds `alive` for 0.67 s before the boss clears.
+      await step(0.8);
+      const extracted = await state();
+      check(
+        "killing the foreman unlocks extraction",
+        extracted.mission?.stage === "extract" &&
+          extracted.huntKills === 6,
+        `stage ${extracted.mission?.stage} · kills ${extracted.huntKills}`,
+      );
+      await pose(32.5, 6.5, 0, -Math.PI / 2, 0);
+      await step(0.2);
+      const values = await hud();
+      dbg = await debug();
+      check(
+        "the control-room beacon ends the mission",
+        dbg.mission.stage === "clear" && values.victory === "shown",
+        `${dbg.mission.stage} · victory ${values.victory}`,
+      );
+      const title = await evaluate<string>(
+        'document.getElementById("victory-title")?.textContent ?? ""',
+      );
+      check(
+        "the overlay names the foundry instead of the district",
+        title === "Foundry cleared",
+        title,
+      );
+      const saved = await evaluate<{
+        reached: string[];
+        levels: {
+          foundry: { cleared: boolean; bestKills: number; bestTime: number };
+        };
+      }>('JSON.parse(localStorage.getItem("raycast.campaign.v1"))');
+      check(
+        "the foundry clear is persisted with its furnace record",
+        saved.reached.includes("foundry") &&
+          saved.levels.foundry.cleared &&
+          saved.levels.foundry.bestKills === 6 &&
+          (saved.levels.foundry.bestTime ?? 0) > 0,
+        `reached ${saved.reached.join(",")} · best ${saved.levels.foundry.bestKills} kills · ${(saved.levels.foundry.bestTime ?? 0).toFixed(1)} s`,
+      );
+      await capturePage("l22-foundry-victory");
+      const result = await interact();
+      await step(0);
+      const after = await debug();
+      check(
+        "E on the foundry victory returns to the courtyard",
+        result === "continue" && after.level === "courtyard",
+        `${result} · ${after.level}`,
+      );
+    });
+
     // ------------------------------------------------------------------ run
     for (const scenario of scenarios) {
       currentScenario = scenario.id;

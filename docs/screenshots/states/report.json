@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-12T07:45:01.225Z",
+  "generatedAt": "2026-11-12T08:03:58.518Z",
   "url": "http://127.0.0.1:5204/?screenshot",
-  "durationMs": 3576,
+  "durationMs": 2670,
   "passed": 42,
   "failed": 0,
   "checks": [
@@ -153,7 +153,7 @@
       "state": "guardian",
       "name": "guardian-walk renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 55.3"
+      "detail": "512 colors, mean luma 65.7"
     },
     {
       "state": "guardian",
@@ -171,7 +171,7 @@
       "state": "guardian",
       "name": "guardian-attack-windup renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 54.8"
+      "detail": "512 colors, mean luma 65.4"
     },
     {
       "state": "guardian",
@@ -183,7 +183,7 @@
       "state": "guardian",
       "name": "guardian-attack-impact renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 56.1"
+      "detail": "512 colors, mean luma 66.4"
     },
     {
       "state": "guardian",
@@ -201,7 +201,7 @@
       "state": "guardian",
       "name": "guardian-hurt renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 56.3"
+      "detail": "512 colors, mean luma 65.5"
     },
     {
       "state": "guardian",
@@ -219,7 +219,7 @@
       "state": "guardian",
       "name": "guardian-death-early renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 56.4"
+      "detail": "512 colors, mean luma 65.6"
     },
     {
       "state": "guardian",
@@ -231,7 +231,7 @@
       "state": "guardian",
       "name": "guardian-death-mid renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 55.6"
+      "detail": "512 colors, mean luma 66.1"
     },
     {
       "state": "guardian",
@@ -243,7 +243,7 @@
       "state": "guardian",
       "name": "guardian-corpse renders content",
       "ok": true,
-      "detail": "512 colors, mean luma 54.5"
+      "detail": "512 colors, mean luma 65.2"
     },
     {
       "state": "guardian",
@@ -349,7 +349,7 @@
       "expected": "walk",
       "observed": "attack",
       "colors": 512,
-      "meanLuma": 55.3
+      "meanLuma": 65.7
     },
     {
       "name": "guardian-attack-windup",
@@ -358,7 +358,7 @@
       "expected": "attack",
       "observed": "attack",
       "colors": 512,
-      "meanLuma": 54.8
+      "meanLuma": 65.4
     },
     {
       "name": "guardian-attack-impact",
@@ -367,7 +367,7 @@
       "expected": "attack",
       "observed": "attack",
       "colors": 512,
-      "meanLuma": 56.1
+      "meanLuma": 66.4
     },
     {
       "name": "guardian-hurt",
@@ -376,7 +376,7 @@
       "expected": "hurt",
       "observed": "hurt",
       "colors": 512,
-      "meanLuma": 56.3
+      "meanLuma": 65.5
     },
     {
       "name": "guardian-death-early",
@@ -385,7 +385,7 @@
       "expected": "death",
       "observed": "death",
       "colors": 512,
-      "meanLuma": 56.4
+      "meanLuma": 65.6
     },
     {
       "name": "guardian-death-mid",
@@ -394,7 +394,7 @@
       "expected": "death",
       "observed": "death",
       "colors": 512,
-      "meanLuma": 55.6
+      "meanLuma": 66.1
     },
     {
       "name": "guardian-corpse",
@@ -403,7 +403,7 @@
       "expected": "death",
       "observed": "death",
       "colors": 512,
-      "meanLuma": 54.5
+      "meanLuma": 65.2
     }
   ],
   "sheet": "/Users/holyscript/Desktop/projects/raycast/docs/screenshots/states/contact-sheet.png"
