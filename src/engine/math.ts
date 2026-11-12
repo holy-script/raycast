@@ -19,8 +19,24 @@ export function wrapAngle(angle: number): number {
  * screen y component is negated; using `sin` directly mirrors the arrow
  * vertically while positions stay correct.
  */
+/**
+ * Projects a world yaw onto the minimap. The map is drawn y-up, while the
+ * camera basis is the classic raycaster one (screen-right is +y when facing
+ * +x), so both axes are mirrored relative to the level grid to keep strafing
+ * and look direction consistent with the first-person view.
+ */
 export function minimapHeading(angle: number): { x: number; y: number } {
-  return { x: Math.cos(angle), y: -Math.sin(angle) };
+  return { x: -Math.cos(angle), y: -Math.sin(angle) };
+}
+
+export function minimapPoint(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  scale: number,
+): { x: number; y: number } {
+  return { x: (width - x) * scale, y: (height - y) * scale };
 }
 
 /**

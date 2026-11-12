@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-12T06:12:05.509Z",
+  "generatedAt": "2026-11-12T06:34:18.582Z",
   "url": "http://127.0.0.1:5201/?screenshot",
-  "durationMs": 13158,
+  "durationMs": 14158,
   "scenarios": [
     "g01-spawn-idle",
     "g02-walk-forward",
@@ -118,7 +118,7 @@
     "l16-ceiling-jet-cap",
     "l17-roof-over-vault"
   ],
-  "passed": 766,
+  "passed": 767,
   "failed": 0,
   "checks": [
     {
@@ -3087,7 +3087,7 @@
       "group": "ui",
       "name": "resuming advances the simulation",
       "ok": true,
-      "detail": "patrol dx 0.38, 22 frames, paused=false, 6.43% pixels changed"
+      "detail": "patrol dx 0.38, 23 frames, paused=false, 6.43% pixels changed"
     },
     {
       "scenario": "u05-pause-resume",
@@ -3876,6 +3876,13 @@
     {
       "scenario": "f02-player-kill",
       "group": "combat",
+      "name": "re-hitting a dying enemy does not restart the death animation",
+      "ok": true,
+      "detail": "frame 2 → 2"
+    },
+    {
+      "scenario": "f02-player-kill",
+      "group": "combat",
       "name": "the corpse drops out of targeting but stays rendered",
       "ok": true,
       "detail": "alive=false · size=1.33 m · 4744 corpse px"
@@ -3885,7 +3892,7 @@
       "group": "combat",
       "name": "f02-enemy-corpse matches baseline",
       "ok": true,
-      "detail": "0.00% of pixels differ"
+      "detail": "0.11% of pixels differ"
     },
     {
       "scenario": "f02-player-kill",
@@ -3899,7 +3906,7 @@
       "group": "combat",
       "name": "f02-player-kill matches baseline",
       "ok": true,
-      "detail": "0.00% of pixels differ"
+      "detail": "0.11% of pixels differ"
     },
     {
       "scenario": "f02-player-kill",
@@ -6023,13 +6030,13 @@
     {
       "name": "f02-enemy-corpse",
       "kind": "canvas",
-      "diff": 0,
+      "diff": 0.0011176215277777777,
       "baseline": "compared"
     },
     {
       "name": "f02-player-kill",
       "kind": "canvas",
-      "diff": 0,
+      "diff": 0.0011176215277777777,
       "baseline": "compared"
     },
     {

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   elevationAngle,
   minimapHeading,
+  minimapPoint,
   quantizeDirection,
   quantizePitch,
   samplePitch,
@@ -98,10 +99,11 @@ describe("angle helpers", () => {
 });
 
 describe("minimap heading", () => {
-  it("projects world yaw onto a y-up map without mirroring", () => {
-    // +x is screen-right; +y is north, which must draw upward (negative y).
+  it("mirrors world x and draws north upward", () => {
+    // The camera basis puts its right-hand side on +y when facing +x, so the
+    // map mirrors x to keep strafing aligned with the first-person view.
     const east = minimapHeading(0);
-    expect(east.x).toBeCloseTo(1);
+    expect(east.x).toBeCloseTo(-1);
     expect(east.y).toBeCloseTo(0);
     const north = minimapHeading(Math.PI / 2);
     expect(north.x).toBeCloseTo(0);
@@ -109,5 +111,17 @@ describe("minimap heading", () => {
     const south = minimapHeading(-Math.PI / 2);
     expect(south.x).toBeCloseTo(0);
     expect(south.y).toBeCloseTo(1);
+  });
+
+  it("projects points onto the same mirrored map", () => {
+    const at = minimapPoint(3.5, 1.5, 24, 24, 1);
+    expect(at.x).toBeCloseTo(20.5);
+    expect(at.y).toBeCloseTo(22.5);
+    // Facing north, a left strafe moves the world toward +x, which must move
+    // the icon left on screen after mirroring.
+    const start = minimapPoint(10, 10, 24, 24, 1);
+    const afterLeftStrafe = minimapPoint(11, 10, 24, 24, 1);
+    expect(afterLeftStrafe.x).toBeLessThan(start.x);
+    expect(afterLeftStrafe.y).toBeCloseTo(start.y);
   });
 });

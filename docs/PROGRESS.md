@@ -28,10 +28,10 @@ Run from a clean checkout:
 ```bash
 npm ci
 npm run typecheck   # passes
-npm test            # 11 files, 112 tests pass
-npm run build       # tsc + vite build (66.86 kB JS / 22.63 kB gzip)
+npm test            # 11 files, 113 tests pass
+npm run build       # tsc + vite build (67.00 kB JS / 22.66 kB gzip)
 npm run playtest    # 40/40 browser checks pass
-npm run playtest:matrix  # 114 scenarios, 766/766 checks, 137 captures, 0 console errors
+npm run playtest:matrix  # 114 scenarios, 767/767 checks, 137 captures, 0 console errors
 npm run playtest:flight  # 18 poses + live jetpack, 109/109 checks, 30 captures
 npm run playtest:states  # 42/42 state checks, 21 captures, 0 console errors
 npm run assets:verify -- --min-iou 0.4  # 1,216-frame guardian atlas; min IoU 0.43, mean 0.90

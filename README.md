@@ -46,7 +46,7 @@ atlas, so near walls cut through the correct part of a sprite.
 states, NPC dialogue, doors, keycard/medkit/fuel pickups, level transitions, a 64×64
 Rooftop District with 4–12 m towers, enterable interiors, and a boss-gated extraction,
 synthesized audio, and a pause/settings menu. Verification runs a 114-scenario
-deterministic matrix (766 checks), a 40-check happy-path browser run, an 18-pose airborne
+deterministic matrix (767 checks), a 40-check happy-path browser run, an 18-pose airborne
 flight sweep with a live jetpack sequence (109 checks), and a 42-check paused-state gallery
 capturing every body state.
 The M6 AI stylization infrastructure (Blender depth/normal controls, ComfyUI

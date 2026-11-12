@@ -3,7 +3,7 @@
 `npm run playtest:matrix` drives the same headless-Chrome/CDP harness as
 `npm run playtest`, but instead of one happy path it walks the game through 114
 deterministic state, interaction, combat, level, district, interior, route, and viewmodel
-scenarios: 766 checks (assertions plus golden-frame comparisons) and 137 captures
+scenarios: 767 checks (assertions plus golden-frame comparisons) and 137 captures
 (canvas frames plus full-page UI overlays).
 
 The point is coverage the owner should not have to repeat by hand — every movement axis,
@@ -247,7 +247,7 @@ that the sky visible through a room is the open doorway sightline, not an enclos
 ## M13 mission and boss extension (2026-11-12)
 
 M13 adds `f13-boss-encounter` and extends existing scenarios (matrix now 114 scenarios /
-766 checks / 137 captures):
+767 checks / 137 captures):
 
 | Scenario | Assertion |
 | --- | --- |
@@ -266,6 +266,14 @@ vertical delta by the horizontal distance, restoring the shallow aim. Two test d
 were fixed at the same time: the `f13` kill loop read `actor.hostile` instead of
 `actor.spec.hostile`, and `l09` checked the victory overlay before the 0.67 s boss death
 animation finished.
+
+Owner follow-up (2026-11-12, matrix now 114 scenarios / 767 checks): the minimap still
+mirrored strafing because only the heading had been flipped in the previous fix; the map
+now mirrors world x for tiles, pickups, exits, actors, and the player, and
+`tests/math.test.ts` locks both the heading and point projection. `f02-player-kill` also
+asserts that re-hitting a dying enemy does not restart its death animation: after
+0.3 s the death frame is 2, an extra 999-damage hit leaves it at frame 2 instead of
+resetting to 0.
 
 ## Extending it
 

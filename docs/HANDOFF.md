@@ -11,14 +11,14 @@ npm run typecheck
 npm test
 npm run build
 npm run playtest   # headless Chrome, 40 checks + screenshots
-npm run playtest:matrix  # 114 deterministic scenarios, 766 checks
+npm run playtest:matrix  # 114 deterministic scenarios, 767 checks
 npm run playtest:flight  # 18 airborne poses + live jetpack, 109 checks
 npm run playtest:states  # 42 state checks, 21 paused-state captures
 npm run dev        # http://localhost:5173
 ```
 
-Expected: typecheck clean, 112 tests passing across 11 files, Vite build succeeds, playtest
-40/40, matrix 766/766, flight 109/109, state gallery 42/42 with zero console errors.
+Expected: typecheck clean, 113 tests passing across 11 files, Vite build succeeds, playtest
+40/40, matrix 767/767, flight 109/109, state gallery 42/42 with zero console errors.
 Click the canvas,
 move with WASD, hold Space to jetpack up to 18 m outdoors (or below the ceiling indoors),
 and look down to see the top-pitch
@@ -117,7 +117,7 @@ flight.
 
 `?screenshot` hides the intro overlay for headless captures. Prefer the harnesses:
 `npm run playtest` is the happy-path browser check, `npm run playtest:matrix` walks
-114 deterministic state/route scenarios (766 checks, labelled contact sheet, golden
+114 deterministic state/route scenarios (767 checks, labelled contact sheet, golden
 frames), `npm run playtest:states` pauses the sim in every player/guardian body state
 for 21 gallery captures (42 checks), and `npm run playtest:flight` sweeps 18
 altitude/pitch poses plus a live jetpack flight (109 checks) while asserting no sky
@@ -323,8 +323,8 @@ alone can leave HUD values at `--`.
 M13 is complete locally: the district runs hunt → boss → extract → clear, the overseer
 fires a three-bolt volley from behind new rooftop cover, the HUD shows the boss row and
 stage objective, and the beacon raises a mission-complete overlay with `E` to continue.
-Verification passes `playtest` (40), `playtest:matrix` (766 across 114 scenarios),
-`playtest:flight` (109), `playtest:states` (42), and 112 unit tests. The owner should
+Verification passes `playtest` (40), `playtest:matrix` (767 across 114 scenarios),
+`playtest:flight` (109), `playtest:states` (42), and 113 unit tests. The owner should
 playtest the full district loop — especially volley dodging from the 12.6 m cover — before
 the next design step.
 

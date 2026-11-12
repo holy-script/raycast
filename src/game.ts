@@ -6,6 +6,7 @@ import {
   elevationAngle,
   lerp,
   minimapHeading,
+  minimapPoint,
   quantizePitch,
   samplePitch,
   sampleStaticPitch,
@@ -987,6 +988,9 @@ export class Game {
   }
 
   private damageActor(actor: Actor, amount: number): void {
+    // Bolts can still reach a body while it plays the 0.67 s death topple;
+    // extra hits must not restart the animation or count another kill.
+    if (actor.state === "death") return;
     actor.hp = Math.max(0, actor.hp - amount);
     actor.stateT = 0;
     this.emit("hit");
@@ -1858,48 +1862,63 @@ export class Game {
         const tile = world.tiles[y * world.width + x];
         if (tile === 0) continue;
         ctx.fillStyle = tile === 2 ? "#39434f" : tile === 3 ? "#8a6b3a" : "#2a2f3c";
-        ctx.fillRect(x * scale, (world.height - 1 - y) * scale, scale - 0.5, scale - 0.5);
+        ctx.fillRect(
+          (world.width - 1 - x) * scale,
+          (world.height - 1 - y) * scale,
+          scale - 0.5,
+          scale - 0.5,
+        );
       }
     }
 
     for (const pickup of this.pickups) {
       if (pickup.taken) continue;
-      const px = pickup.x * scale;
-      const py = (world.height - pickup.y) * scale;
+      const at = minimapPoint(
+        pickup.x,
+        pickup.y,
+        world.width,
+        world.height,
+        scale,
+      );
       ctx.fillStyle =
         pickup.kind === "keycard"
           ? "#6ce0ef"
           : pickup.kind === "medkit"
             ? "#f0e4c8"
             : "#8fb7d0";
-      ctx.fillRect(px - 1.2, py - 1.2, 2.4, 2.4);
+      ctx.fillRect(at.x - 1.2, at.y - 1.2, 2.4, 2.4);
     }
 
     for (const exit of this.exits) {
-      const ex = exit.x * scale;
-      const ey = (world.height - exit.y) * scale;
+      const at = minimapPoint(exit.x, exit.y, world.width, world.height, scale);
       ctx.strokeStyle = "#6ce0ef";
       ctx.beginPath();
-      ctx.arc(ex, ey, 2.6, 0, Math.PI * 2);
+      ctx.arc(at.x, at.y, 2.6, 0, Math.PI * 2);
       ctx.stroke();
     }
 
     for (const actor of this.actors) {
       if (!actor.alive) continue;
-      const ax = actor.x * scale;
-      const ay = (world.height - actor.y) * scale;
+      const at = minimapPoint(actor.x, actor.y, world.width, world.height, scale);
       const heading = minimapHeading(actor.facing);
       ctx.fillStyle = actor.spec.hostile ? "#e08a7a" : "#66c7cd";
-      ctx.fillRect(ax - 1.5, ay - 1.5, 3, 3);
+      ctx.fillRect(at.x - 1.5, at.y - 1.5, 3, 3);
       ctx.strokeStyle = ctx.fillStyle;
       ctx.beginPath();
-      ctx.moveTo(ax, ay);
-      ctx.lineTo(ax + heading.x * 5, ay + heading.y * 5);
+      ctx.moveTo(at.x, at.y);
+      ctx.lineTo(at.x + heading.x * 5, at.y + heading.y * 5);
       ctx.stroke();
     }
 
-    const px = this.player.x * scale;
-    const py = (world.height - this.player.y) * scale;
+    const at = minimapPoint(
+      this.player.x,
+      this.player.y,
+      world.width,
+      world.height,
+      scale,
+    );
+    const px = at.x;
+    const py = at.y;
 
     const halfFov = this.baseFov() / 2;
     const leftEdge = minimapHeading(this.player.yaw - halfFov);

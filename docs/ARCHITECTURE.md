@@ -9,9 +9,11 @@ solid diorama from jetpack altitude and the player can land on a wall to look do
 ## Coordinate system
 
 - Map cell `(x, y)` covers `[x, x+1) × [y, y+1)`. Rows increase downward (`+y` is
-  "south" on the minimap).
-- Yaw `0` points east (`+x`); `yaw = π/2` points south (`+y`), so yaw increases
-  clockwise on screen.
+  "south" in level data). The minimap draws `+y` upward and mirrors `x`, because the
+  camera basis (`plane = (−dirY, dirX)`) is mirrored relative to a y-down grid; mirroring
+  both axes keeps minimap strafe and look directions aligned with the first-person view.
+- Yaw `0` points east (`+x`); `yaw = π/2` points toward `+y`, so yaw increases clockwise
+  on the minimap.
 - `z` is height in world units. The floor is `z = 0`; the player eye is at
   `z + EYE_HEIGHT`.
 - Actor `facing` uses the same angle convention. Frame index 0 is the actor seen from
@@ -343,7 +345,9 @@ sits inside solid geometry or outside the room, the eye is used instead. Damage,
 and hit resolution are owned by the projectile step. A hit applies damage plus 0.18
 knockback and switches the actor to `hurt` or `death`. Dead actors stay in the actor array
 with `alive = false` so the final death frame still draws as a corpse; they no longer
-update, attack, or accept further hits.
+update, attack, or accept further hits. An actor already in the `death` state ignores all
+damage, so bolts that land during the 0.67 s topple cannot restart the animation or count
+another kill.
 
 `src/engine/crates.ts` marks cells containing `X` at 1.4 m. Player bolts call
 `damageCrateAt(x, y)` when they stop on a crate; each hit is counted per cell and, on the
@@ -507,7 +511,7 @@ Screenshots and a JSON report land in `docs/screenshots/playtest/`.
 The companion harnesses share `tools/playtest/support.ts` (contact sheets, sky-row
 classification, image metrics):
 
-- `playtest:matrix` — 114 deterministic scenarios, 766 checks, golden-frame comparison.
+- `playtest:matrix` — 114 deterministic scenarios, 767 checks, golden-frame comparison.
 - `playtest:states` — paused player/guardian animation gallery, 42 checks.
 - `playtest:flight` — 18 altitude/pitch poses plus a live jetpack flight, 109 checks. It
   classifies every canvas pixel against the sky gradient, flags enclosed sky holes, fits the

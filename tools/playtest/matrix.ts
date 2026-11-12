@@ -1440,6 +1440,26 @@ async function main(): Promise<void> {
       );
       const values = await hud();
       check("kill toast names the target", values.toast.includes("STALKER DOWN"), values.toast);
+      await step(0.3);
+      const midDeath = (await debug()).actors.find(
+        (actor) => actor.name === "stalker",
+      );
+      await evaluate(`(() => {
+        const game = window.__raycast.game;
+        const actor = game.actors.find((entry) => entry.spec.name === "stalker");
+        if (actor) game.damageActor(actor, 999);
+      })()`);
+      await step(0);
+      const afterDeath = (await debug()).actors.find(
+        (actor) => actor.name === "stalker",
+      );
+      check(
+        "re-hitting a dying enemy does not restart the death animation",
+        (midDeath?.frameIndex ?? 0) > 0 &&
+          afterDeath?.state === "death" &&
+          afterDeath?.frameIndex === midDeath?.frameIndex,
+        `frame ${midDeath?.frameIndex} → ${afterDeath?.frameIndex}`,
+      );
       await step(0.7);
       dbg = await debug();
       stalker = dbg.actors.find((actor) => actor.name === "stalker");

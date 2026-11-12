@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-12T06:12:33.878Z",
+  "generatedAt": "2026-11-12T06:35:21.394Z",
   "url": "http://127.0.0.1:5204/?screenshot",
-  "durationMs": 3366,
+  "durationMs": 3589,
   "passed": 42,
   "failed": 0,
   "checks": [

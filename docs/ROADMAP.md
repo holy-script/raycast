@@ -6,7 +6,7 @@ is checked and the verification command passes. Update this file and
 
 Current position: **M0–M13 complete and deployed.** Ranged combat, interaction, doors/pickups,
 level transitions, the reactor map, and the Rooftop District are playable and covered by
-766 deterministic matrix checks (114 scenarios), a 40-check happy-path run, a 109-check
+767 deterministic matrix checks (114 scenarios), a 40-check happy-path run, a 109-check
 flight sweep, and a 42-check paused-state gallery. The guardian is the only shipped
 chassis, with all six states in a 16×4×19 atlas; the scout and brute prototypes were
 removed until their art pass exists. M8 delivered procedural audio, a pause/settings menu
@@ -363,9 +363,12 @@ counter.
   and `E` returning to the courtyard
 - [x] Enemy bolts keep their shallow trajectory after the volley refactor: the vertical
   slope is computed per horizontal metre so shots no longer nose into the floor
+- [x] Owner follow-up: the minimap mirrors both axes (points and headings) so strafing
+  matches the first-person view, and a dying actor ignores further damage so the death
+  animation cannot restart or double-count kills
 
-**Acceptance:** `npm run typecheck`, 112 unit tests, `npm run build` (66.86 kB JS),
-`npm run playtest` (40/40), `npm run playtest:matrix` (766/766 across 114 scenarios, 137
+**Acceptance:** `npm run typecheck`, 113 unit tests, `npm run build` (67.00 kB JS),
+`npm run playtest` (40/40), `npm run playtest:matrix` (767/767 across 114 scenarios, 137
 captures), `npm run playtest:flight` (109/109), and `npm run playtest:states` (42/42)
 pass with zero page errors. Captures show the overseer and its boss bar, the mission
 overlay, the panel-clad office walls and ceiling, and the victory overlay. Verified
